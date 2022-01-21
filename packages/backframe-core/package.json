@@ -2,7 +2,7 @@
   "name": "@backframe/core",
   "version": "0.0.1",
   "description": "An official core library required for backframe projects",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "jest"
   },
