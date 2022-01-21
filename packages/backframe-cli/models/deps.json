@@ -1,0 +1,89 @@
+{
+    "backframe": {
+        "deps": [
+            "@backframe/core:0.1.0", "@backframe/dbs:0.1.0"
+        ]
+    },
+    "apis": {
+        "gql": {
+            "deps": ["@backframe/gql:0.1.0"]
+        },
+        "rest": {
+            "deps": ["@backframe/rest:0.1.0"]
+        },
+        "rpc": {
+            "deps": ["@backframe/rpc:0.1.0"]
+        },
+        "soap": {
+            "deps": ["@backframe/soap:0.1.0"]
+        }
+    },
+    "database": {
+        "mongodb": {
+            "deps": ["mongoose"]
+        },
+        "mariadb": {
+            "deps": ["mariadb"]
+        },
+        "mysql": {
+            "deps": ["mysql"]
+        },
+        "couchbase": {
+            "deps": ["nano"]
+        },
+        "redis": {
+            "deps": ["mariadb:0.1.0"]
+        },
+        "miscrosoftsql": {
+            "deps": ["mariadb:0.1.0"]
+        },
+        "firestore": {
+            "deps": ["@firebase/firestore"]
+        }
+    },
+    "internals": {
+        "sockets": {
+            "deps": ["socket.io"]
+        },
+        "clustering": {
+            "deps": [],
+            "devDeps": ["pm2"]
+        }
+    },
+    "third-party": {
+        "stripe": {
+            "deps": ["stripe"]
+        },
+        "twilio": {
+            "deps": ["twilio"]
+        },
+        "sendgrid": {
+            "deps": ["@sendgrid/mail"]
+        },
+        "firebase": {
+            "deps": ["firebase"]
+        }
+    },
+    "auth-providers": {
+        "google": {
+            "deps": ["passport-google-oauth2"]
+        },
+        "facebook": {
+            "deps": ["passport-facebook"]
+        },
+        "twitter": {
+            "deps": ["passport-github"]
+        },
+        "email-local": {
+            "deps": ["passport-local"]
+        }
+    },
+    "devops": {
+        "travis": {
+            "deps": []
+        },
+        "gha": {
+            "deps": []
+        }
+    }
+}
