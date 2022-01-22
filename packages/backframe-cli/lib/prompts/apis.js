@@ -19,7 +19,7 @@ module.exports = () => {
         value: "gql",
       },
       { name: "REST", value: "rest", checked: true },
-      { name: "RPC", value: "rpc" },
+      { name: "gRPC", value: "rpc" },
       { name: "SOAP", value: "soap" },
     ],
     default: "REST",
