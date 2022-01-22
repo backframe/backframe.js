@@ -2,9 +2,16 @@ const EventEmitter = require("events");
 const path = require("path");
 const fs = require("fs-extra");
 const { writeSingle } = require("../lib/writeFileTree");
-const { tldComment, errorMsg } = require("../lib/constants");
+const {
+  tldComment,
+  errorMsg,
+  createRouter,
+  exportRouter,
+  authImport,
+} = require("../lib/constants");
 const { toTitleCase, pluralize } = require("../lib/utils");
 const FunctionBuilder = require("./FunctionBuilder");
+const { attachMethod } = require("./FunctionBuilder");
 
 class RestGenerator extends EventEmitter {
   constructor(name, ctx, options) {
@@ -79,13 +86,21 @@ class RestGenerator extends EventEmitter {
     // replace existing backframe.json
     fs.writeFileSync(this.bfConfig, JSON.stringify(copy, null, 2));
 
+    // inject controller body and return exports and imports
     let [imp, exp] = this.injectController(
       `${filePath}/${pluralize(this.name)}/${pluralize(
         this.name
       )}.controller.js`
     );
 
+    // inject model body using imports from controller
     this.injectModel(imp, `${this.modelPath}/${modelName}`);
+
+    // inject router body using exports from controller
+    this.injectRouter(
+      exp,
+      `${filePath}/${pluralize(this.name)}/${pluralize(this.name)}.route.js`
+    );
   }
 
   injectController(file, resource = this.name) {
@@ -96,42 +111,50 @@ class RestGenerator extends EventEmitter {
     //   Implementing get methods
     if (methods.hasOwnProperty("get")) {
       let name = toTitleCase(resource);
+      let method = `get`;
       const base = methods["get"];
 
-      if (base.getAll) imports.push({ name: `getAll${name}s`, params: [""] });
+      if (base.getAll)
+        imports.push({ name: `getAll${name}s`, params: [""], method });
       for (const val of base.allowedFields) {
         if (val !== undefined)
           imports.push({
             name: `get${name}By${toTitleCase(val)}`,
             params: [`${val}`],
+            method,
           });
       }
       for (const sub of base.subResources) {
         if (sub !== undefined)
           imports.push({
             name: `get${name}${toTitleCase(sub)}s`,
-            params: [`${sub}`, `id`],
+            params: [`id`, `${sub}`],
+            method,
           });
       }
-      imports.push({ name: `get${name}`, params: [`id`] });
+      imports.push({ name: `get${name}`, params: [`id`], method });
     }
 
     // post methods
     if (methods.hasOwnProperty("post")) {
       let name = toTitleCase(resource);
-      // let base = methods["post"]
+      let method = `post`;
 
-      imports.push({ name: `post${name}`, params: [``] });
+      imports.push({ name: `post${name}`, params: [``], method });
     }
 
     if (methods.hasOwnProperty("put")) {
       let name = toTitleCase(resource);
-      imports.push({ name: `put${name}`, params: [`id`] });
+      let method = `put`;
+
+      imports.push({ name: `put${name}`, params: [`id`], method });
     }
 
     if (methods.hasOwnProperty("delete")) {
       let name = toTitleCase(resource);
-      imports.push({ name: `delete${name}`, params: [`id`] });
+      let method = `delete`;
+
+      imports.push({ name: `delete${name}`, params: [`id`], method });
     }
 
     const address = this.resolveAddress(file, this.ctx);
@@ -158,11 +181,12 @@ class RestGenerator extends EventEmitter {
     })
       `);
       functions.push(fn.build(name));
-      fn.options.export && exports.push(name);
+      fn.options.export &&
+        exports.push({ name, params: i.params, method: i.method });
     });
 
     const moduleTemp = `module.exports = {
-    ${Object.values(exports)}
+    ${Object.values(exports.map((e) => e.name))}
 }`;
 
     const body = fs.readFileSync(file);
@@ -177,14 +201,49 @@ class RestGenerator extends EventEmitter {
     return [imports, exports];
   }
 
-  injectRouter() {}
+  injectRouter(imp, file) {
+    const body = fs.readFileSync(file);
+
+    let functions = [];
+    const importStatement = `const {${imp.map(
+      (i) => i.name
+    )}} = require("./${pluralize(this.name)}.controller.js")`;
+    const instance = `router`;
+
+    imp.forEach((i) => {
+      const needsAuth = this.getConfig().endpoints["rest"][this.name].methods[
+        i.method
+      ].protected
+        ? true
+        : false;
+      functions.push(
+        attachMethod(instance, i.method, [
+          `${`"${i.params.map((p) => `${p ? `/:${p}` : `/`}`)}"`.replace(
+            ",",
+            ""
+          )} `,
+          needsAuth ? " checkAuth " : "",
+          i.name,
+        ])
+      );
+    });
+
+    fs.writeFileSync(
+      file,
+      `
+    ${body}${authImport}\n${importStatement}\n
+${createRouter}
+    ${Object.values(functions).toString().replace(/\),/g, ")")}\n
+${exportRouter}
+    `
+    );
+  }
 
   injectModel(exp, file) {
     const data = fs.readFileSync(file);
 
     let functions = [];
     exp.forEach((e) => {
-      console.log(e.params);
       let fn = new FunctionBuilder(e.name, e.params);
       functions.push(fn.build(e.name));
     });

@@ -19,7 +19,17 @@ const errorMsg = {
   description: "It's not you, its us. Please try again later",
 };
 
+const requireExpress = `const express = require("express")`;
+
+const createRouter = `const router = express.Router()`;
+const exportRouter = `module.exports = router`;
+const authImport = `const checkAuth = require("@backframe/core")`;
+
 module.exports = {
   tldComment,
   errorMsg,
+  requireExpress,
+  createRouter,
+  exportRouter,
+  authImport,
 };

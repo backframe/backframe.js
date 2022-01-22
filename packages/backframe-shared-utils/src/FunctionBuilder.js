@@ -19,6 +19,11 @@ ${this.type ? `${this.type} ` : ""}function ${fnName} (${Object.values(
   injectBody(body) {
     this.body = body;
   }
+
+  static attachMethod(instance, methodName, params) {
+    return `
+${instance}.${methodName}(${Object.values(params.filter((p) => p !== ""))})`;
+  }
 }
 
 module.exports = FunctionBuilder;
