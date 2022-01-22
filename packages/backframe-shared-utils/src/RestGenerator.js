@@ -13,6 +13,9 @@ class RestGenerator extends EventEmitter {
     this.options = options;
     this.ctx = ctx;
     this.bfConfig = `${ctx}/backframe.json`;
+    this.modelPath = "";
+    this.controllerPath = "";
+    this.routerPath = "";
   }
 
   getConfig() {
@@ -60,24 +63,29 @@ class RestGenerator extends EventEmitter {
     });
 
     // generate name.model.js
-    let modelPath;
     if (this.options.version) {
-      modelPath = path.join(this.ctx, "models", `v${this.options.version}`);
+      this.modelPath = path.join(
+        this.ctx,
+        "models",
+        `v${this.options.version}`
+      );
     } else {
-      modelPath = path.join(this.ctx, "models");
+      this.modelPath = path.join(this.ctx, "models");
     }
 
     const modelName = `${pluralize(this.name)}.model.js`;
-    writeSingle(modelPath, modelName, dummyData);
+    writeSingle(this.modelPath, modelName, dummyData);
 
-    // replcace existing backframe.json
+    // replace existing backframe.json
     fs.writeFileSync(this.bfConfig, JSON.stringify(copy, null, 2));
 
-    this.injectController(
+    let [imp, exp] = this.injectController(
       `${filePath}/${pluralize(this.name)}/${pluralize(
         this.name
       )}.controller.js`
     );
+
+    this.injectModel(imp, `${this.modelPath}/${modelName}`);
   }
 
   injectController(file, resource = this.name) {
@@ -90,14 +98,22 @@ class RestGenerator extends EventEmitter {
       let name = toTitleCase(resource);
       const base = methods["get"];
 
-      if (base.getAll) imports.push(`getAll${name}s`);
+      if (base.getAll) imports.push({ name: `getAll${name}s`, params: [""] });
       for (const val of base.allowedFields) {
-        if (val !== undefined) imports.push(`get${name}By${toTitleCase(val)}`);
+        if (val !== undefined)
+          imports.push({
+            name: `get${name}By${toTitleCase(val)}`,
+            params: [`${val}`],
+          });
       }
       for (const sub of base.subResources) {
-        if (sub !== undefined) imports.push(`get${name}${toTitleCase(sub)}s`);
+        if (sub !== undefined)
+          imports.push({
+            name: `get${name}${toTitleCase(sub)}s`,
+            params: [`${sub}`, `id`],
+          });
       }
-      imports.push(`get${name}`);
+      imports.push({ name: `get${name}`, params: [`id`] });
     }
 
     // post methods
@@ -105,43 +121,40 @@ class RestGenerator extends EventEmitter {
       let name = toTitleCase(resource);
       // let base = methods["post"]
 
-      imports.push(`post${name}`);
+      imports.push({ name: `post${name}`, params: [``] });
     }
 
     if (methods.hasOwnProperty("put")) {
       let name = toTitleCase(resource);
-      imports.push(`put${name}`);
+      imports.push({ name: `put${name}`, params: [`id`] });
     }
 
     if (methods.hasOwnProperty("delete")) {
       let name = toTitleCase(resource);
-      imports.push(`delete${name}`);
+      imports.push({ name: `delete${name}`, params: [`id`] });
     }
 
     const address = this.resolveAddress(file, this.ctx);
-    const importStatement = `const {${Object.values(
-      imports
+    const importStatement = `const {${imports.map(
+      (i) => i.name
     )}} = require("${address.replace(/\\/g, "/")}")`;
 
     let exports = [],
       functions = [];
     // controller imports done, now build functions
     imports.forEach((i) => {
-      let name = `http${toTitleCase(i)}`;
-      const fn = new FunctionBuilder(
-        name,
-        "",
-        { req: "req", res: "res" },
-        { export: true }
-      );
+      let name = `http${toTitleCase(i.name)}`;
+      const fn = new FunctionBuilder(name, ["req", "res"], {
+        export: true,
+      });
       fn.injectBody(`
-  ${i}(req.params.value)
+  ${i.name}(${i.params.map((p) => (p ? `req.params.${p}` : ``))})
     .then((data) => {
       res.status(200).json(data)
     })
     .catch((e) => {
       process.env.NODE_ENV === "development" && console.log(e)
-      res.status(500).json()
+      res.status(500).json({msg: "An internal error occurred, please try again later"})
     })
       `);
       functions.push(fn.build(name));
@@ -160,9 +173,34 @@ class RestGenerator extends EventEmitter {
         .toString()
         .replace(/},/g, "}")}\n\n${moduleTemp}`
     );
+
+    return [imports, exports];
   }
 
-  injectModel() {}
+  injectRouter() {}
+
+  injectModel(exp, file) {
+    const data = fs.readFileSync(file);
+
+    let functions = [];
+    exp.forEach((e) => {
+      console.log(e.params);
+      let fn = new FunctionBuilder(e.name, e.params);
+      functions.push(fn.build(e.name));
+    });
+
+    const exportStatement = `module.exports = {
+    ${exp.map((i) => i.name)}
+}`;
+
+    // write new data
+    fs.writeFileSync(
+      file,
+      `${data}\n
+    ${Object.values(functions).toString().replace(/},/g, "}")}
+    \n${exportStatement}`
+    );
+  }
 
   resolveAddress() {
     if (this.options.version) {
