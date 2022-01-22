@@ -14,15 +14,6 @@ import writeFiles from "../lib/util/writeFiles";
 const access = promisify(fs.access);
 const copy = promisify(ncp);
 
-// TODO: create new folder with given name, handle errors appropriately
-// TODO: run git init once prompts complete
-// TODO: run npm init -y once git done
-// TODO: check for package manager to use
-// TODO: add dependencies to use for backframe
-// TODO: generate/copy files
-// TODO: run completion hooks
-// TODO: transfer prompt functionality into its own module
-
 export async function create(projectName, options) {
   // console.log(options);
   if (!projectName) {
@@ -234,7 +225,7 @@ async function initializeProject(name, dest, ctx, preset) {
     name,
     version: "0.1.0",
     private: true,
-    dependecies: {},
+    dependencies: {},
     devDependencies: {},
   };
 
@@ -242,7 +233,7 @@ async function initializeProject(name, dest, ctx, preset) {
     const version = dep.version || "latest";
     const name = dep.name;
 
-    pkg.dependecies[name] = version;
+    pkg.dependencies[name] = version;
   });
 
   devDeps.forEach((dep) => {

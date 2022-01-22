@@ -43,7 +43,7 @@ program
   .option("-q --quiet", "Skip the prompts and build the server directly")
   .option("-p --purge", "Build the server and remove every trace of backframe")
   .description(
-    "Builds the server, removing abstractions offered by backframe and replacing them with the actual boilerplate"
+    "Builds a fresh instance of a server, using confgurations found in the backframe.json file"
   );
 
 program
@@ -80,13 +80,22 @@ program
   .alias("d")
   .allowUnknownOption()
   .description(
-    "Deploys your server using the configuration passed in the .backframerc"
+    "Deploys your server using the configuration passed in the backframe.json file"
   )
   .action((args, cmd) => {
     console.log(args);
   });
 
-program.command("generate <resource> [apiOptions]").alias("g");
+program
+  .command("generate <api-type>")
+  .alias("g")
+  .option("-v --version", "Specifies whether to version the api endpoints")
+  .description(
+    "Uses the cli to generate new api endpoints by prompting for values"
+  )
+  .action((args, cmd) => {
+    require("../commands/generate").generate(args, cmd);
+  });
 
 program.on("--help", () => {
   console.log();
