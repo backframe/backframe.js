@@ -1,5 +1,5 @@
 class FunctionBuilder {
-  constructor(name, type, args, options, body = null) {
+  constructor(name, args, options, type, body = null) {
     this.name = name;
     this.args = args;
     this.body = body;
@@ -9,10 +9,10 @@ class FunctionBuilder {
 
   build(fnName) {
     return `
-${this.type ? `${this.type} ` : ""}function ${fnName} (${this.args.req} \, ${
-      this.args.res
-    }) { 
-        ${this.body}
+${this.type ? `${this.type} ` : ""}function ${fnName} (${Object.values(
+      this.args
+    )}) { 
+        ${this.body ? this.body : ""}
 }`;
   }
 
