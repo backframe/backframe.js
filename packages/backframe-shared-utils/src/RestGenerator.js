@@ -116,21 +116,25 @@ class RestGenerator extends EventEmitter {
 
       if (base.getAll)
         imports.push({ name: `getAll${name}s`, params: [""], method });
-      for (const val of base.allowedFields) {
-        if (val !== undefined)
-          imports.push({
-            name: `get${name}By${toTitleCase(val)}`,
-            params: [`${val}`],
-            method,
-          });
+      if (base.allowedFields) {
+        for (const val of base.allowedFields) {
+          if (val !== undefined)
+            imports.push({
+              name: `get${name}By${toTitleCase(val)}`,
+              params: [`${val}`],
+              method,
+            });
+        }
       }
-      for (const sub of base.subResources) {
-        if (sub !== undefined)
-          imports.push({
-            name: `get${name}${toTitleCase(sub)}s`,
-            params: [`id`, `${sub}`],
-            method,
-          });
+      if (base.subResources) {
+        for (const sub of base.subResources) {
+          if (sub !== undefined)
+            imports.push({
+              name: `get${name}${toTitleCase(sub)}s`,
+              params: [`id`, `${sub}`],
+              method,
+            });
+        }
       }
       imports.push({ name: `get${name}`, params: [`id`], method });
     }
@@ -255,8 +259,7 @@ ${exportRouter}
     // write new data
     fs.writeFileSync(
       file,
-      `${data}\n
-    ${Object.values(functions).toString().replace(/},/g, "}")}
+      `${data}${Object.values(functions).toString().replace(/},/g, "}")}
     \n${exportStatement}`
     );
   }

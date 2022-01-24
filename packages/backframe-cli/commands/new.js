@@ -10,6 +10,7 @@ import validateProjectName from "validate-npm-package-name";
 
 import { getPromptModules } from "../lib/util/promptModules";
 import writeFiles from "../lib/util/writeFiles";
+import { RestGenerator } from "@backframe/shared-utils";
 
 const access = promisify(fs.access);
 const copy = promisify(ncp);
@@ -148,6 +149,10 @@ export async function create(projectName, options) {
       task: () => initGit(targetDir),
       enabled: () => options.git,
     },
+    {
+      title: `📲  Invoking Generators...`,
+      task: () => invokeGenerators(targetDir),
+    },
   ]);
 
   await tasks.run();
@@ -281,4 +286,15 @@ async function initGit(targetDirectory) {
   if (result.failed) {
     console.log(`${chalk.yellow(`Failed to initiliaze git repository!`)}`);
   }
+}
+
+function invokeGenerators(ctx) {
+  let options = {
+    methods: {
+      get: {},
+    },
+  };
+
+  const generator = new RestGenerator("test", ctx, options);
+  generator.generateResource();
 }
