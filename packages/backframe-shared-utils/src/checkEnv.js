@@ -1,5 +1,4 @@
-const { execSync } = require("child_process");
-const path = require("path");
+const {execSync} = require("child_process");
 const semver = require("semver");
 
 let _hasYarn;
@@ -9,16 +8,16 @@ let _pnpmVersion;
 
 exports.hasYarn = () => {
   try {
-    execSync("yarn --version", { stdio: "ignore" });
+    execSync("yarn --version", {stdio: "ignore"});
     return (_hasYarn = true);
   } catch (e) {
     return (_hasYarn = false);
   }
 };
 
-exports._hasGit = () => {
+exports.hasGit = () => {
   try {
-    execSync("git --version", { stdio: "ignore" });
+    execSync("git --version", {stdio: "ignore"});
     return (_hasGit = true);
   } catch (e) {
     return (_hasGit = false);
@@ -35,7 +34,7 @@ function getPnpmVersion() {
   return _pnpmVersion || "0.0.0";
 }
 
-exports.hasPnpmVersionOrLater = (version) => {
+exports.hasPnpmVersionOrLater = version => {
   return semver.gte(getPnpmVersion(), version);
 };
 
