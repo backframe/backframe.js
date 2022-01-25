@@ -150,6 +150,18 @@ class RestGenerator extends EventEmitter {
     if (methods.hasOwnProperty("put")) {
       let name = toTitleCase(resource);
       let method = `put`;
+      const base = methods["put"];
+
+      if (base.subResources) {
+        for (const sub of base.subResources) {
+          if (sub !== undefined)
+            imports.push({
+              name: `put${name}${toTitleCase(sub)}s`,
+              params: [`id`, `${sub}`],
+              method,
+            });
+        }
+      }
 
       imports.push({ name: `put${name}`, params: [`id`], method });
     }
@@ -157,6 +169,28 @@ class RestGenerator extends EventEmitter {
     if (methods.hasOwnProperty("delete")) {
       let name = toTitleCase(resource);
       let method = `delete`;
+      const base = methods["delete"];
+
+      if (base.allowedFields) {
+        for (const val of base.allowedFields) {
+          if (val !== undefined)
+            imports.push({
+              name: `delete${name}By${toTitleCase(val)}`,
+              params: [`${val}`],
+              method,
+            });
+        }
+      }
+      if (base.subResources) {
+        for (const sub of base.subResources) {
+          if (sub !== undefined)
+            imports.push({
+              name: `delete${name}${toTitleCase(sub)}s`,
+              params: [`id`, `${sub}`],
+              method,
+            });
+        }
+      }
 
       imports.push({ name: `delete${name}`, params: [`id`], method });
     }
