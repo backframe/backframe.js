@@ -1,6 +1,7 @@
 const RestGenerator = require("./src/RestGenerator");
-const { toTitleCase, pluralize } = require("./lib/utils");
-const { writeMultiple, writeSingle } = require("./lib/writeFileTree");
+const {toTitleCase, pluralize} = require("./lib/utils");
+const {writeMultiple, writeSingle} = require("./lib/writeFileTree");
+const {hasGit, hasYarn} = require("./src/checkEnv");
 
 module.exports = {
   RestGenerator,
@@ -8,4 +9,6 @@ module.exports = {
   pluralize,
   writeMultiple,
   writeSingle,
+  hasGit,
+  hasYarn,
 };
