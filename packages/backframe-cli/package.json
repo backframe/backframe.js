@@ -4,8 +4,7 @@
   "description": "The official cli for bootstrapping backframe based projects",
   "main": "src/index.js",
   "bin": {
-    "bf": "bin/bf",
-    "@backframe/cli": "bin/bf"
+    "bf": "bin/bf"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
