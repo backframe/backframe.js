@@ -5,12 +5,12 @@ import execa from "execa";
 import chalk from "chalk";
 import Listr from "listr";
 import inquirer from "inquirer";
-import { promisify } from "util";
+import {promisify} from "util";
 import validateProjectName from "validate-npm-package-name";
 
-import { getPromptModules } from "../lib/util/promptModules";
+import {getPromptModules} from "../lib/util/promptModules";
 import writeFiles from "../lib/util/writeFiles";
-import { RestGenerator } from "@backframe/shared-utils";
+import {RestGenerator} from "@backframe/shared-utils";
 
 const access = promisify(fs.access);
 const copy = promisify(ncp);
@@ -18,7 +18,7 @@ const copy = promisify(ncp);
 export async function create(projectName, options) {
   // console.log(options);
   if (!projectName) {
-    const { appName } = await inquirer.prompt([
+    const {appName} = await inquirer.prompt([
       {
         name: "appName",
         type: "input",
@@ -42,11 +42,11 @@ export async function create(projectName, options) {
   if (!result.validForNewPackages) {
     console.error(chalk.red(`Invalid project name: "${name}"`));
     result.errors &&
-      result.errors.forEach((err) => {
+      result.errors.forEach(err => {
         console.error(chalk.yellow("Error: " + err));
       });
     result.warnings &&
-      result.warnings.forEach((warn) => {
+      result.warnings.forEach(warn => {
         console.error(chalk.yellow("Warning: " + warn));
       });
     process.exit(1);
@@ -54,32 +54,32 @@ export async function create(projectName, options) {
 
   if (fs.existsSync(targetDir)) {
     if (options.force) {
-      fs.rm(targetDir, { recursive: true, force: true });
+      fs.rm(targetDir, {recursive: true, force: true});
     } else {
       if (current) {
-        const { inCurrent } = await inquirer.prompt([
+        const {inCurrent} = await inquirer.prompt([
           {
             name: "inCurrent",
             type: "confirm",
             message: `Generate project in current directory: ${chalk.blue.bold(
-              targetDir
+              targetDir,
             )}`,
           },
         ]);
 
         if (!inCurrent) return;
       } else {
-        const { action } = await inquirer.prompt([
+        const {action} = await inquirer.prompt([
           {
             name: "action",
             type: "list",
             message: `Target directory ${chalk.blue.bold(
-              targetDir
+              targetDir,
             )} already exists. Pick an action:`,
             choices: [
-              { name: "Overwrite existing directory", value: "overwrite" },
-              { name: "Enter a different name", value: "changeName" },
-              { name: "Cancel", value: false },
+              {name: "Overwrite existing directory", value: "overwrite"},
+              {name: "Enter a different name", value: "changeName"},
+              {name: "Cancel", value: false},
             ],
           },
         ]);
@@ -87,9 +87,9 @@ export async function create(projectName, options) {
           return;
         } else if (action === "overwrite") {
           console.log(`\n${chalk.green.dim(`Removing ${targetDir}...`)}\n`);
-          fs.rmSync(targetDir, { recursive: true, force: true });
+          fs.rmSync(targetDir, {recursive: true, force: true});
         } else if (action === "changeName") {
-          const { appName } = await inquirer.prompt({
+          const {appName} = await inquirer.prompt({
             type: "input",
             name: "appName",
             message: "Enter a new name for your project:",
@@ -116,9 +116,9 @@ export async function create(projectName, options) {
       console.log(
         `${chalk.red(
           `An error occurred when trying to load preset: ${chalk.yellow(
-            options.preset
-          )}`
-        )}`
+            options.preset,
+          )}`,
+        )}`,
       );
       console.log(e.message);
       return;
@@ -131,7 +131,7 @@ export async function create(projectName, options) {
   // Save bfconfig.json file
   if (cfg.SavePreset) {
     delete cfg.SavePreset;
-    writeFiles(targetDir, { "bfconfig.json": JSON.stringify(cfg, null, 2) });
+    writeFiles(targetDir, {"bfconfig.json": JSON.stringify(cfg, null, 2)});
   }
 
   // TODO: write a util file for checking git, package manager etc to decide which pkg mngr to use
@@ -149,10 +149,10 @@ export async function create(projectName, options) {
       task: () => initGit(targetDir),
       enabled: () => options.git,
     },
-    {
-      title: `📲  Invoking Generators...`,
-      task: () => invokeGenerators(targetDir),
-    },
+    // {
+    //   title: `📲  Invoking Generators...`,
+    //   task: () => invokeGenerators(targetDir),
+    // },
   ]);
 
   await tasks.run();
@@ -164,14 +164,14 @@ export async function create(projectName, options) {
       (targetDir === process.cwd()
         ? ``
         : chalk.cyan(` ${chalk.gray("$")} cd ${projectName}\n`)) +
-      chalk.cyan(` ${chalk.gray("$")} ${"bf serve"}`)
+      chalk.cyan(` ${chalk.gray("$")} ${"bf serve"}`),
   );
 
   // Some little humour
   console.log(
     `\n${chalk.cyan.bold(
-      `Now you can build your API without going insane 😁. Happy Hacking!`
-    )}`
+      `Now you can build your API without going insane 😁. Happy Hacking!`,
+    )}`,
   );
 
   return true;
@@ -181,7 +181,7 @@ async function resolvePrompts() {
   const questions = [];
 
   const modules = getPromptModules();
-  modules.forEach((m) => {
+  modules.forEach(m => {
     // FIXME: Implement a better way to check if the return value is an array
     if (m().length) questions.push(...m());
     else questions.push(m());
@@ -200,7 +200,7 @@ function resolveDependencies(options) {
   deps.push(...schema["backframe"]["deps"]);
   const features = Array.from(Object.keys(options));
 
-  features.forEach((feat) => {
+  features.forEach(feat => {
     if (typeof options[feat] === "string") {
       const value = options[feat];
       getDeps(schema, feat, value);
@@ -234,14 +234,14 @@ async function initializeProject(name, dest, ctx, preset) {
     devDependencies: {},
   };
 
-  deps.forEach((dep) => {
+  deps.forEach(dep => {
     const version = dep.version || "latest";
     const name = dep.name;
 
     pkg.dependencies[name] = version;
   });
 
-  devDeps.forEach((dep) => {
+  devDeps.forEach(dep => {
     const version = dep.version || "latest";
     const name = dep.name;
 
@@ -257,17 +257,17 @@ async function initializeProject(name, dest, ctx, preset) {
     apis: [...preset.apis],
     middleware: {},
     endpoints: {},
-    database: { db: preset.database, development: preset.internals.mockdb },
+    database: {db: preset.database, development: preset.internals.mockdb},
     auth: {},
     thirdPartyServices: {},
   };
 
-  bfconfig.apis.forEach((a) => (bfconfig.endpoints[a] = {}));
-  bfconfig.auth["strategies"] = preset["auth-providers"].map((p) => ({
+  bfconfig.apis.forEach(a => (bfconfig.endpoints[a] = {}));
+  bfconfig.auth["strategies"] = preset["auth-providers"].map(p => ({
     provider: p,
     options: {},
   }));
-  bfconfig.thirdPartyServices = preset["third-party"].map((s) => ({
+  bfconfig.thirdPartyServices = preset["third-party"].map(s => ({
     service: s,
     options: {},
   }));
@@ -286,15 +286,4 @@ async function initGit(targetDirectory) {
   if (result.failed) {
     console.log(`${chalk.yellow(`Failed to initiliaze git repository!`)}`);
   }
-}
-
-function invokeGenerators(ctx) {
-  let options = {
-    methods: {
-      get: {},
-    },
-  };
-
-  const generator = new RestGenerator("test", ctx, options);
-  generator.generateResource();
 }
