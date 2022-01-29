@@ -2,10 +2,10 @@ import chalk from "chalk";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
-import { promisify } from "util";
+import {promisify} from "util";
 
-import { RestGenerator, toTitleCase } from "@backframe/shared-utils";
-import { version } from "os";
+import {RestGenerator, toTitleCase} from "@backframe/shared-utils";
+import {version} from "os";
 
 const access = promisify(fs.access);
 
@@ -18,9 +18,9 @@ export async function generate(api, options) {
     console.log(
       chalk.red(
         `\nFatal: could not detect a ${chalk.yellow(
-          `backframe.json`
-        )} file in current directory. Are you in a backframe project?\n`
-      )
+          `backframe.json`,
+        )} file in current directory. Are you in a backframe project?\n`,
+      ),
     );
     return;
   }
@@ -60,11 +60,11 @@ async function generateRest(ctx) {
       name: "version",
       type: "number",
       message: "Enter version number (Integers only)",
-      when: (answers) => answers.versioning,
+      when: answers => answers.versioning,
     },
   ];
 
-  const { resource, version } = await inquirer.prompt(introPrompt);
+  const {resource, version} = await inquirer.prompt(introPrompt);
 
   let methodPrompt = {
     name: "methodArray",
@@ -91,9 +91,9 @@ async function generateRest(ctx) {
   };
 
   let methods = {};
-  const { methodArray } = await inquirer.prompt(methodPrompt);
+  const {methodArray} = await inquirer.prompt(methodPrompt);
 
-  // This is some very repetitive and ugly code 🤮.
+  // FIXME: This is some very repetitive and ugly code 🤮.
   // The prompts worked incorrectly everytime i tried wrapping this in a forEach loop
   // Fix me if you can 😃
   if (methodArray.includes("get")) {
@@ -175,9 +175,9 @@ function parseOptions(m, resource) {
       name: "protected",
       type: "confirm",
       message: `Require authentication for the ${chalk.yellow(
-        m.toUpperCase()
+        m.toUpperCase(),
       )} method on the ${chalk.green(toTitleCase(resource))} resource?`,
-    }
+    },
   );
 
   return methodData;
