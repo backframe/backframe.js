@@ -11,6 +11,7 @@ import validateProjectName from "validate-npm-package-name";
 import {getPromptModules} from "../lib/util/promptModules";
 import writeFiles from "../lib/util/writeFiles";
 import {RestGenerator} from "@backframe/shared-utils";
+import {hasGit, hasYarn} from "@backframe/shared-utils";
 
 const access = promisify(fs.access);
 const copy = promisify(ncp);
@@ -33,6 +34,8 @@ export async function create(projectName, options) {
     ...options,
     git: true,
   };
+
+  // Resolve the targetDirectory
   const directory = options.cwd || process.cwd();
   const current = projectName === ".";
   const name = current ? path.relative("../", directory) : projectName;
@@ -52,6 +55,7 @@ export async function create(projectName, options) {
     process.exit(1);
   }
 
+  // Handle if directory exists
   if (fs.existsSync(targetDir)) {
     if (options.force) {
       fs.rm(targetDir, {recursive: true, force: true});
@@ -102,6 +106,7 @@ export async function create(projectName, options) {
 
   let cfg;
 
+  // Set the default config if prompts skipped
   if (options.default) {
     cfg = {
       apis: "rest",
@@ -110,6 +115,7 @@ export async function create(projectName, options) {
       internals: "analytics",
     };
   } else if (options.preset) {
+    // If path to preset is passed, try to load the preset
     try {
       await access(options.preset, fs.constants.R_OK);
     } catch (e) {
@@ -125,6 +131,7 @@ export async function create(projectName, options) {
     }
     cfg = JSON.parse(fs.readFileSync(options.preset).toString());
   } else {
+    // Call the function to prompt for options
     cfg = await resolvePrompts();
   }
 
@@ -133,10 +140,6 @@ export async function create(projectName, options) {
     delete cfg.SavePreset;
     writeFiles(targetDir, {"bfconfig.json": JSON.stringify(cfg, null, 2)});
   }
-
-  // TODO: write a util file for checking git, package manager etc to decide which pkg mngr to use
-  // TODO: Create the backframe deps and publish them to get started
-  // TODO: Install the required packages and run cmpletion hooks
 
   // Start execution of the tasks
   const tasks = new Listr([
@@ -157,6 +160,7 @@ export async function create(projectName, options) {
 
   await tasks.run();
 
+  // Project generated, log outro
   console.log();
   console.log(`🎉  Successfully created project ${chalk.yellow(targetDir)}.\n`);
   console.log(
@@ -169,7 +173,7 @@ export async function create(projectName, options) {
 
   // Some little humour
   console.log(
-    `\n${chalk.cyan.bold(
+    `\n${chalk.cyan(
       `Now you can build your API without going insane 😁. Happy Hacking!`,
     )}`,
   );
@@ -191,6 +195,7 @@ async function resolvePrompts() {
   return answers;
 }
 
+// Generate dependencies depending on the config
 function resolveDependencies(options) {
   const schema = require("../models/deps.json");
 
@@ -222,8 +227,8 @@ function resolveDependencies(options) {
   return [deps, devDeps];
 }
 
+// Actual function that bootstraps the project
 async function initializeProject(name, dest, ctx, preset) {
-  // Features entered manually
   const [deps, devDeps] = resolveDependencies(preset);
 
   const pkg = {
@@ -279,11 +284,17 @@ async function initializeProject(name, dest, ctx, preset) {
 }
 
 async function initGit(targetDirectory) {
-  const result = await execa("git", ["init"], {
-    cwd: targetDirectory,
-  });
-
-  if (result.failed) {
-    console.log(`${chalk.yellow(`Failed to initiliaze git repository!`)}`);
+  if (hasGit) {
+    try {
+      await execa("git", ["init"], {
+        cwd: targetDirectory,
+      });
+    } catch (e) {
+      console.log(`${chalk.yellow(`Failed to initiliaze git repository!`)}`);
+    }
   }
 }
+
+async function invokeGenerators() {}
+
+async function installDependencies() {}
