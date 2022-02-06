@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import logo from "../assets/logo.png";
-import {ChevronLeftRounded} from "@material-ui/icons";
+// import {ChevronLeftRounded} from "@material-ui/icons";
 
 interface SideBarProps {
   children?: React.ReactNode;
@@ -30,7 +30,8 @@ const ListItem: React.FC<ListItemProps> = ({item}: ListItemProps) => {
         <span className="text-white text-xl">
           {" "}
           <div>
-            <ChevronLeftRounded />
+            {/* <ChevronLeftRounded /> */}
+            &gt;
           </div>
         </span>
       </div>
