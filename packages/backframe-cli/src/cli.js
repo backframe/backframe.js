@@ -21,19 +21,19 @@ program
   .alias("s")
   .option(
     "-p, --port <portNumber>",
-    "Pass the custom port number to start the server on"
+    "Pass the custom port number to start the server on",
   )
   .option(
     "-o, --open",
-    "Open the backframe admin dashboard in a browser window, default is false"
+    "Open the backframe admin dashboard in a browser window, default is false",
   )
   .description(
-    "Starts the backframe server present in the working directory on port 9000 or a custom specified port"
+    "Starts the backframe server present in the working directory on port 9000 or a custom specified port",
   )
   .action((args, cmd) => {
     const PORT = args.port || 9000;
     console.log(
-      `${chalk.green.bold(`🚀 Starting the server on port: ${PORT}....`)}`
+      `${chalk.green.bold(`🚀 Starting the server on port: ${PORT}....`)}`,
     );
   });
 
@@ -43,7 +43,7 @@ program
   .option("-q --quiet", "Skip the prompts and build the server directly")
   .option("-p --purge", "Build the server and remove every trace of backframe")
   .description(
-    "Builds a fresh instance of a server, using confgurations found in the backframe.json file"
+    "Builds a fresh instance of a server, using confgurations found in the backframe.json file",
   );
 
 program
@@ -51,14 +51,14 @@ program
   .alias("w")
   .option(
     "-p, --port <portNumber>",
-    "Pass the custom port number to start the server on"
+    "Pass the custom port number to start the server on",
   )
   .option(
     "-e, --exclude [files]",
-    "Pass a list of files not to watch for changes"
+    "Pass a list of files not to watch for changes",
   )
   .description(
-    "Starts the backframe server in watch mode, restarting whenever changes are detected"
+    "Starts the backframe server in watch mode, restarting whenever changes are detected",
   )
   .action((args, cmd) => {
     console.log(args);
@@ -69,7 +69,7 @@ program
   .alias("a")
   .allowUnknownOption()
   .description(
-    "Installs and invokes a plugin/middleware to an existing server using bf-cli"
+    "Installs and invokes a plugin/middleware to an existing server using bf-cli",
   )
   .action((type, pkgName, cmd) => {
     require("../commands/add")(type, pkgName, cmd);
@@ -80,7 +80,7 @@ program
   .alias("d")
   .allowUnknownOption()
   .description(
-    "Deploys your server using the configuration passed in the backframe.json file"
+    "Deploys your server using the configuration passed in the backframe.json file",
   )
   .action((args, cmd) => {
     console.log(args);
@@ -91,7 +91,7 @@ program
   .alias("g")
   .option("-v --version", "Specifies whether to version the api endpoints")
   .description(
-    "Uses the cli to generate new api endpoints by prompting for values"
+    "Uses the cli to generate new api endpoints by prompting for values",
   )
   .action((args, cmd) => {
     require("../commands/generate").generate(args, cmd);
@@ -101,15 +101,15 @@ program.on("--help", () => {
   console.log();
   console.log(
     `  Run ${chalk.cyan(
-      `bf <command> --help`
-    )} for detailed usage of given command.`
+      `bf <command> --help`,
+    )} for detailed usage of given command.`,
   );
   console.log();
 });
 
-program.commands.forEach((c) => c.on("--help", () => console.log()));
+program.commands.forEach(c => c.on("--help", () => console.log()));
 
-program.arguments("<command>").action((cmd) => {
+program.arguments("<command>").action(cmd => {
   program.outputHelp();
   console.log(`  ` + chalk.red(`Unknown command ${chalk.yellow(cmd)}.`));
   console.log();
@@ -117,13 +117,13 @@ program.arguments("<command>").action((cmd) => {
 });
 
 export async function start(rawArgs) {
-  const { enhanceErrorMessages } = require("../lib/util/handleErrors");
+  const {enhanceErrorMessages} = require("../lib/util/handleErrors");
 
-  enhanceErrorMessages("missingArgument", (argName) => {
+  enhanceErrorMessages("missingArgument", argName => {
     return `Missing required argument ${chalk.yellow(`<${argName}>`)}.`;
   });
 
-  enhanceErrorMessages("unknownOption", (optionName) => {
+  enhanceErrorMessages("unknownOption", optionName => {
     return `Unknown option ${chalk.yellow(optionName)}.`;
   });
 
