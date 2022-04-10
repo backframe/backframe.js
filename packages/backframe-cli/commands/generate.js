@@ -152,7 +152,7 @@ async function generateRest(ctx) {
 function parseOptions(m, resource) {
   let methodData = [];
 
-  const info = `${chalk.yellow(m.toUpperCase(), "- method OPTION:")}`;
+  const info = `${chalk.green(`[${m.toUpperCase()} OPTION:]`)}`;
   m === "get" &&
     methodData.push({
       name: "getAll",
