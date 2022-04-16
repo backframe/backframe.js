@@ -13,7 +13,7 @@ program
   .option("-n, --no-git", "Skip git initialization")
   .option("-f, --force", "Overwrite target directory if it exists")
   .action((appName, cmd) => {
-    require("../commands/new").create(appName, cmd);
+    require("../commands/new.ts").create(appName, cmd);
   });
 
 program
