@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs-extra";
 import ncp from "ncp";
 import path from "path";
 import execa from "execa";
