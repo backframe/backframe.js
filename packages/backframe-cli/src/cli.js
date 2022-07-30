@@ -94,7 +94,7 @@ program
     "Uses the cli to generate new api endpoints by prompting for values",
   )
   .action((args, cmd) => {
-    require("../commands/generate").generate(args, cmd);
+    require("../commands/generate.ts").generate(args, cmd);
   });
 
 program.on("--help", () => {

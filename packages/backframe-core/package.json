@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/ndaba1/bf-core/issues"
   },
-  "homepage": "https://github.com/ndaba1/bf-core#readme"
+  "homepage": "https://github.com/ndaba1/bf-core#readme",
+  "dependencies": {
+    "@types/node": "^17.0.42"
+  }
 }

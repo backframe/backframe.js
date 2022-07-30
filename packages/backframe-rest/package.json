@@ -11,5 +11,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^17.0.42"
+  }
 }

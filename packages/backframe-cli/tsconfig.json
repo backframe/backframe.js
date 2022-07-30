@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.shared.json",
   "compilerOptions": {
+    "types": ["node"],
     "target": "es5",
     "lib": ["esnext"],
     "allowJs": true,
@@ -15,7 +16,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "outDir": "./dist",
+    "outDir": "./dist"
     // "rootDir": "./src"
   },
   "include": ["**/*.ts"],
