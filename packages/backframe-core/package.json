@@ -1,0 +1,32 @@
+{
+  "name": "@backframe/core",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "type": "module",
+  "types": "types/index.d.ts",
+  "files": [
+    "dist/",
+    "types/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write ./src/**/*.ts",
+    "format:check": "prettier --check ./src/**/*.ts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/glob": "^8.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "dotenv": "^16.0.2",
+    "esbuild": "^0.15.7",
+    "fs-extra": "^10.1.0",
+    "glob": "^8.0.3",
+    "resolve-from": "^5.0.0"
+  }
+}
