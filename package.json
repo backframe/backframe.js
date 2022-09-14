@@ -6,6 +6,9 @@
   "repository": "https://github.com/backframe/backframe.js.git",
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "pnpm recursive run build",
     "prepare": "pnpm husky install"
