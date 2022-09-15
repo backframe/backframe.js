@@ -1,4 +1,13 @@
-node_modules
-dist/*
-.*/
 
+**/coverage/**
+**/node_modules/**
+bin/
+packages/*/dist/**
+packages/*/scripts/**
+**/dist/*
+**/public/*
+docs
+examples
+integration-tests
+node_modules
+**/*.d.ts
