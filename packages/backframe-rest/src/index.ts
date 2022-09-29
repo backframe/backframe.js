@@ -1,6 +1,7 @@
 import {
   IBfConfigInternal,
   IHandlerContext,
+  IModuleConfig,
   IResourceConfig,
   IRouteConfig,
 } from "@backframe/core";
@@ -12,10 +13,10 @@ import { __parseHandlers } from "./lib/helpers.js";
 const { glob } = pkg;
 
 export default async function start(cfg: Partial<IBfConfigInternal>) {
-  cfg.metadata.usesTs && process.chdir("./.bf"); // -> dont forget to exit
+  process.chdir("./.bf"); // -> dont forget to exit
   console.log("Backframe rest generation starting...");
   console.log(cfg);
-  const matches = glob.sync("./routes/**/*.js");
+  const matches = glob.sync("./src/routes/**/*.js");
   if (!matches.length) {
     console.log(
       "No routes were detected. Please include at least one route for the server to run."
@@ -93,7 +94,7 @@ function generateRoutePath(file: string) {
   return `${root}/${parts[0]}`;
 }
 
-export function defineRouteConfig(cfg: IRouteConfig) {
+export function defineRouteConfig(cfg: Partial<IModuleConfig>) {
   return cfg;
 }
 
