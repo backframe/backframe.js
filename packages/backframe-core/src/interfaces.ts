@@ -24,9 +24,9 @@ export type BfConfig = {
 };
 
 export interface IBfConfigInternal extends BfConfig {
-  hasPlugins: () => boolean;
-  includesPlugin: (val: string) => any;
-  metadata: any;
+  hasPlugins?: () => boolean;
+  includesPlugin?: (val: string) => any;
+  metadata?: any;
 }
 
 export interface IRouteConfig {
@@ -41,7 +41,7 @@ export interface IRouteConfig {
   config: IModuleConfig;
 }
 
-interface IModuleConfig {
+export interface IModuleConfig {
   middleware?: RequestHandler[];
   enabledMethods?: string[];
   publicMethods?: string[];
