@@ -1,18 +1,17 @@
-import { BfConfig, IBfConfigInternal } from "./interfaces.js";
+import { BfConfig, IBfConfigInternal } from "./lib/types.js";
 
-export { loadConfig as default } from "./config.js";
+export { loadConfig as default } from "./lib/config.js";
 export {
   BfConfig,
   BfRequestHandler,
+  BfResourceConfig,
   IBfConfigInternal,
   IHandlerContext,
   IModuleConfig,
-  IResourceConfig,
+  IResourceHandlers,
   IRouteConfig,
-} from "./interfaces.js";
-export function defineConfig(cfg: Partial<BfConfig>) {
-  return cfg;
-}
-export function definePlugin(cfg: Partial<IBfConfigInternal>) {
-  return cfg;
-}
+  MethodName,
+  MethodNameAlias,
+} from "./lib/types.js";
+export const defineConfig = (cfg: BfConfig) => cfg;
+export const definePlugin = (cfg: IBfConfigInternal) => cfg;
