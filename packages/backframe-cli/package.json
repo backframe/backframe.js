@@ -6,7 +6,8 @@
     "bf": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm prebuild && tsc",
+    "prebuild": "rm -rf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ./src/**/*.ts",
