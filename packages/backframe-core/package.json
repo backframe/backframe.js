@@ -10,7 +10,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm prebuild && tsc",
+    "prebuild": "rm -rf dist types",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ./src/**/*.ts",
