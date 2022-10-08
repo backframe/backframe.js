@@ -11,6 +11,7 @@ const { glob } = pkg;
 const current = (...s: string[]) => path.join(process.cwd(), ...s);
 
 export async function loadConfig() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let module: any;
   let config: BfConfig;
   const pkg = require(path.join(process.cwd(), "package.json"));
