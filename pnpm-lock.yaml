@@ -34,6 +34,16 @@ importers:
       ts-node: 10.9.1_tjxxr4okrdgzkzqzhfljhcr2hu
       typescript: 4.8.3
 
+  example-two:
+    specifiers:
+      '@backframe/cli': workspace:^0.0.0
+      '@backframe/core': workspace:^0.0.0
+      '@backframe/rest': workspace:^0.0.0
+    dependencies:
+      '@backframe/cli': link:../packages/backframe-cli
+      '@backframe/core': link:../packages/backframe-core
+      '@backframe/rest': link:../packages/backframe-rest
+
   packages/backframe-admin:
     specifiers:
       '@babel/core': '>=7.0.0 <8.0.0'
@@ -189,14 +199,16 @@ importers:
 
   packages/backframe-rest:
     specifiers:
-      '@backframe/core': workspace:*
+      '@backframe/core': workspace:0.0.0
       '@types/express': ^4.17.13
       '@types/glob': ^8.0.0
       express: ^4.18.1
       glob: ^8.0.3
+      zod: ^3.19.1
     dependencies:
       express: 4.18.1
       glob: 8.0.3
+      zod: 3.19.1
     devDependencies:
       '@backframe/core': link:../backframe-core
       '@types/express': 4.17.13
@@ -226,11 +238,15 @@ importers:
     specifiers:
       '@backframe/cli': workspace:*
       '@backframe/core': workspace:*
+      '@backframe/db': workspace:0.0.0
       '@backframe/rest': workspace:*
+      zod: ^3.19.1
     dependencies:
       '@backframe/cli': link:../backframe-cli
       '@backframe/core': link:../backframe-core
+      '@backframe/db': link:../backframe-db
       '@backframe/rest': link:../backframe-rest
+      zod: 3.19.1
 
   packages/example-bf-plugin:
     specifiers:
@@ -251,6 +267,16 @@ importers:
       mongoose: ^6.6.0
     dependencies:
       mongoose: 6.6.0
+
+  packages/example-two:
+    specifiers:
+      '@backframe/cli': workspace:^0.0.0
+      '@backframe/core': workspace:^0.0.0
+      '@backframe/rest': workspace:^0.0.0
+    dependencies:
+      '@backframe/cli': link:../backframe-cli
+      '@backframe/core': link:../backframe-core
+      '@backframe/rest': link:../backframe-rest
 
 packages:
 
