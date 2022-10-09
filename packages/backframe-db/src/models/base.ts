@@ -2,8 +2,8 @@ export class Base {
   private _name!: string;
 
   constructor(
-    private _isRequired = false,
-    private _default: string | number | boolean | Date
+    public _isRequired = false,
+    public _default: string | number | boolean | Date
   ) {}
 
   required() {

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { Base } from "./base.js";
 
 export class Int extends Base {
@@ -13,6 +14,14 @@ export class Int extends Base {
   min(val: number) {
     this._min = val;
     return this;
+  }
+
+  __genSchema() {
+    const s = z.number().default(this._default as number);
+    if (!this._isRequired) {
+      return s.optional();
+    }
+    return s;
   }
 }
 
@@ -30,6 +39,14 @@ export class Float extends Base {
     this._min = val;
     return this;
   }
+
+  __genSchema() {
+    const s = z.number().default(this._default as number);
+    if (!this._isRequired) {
+      return s.optional();
+    }
+    return s;
+  }
 }
 
 export class BigInt extends Base {
@@ -45,5 +62,13 @@ export class BigInt extends Base {
   min(val: number) {
     this._min = val;
     return this;
+  }
+
+  __genSchema() {
+    const s = z.number().default(this._default as number);
+    if (!this._isRequired) {
+      return s.optional();
+    }
+    return s;
   }
 }
