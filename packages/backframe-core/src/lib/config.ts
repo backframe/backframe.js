@@ -3,12 +3,15 @@ import { logger } from "@backframe/utils";
 import dotenv from "dotenv";
 import { buildSync } from "esbuild";
 import pkg from "glob";
+import { createRequire } from "module";
 import path from "path";
 import { BfConfig, BfConfigSchema, IBfConfigInternal } from "./types.js";
 import { generateDefaultConfig } from "./utils.js";
 const { glob } = pkg;
 
+const require = createRequire(import.meta.url);
 const current = (...s: string[]) => path.join(process.cwd(), ...s);
+const load = async (s: string) => await import(`file://${s}`);
 
 export async function loadConfig() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,28 +22,18 @@ export async function loadConfig() {
   const cfgMatches = glob.sync("./bf.config.*");
 
   if (!cfgMatches.length) {
-    logger.warn("no config file found. using default backframe config");
+    logger.warn("no config file found, using default backframe config");
     config = generateDefaultConfig();
   } else {
-    const match = cfgMatches[0] ?? "";
-    if (match.includes(".mjs")) {
-      buildSync({
-        format: "cjs",
-        entryPoints: [match],
-        platform: "node",
-        outdir: "./node_modules/.bf",
-      });
-
-      module = require(current("node_modules/.bf/bf.config.js"));
-    } else {
-      module = require(current(match));
-    }
+    module = await load(current(cfgMatches[0]));
+    logger.info("loaded config successfully");
   }
 
   config = { ...generateDefaultConfig(), ...(module?.default ?? module) };
   const opts = BfConfigSchema.safeParse(config);
   if (!opts.success) {
     logger.error("your config file is not valid");
+    process.exit(1);
   }
 
   const expanded: IBfConfigInternal = { ...config, getFileSource: () => "src" };
@@ -68,7 +61,7 @@ export async function loadConfig() {
     dotenv.config({
       path: env[0],
     });
-    logger.info(`Loaded env variables from ${env[0]}`);
+    logger.info(`loaded env variables from \`${env[0]}\``);
   }
 
   // 3: set defaults and so on;
