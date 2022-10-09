@@ -168,6 +168,8 @@ importers:
 
   packages/backframe-core:
     specifiers:
+      '@backframe/db': workspace:^0.0.0
+      '@backframe/rest': workspace:^0.0.0
       '@backframe/utils': workspace:^0.0.0
       '@types/fs-extra': ^9.0.13
       '@types/glob': ^8.0.0
@@ -179,6 +181,8 @@ importers:
       resolve-from: ^5.0.0
       zod: ^3.19.1
     dependencies:
+      '@backframe/db': link:../backframe-db
+      '@backframe/rest': link:../backframe-rest
       '@backframe/utils': link:../backframe-utils
       chalk: 5.0.1
       dotenv: 16.0.2
@@ -304,11 +308,13 @@ importers:
       '@backframe/core': workspace:^0.0.0
       '@backframe/db': workspace:^0.0.0
       '@backframe/rest': workspace:^0.0.0
+      zod: ^3.19.1
     dependencies:
       '@backframe/cli': link:../backframe-cli
       '@backframe/core': link:../backframe-core
       '@backframe/db': link:../backframe-db
       '@backframe/rest': link:../backframe-rest
+      zod: 3.19.1
 
 packages:
 
