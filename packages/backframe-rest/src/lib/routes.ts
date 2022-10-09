@@ -1,24 +1,27 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import {
   BfResourceConfig,
   IBfConfigInternal,
   IModuleConfig,
   IRouteConfig,
 } from "@backframe/core";
+import { logger } from "@backframe/utils";
 import pkg from "glob";
 import path from "path";
-import { _parseHandlers } from "./handlers";
+import { _parseHandlers } from "./handlers.js";
 const { glob } = pkg;
 
+// const require = createRequire(import.meta.url);
 const current = (...s: string[]) => path.join(process.cwd(), ...s);
+const load = async (s: string) => await import(`file://${s}`);
 
 export async function resolveRoutes(bfConfig: IBfConfigInternal) {
   const src = bfConfig.getFileSource();
   const dir = `./${src}/routes/**/*.js`;
   const matches = glob.sync(dir);
+  const debug = process.env.BF_DEBUG;
 
   if (!matches.length) {
-    console.log("No routes were detected. Exiting...");
+    logger.error("no routes were detected. exiting...");
     process.exit(1);
   }
 
@@ -44,7 +47,7 @@ export async function resolveRoutes(bfConfig: IBfConfigInternal) {
       const route = path.join(path.dirname(file), base).replace(/\\/g, "/");
 
       // 2: import file and parse required options
-      const module: IModuleConfig = await import(current(match));
+      const module: IModuleConfig = await load(current(match));
       const config: BfResourceConfig = {
         route,
         handlers: _parseHandlers(module, route),
@@ -55,7 +58,7 @@ export async function resolveRoutes(bfConfig: IBfConfigInternal) {
     })
   );
 
-  console.log(resources);
+  debug && console.log(resources);
   return resources;
 }
 
