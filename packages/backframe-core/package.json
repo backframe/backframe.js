@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "main": "dist/index.js",
   "license": "MIT",
-  "type": "module",
   "types": "types/index.d.ts",
   "files": [
     "dist/",
@@ -11,7 +10,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "pnpm prebuild && tsc",
+    "build": "tsc",
     "prebuild": "rimraf dist types",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -23,6 +22,8 @@
     "@types/glob": "^8.0.0"
   },
   "dependencies": {
+    "@backframe/db": "workspace:^0.0.0",
+    "@backframe/rest": "workspace:^0.0.0",
     "@backframe/utils": "workspace:^0.0.0",
     "chalk": "^5.0.1",
     "dotenv": "^16.0.2",

@@ -3,13 +3,11 @@ import { logger } from "@backframe/utils";
 import dotenv from "dotenv";
 import { buildSync } from "esbuild";
 import pkg from "glob";
-import { createRequire } from "module";
 import path from "path";
 import { BfConfig, BfConfigSchema, IBfConfigInternal } from "./types.js";
 import { generateDefaultConfig } from "./utils.js";
 const { glob } = pkg;
 
-const require = createRequire(import.meta.url);
 const current = (...s: string[]) => path.join(process.cwd(), ...s);
 const load = async (s: string) => await import(`file://${s}`);
 

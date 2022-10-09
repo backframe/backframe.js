@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Model } from "@backframe/db";
 import {
   Express,
   Request as ExpressReq,
   Response as ExpressRes,
 } from "express";
 import { Server as HttpServer } from "http";
-import { z, ZodAnyDef } from "zod";
+import { z } from "zod";
 
 export const BfConfigSchema = z.object({
   interfaces: z
@@ -118,7 +119,7 @@ export interface IHandlerContext {
 }
 
 export interface IRouteConfig {
-  model?: ZodAnyDef;
+  model?: Model;
   middleware?: BfRequestHandler[];
   enabled?: MethodName[];
   public?: MethodName[];
