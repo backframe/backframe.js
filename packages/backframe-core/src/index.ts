@@ -6,6 +6,7 @@ export {
   BfRequestHandler,
   BfResourceConfig,
   IBfConfigInternal,
+  IBfServer,
   IHandlerContext,
   IModuleConfig,
   IResourceHandlers,
