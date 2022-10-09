@@ -4,7 +4,6 @@ export function generateDefaultConfig(): BfConfig {
   return {
     settings: {
       srcDir: "src",
-      platform: "express",
     },
   };
 }
