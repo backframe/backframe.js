@@ -1,53 +1,42 @@
-import {
-  IBfConfigInternal,
-  IHandlerContext,
-  IRouteConfig,
-  MethodName,
-} from "@backframe/core";
-import express, { Request, Response } from "express";
+import { IBfConfigInternal, IRouteConfig } from "@backframe/core";
+import { logger } from "@backframe/utils";
+import fs from "fs";
+import path from "path";
 import { resolveRoutes } from "./lib/routes.js";
+import { BfServer, defaultServer } from "./lib/server.js";
+
+const debug = process.env.BF_DEBUG;
+const current = (...s: string[]) => path.join(process.cwd(), ...s);
+const load = async (s: string) => await import(`file://${s}`);
 
 export default async function (cfg: IBfConfigInternal) {
-  const server = express();
+  let server: BfServer;
+  // search if there is a custom server file
+  const src = cfg.getFileSource();
+  const file = path.join(src, cfg.settings.server ?? "server.js");
+
+  if (fs.existsSync(file)) {
+    const module = await load(current(file));
+    if (!module.default) {
+      logger.error(`please export a default object from ${file}`);
+      process.exit(1);
+    }
+    server = module.default;
+  } else {
+    server = defaultServer();
+  }
+
+  // load resources and add them to server
   const resources = await resolveRoutes(cfg);
-
   resources.forEach((r) => {
-    console.log(Object.keys(r.handlers));
-    const middleware = r.routeConfig.middleware ?? [
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (_rq: any, _rs: any, next: () => any) => next(),
-    ];
-    const _include = (val: MethodName) => Object.keys(r.handlers).includes(val);
-    const _handle = (method: MethodName) => (req: Request, res: Response) => {
-      const ctx: IHandlerContext = {
-        _req: req,
-        _res: res,
-        db: {},
-        auth: {},
-        input: {},
-        params: req.params,
-        query: req.query,
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const val = r.handlers[method as MethodName]!(ctx);
-      const t = typeof val === "string" ? "text/html" : "application/json";
-      return res.status(200).setHeader("Content-Type", t).json(val);
-    };
-
-    _include("getOne") &&
-      server.get(`${r.route}/:id`, middleware, _handle("getOne"));
-    _include("get") && server.get(r.route, middleware, _handle("get"));
-    _include("post") && server.post(r.route, middleware, _handle("post"));
-    _include("put") && server.put(r.route, middleware, _handle("put"));
-    _include("delete") && server.delete(r.route, middleware, _handle("delete"));
+    debug && console.log(Object.keys(r.handlers));
+    server.addResource(r);
   });
 
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
-  });
+  server.start();
+  return server;
 }
 
 export { defineHandlers } from "./lib/handlers.js";
+export { createServer } from "./lib/server.js";
 export const defineRouteConfig = (cfg: IRouteConfig) => cfg;
