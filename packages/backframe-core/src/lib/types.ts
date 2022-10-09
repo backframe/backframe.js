@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request as ExpressReq, Response as ExpressRes } from "express";
+import {
+  Express,
+  Request as ExpressReq,
+  Response as ExpressRes,
+} from "express";
+import { Server as HttpServer } from "http";
 import { z, ZodAnyDef } from "zod";
 
 export const BfConfigSchema = z.object({
@@ -36,7 +41,24 @@ export const BfConfigSchema = z.object({
     .optional(),
   settings: z.object({
     srcDir: z.string(),
-    platform: z.string().optional(),
+    server: z.string().optional(),
+    logger: z
+      .object({
+        level: z.enum(["debug", "info", "warn", "error"]),
+        timestamp: z.boolean().optional(),
+        format: z
+          .function()
+          .args(
+            z.object({
+              level: z.string(),
+              message: z.string(),
+              timestamp: z.string().optional(),
+            })
+          )
+          .returns(z.string())
+          .optional(),
+      })
+      .optional(),
   }),
 });
 
@@ -111,4 +133,14 @@ export interface IModuleConfig {
     }[];
   };
   config?: IRouteConfig;
+}
+
+export interface IBfServer {
+  _app: Express;
+  _handle: HttpServer;
+  start: (port?: number) => void | undefined;
+  stop: (
+    callback?: (err?: Error | undefined) => void | undefined
+  ) => void | undefined;
+  addResource: (r: BfResourceConfig) => void;
 }
