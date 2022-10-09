@@ -2,6 +2,7 @@
   "name": "@backframe/db",
   "description": "Backframe database package",
   "version": "0.0.0",
+  "type": "module",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
@@ -9,8 +10,8 @@
     "README.md"
   ],
   "scripts": {
-    "prebuild": "rm -rf dist",
-    "build": "tsc"
+    "prebuild": "rimraf dist",
+    "build": "pnpm prebuild && tsc"
   },
   "dependencies": {
     "zod": "^3.19.1",
