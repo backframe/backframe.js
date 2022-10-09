@@ -13,6 +13,7 @@ import express, {
 } from "express";
 import helmet from "helmet";
 import { Server as HttpServer } from "http";
+import { z } from "zod";
 
 // cors options
 // request logger
@@ -48,17 +49,21 @@ export class BfServer {
   private applyMiddleware() {
     this._app.use(helmet());
     this.cfg.cors?.enabled && this._app.use(cors(this.cfg.cors.options ?? {}));
-    if (this.cfg.logRequests !== false) this._app.use(RequestLogger);
+    if (this.cfg.logRequests !== false) this._app.use(RequestLogger());
   }
 
   private _wrapHandler(method: MethodName, r: BfResourceConfig) {
     return (req: ExpressReq, res: ExpressRes) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const model = r.routeConfig.model!;
+      const schema = model.__genSchema();
+      const input: z.infer<typeof schema> = req.body;
       const ctx: IHandlerContext = {
         _req: req,
         _res: res,
         db: {},
         auth: {},
-        input: {},
+        input: input as z.infer<typeof schema>,
         params: req.params,
         query: req.query,
       };
@@ -111,7 +116,7 @@ export function defaultServer() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RequestLogger = (req: ExpressReq, res: ExpressRes, next: any) => {
+const RequestLogger = () => (req: ExpressReq, res: ExpressRes, next: any) => {
   logger.info(
     `${req.method} ${req.path} HTTP/${req.httpVersion} -> ${res.statusCode}`
   );
