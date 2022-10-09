@@ -2,6 +2,7 @@
   "name": "@backframe/rest",
   "version": "0.0.0",
   "main": "dist/index.js",
+  "type": "module",
   "license": "MIT",
   "author": {
     "name": "Victor Ndaba",
@@ -12,8 +13,13 @@
     "prebuild": "rm -rf dist"
   },
   "dependencies": {
+    "@backframe/utils": "workspace:^0.0.0",
+    "@types/cors": "^2.8.12",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
     "glob": "^8.0.3",
+    "helmet": "^6.0.0",
+    "morgan": "^1.10.0",
     "zod": "^3.19.1"
   },
   "devDependencies": {
