@@ -1,18 +1,11 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const { createServer } = require("vite");
-const { definePlugin } = require("@backframe/core");
 
-const p = definePlugin();
-
-p.beforeServerStart = async (cfg) => {
-  process.env.BF_DEBUG && console.log("beforeServerStart called");
+async function ssr(app) {
   let vite;
-  const app = cfg.server._app;
-  const here = (...s) => path.resolve(__dirname, ...s);
+  const root = (...s) => path.resolve(__dirname, "..", ...s);
 
   if (process.env.NODE_ENV === "development") {
     vite = await createServer({
@@ -22,24 +15,24 @@ p.beforeServerStart = async (cfg) => {
 
     app.use(vite.middlewares);
   } else {
-    app.use("/admin", express.static(path.resolve(__dirname, "dist/client")));
+    app.use("/static", express.static(root("dist/client")));
   }
 
   app.use("/admin", async (req, res, next) => {
-    const url = req.originalUrl;
+    const url = req.path;
     let template, render;
 
     try {
       if (process.env.NODE_ENV === "development") {
-        template = fs.readFileSync(path.resolve("./index.html"), "utf-8");
+        template = fs.readFileSync(root("index.html"), "utf-8");
         template = await vite.transformIndexHtml(url, template);
         render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
       } else {
-        template = fs.readFileSync(here("dist/client/index.html"), "utf-8");
+        template = fs.readFileSync(root("dist/client/index.html"), "utf-8");
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         render = (
-          await import(`file://${here("./dist/server/entry-server.js")}`)
+          await import(`file://${root("./dist/server/entry-server.js")}`)
         ).render;
       }
 
@@ -54,8 +47,6 @@ p.beforeServerStart = async (cfg) => {
       next(error);
     }
   });
+}
 
-  return cfg;
-};
-
-module.exports = p;
+module.exports = { ssr };
