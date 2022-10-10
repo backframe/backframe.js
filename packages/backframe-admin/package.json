@@ -1,16 +1,22 @@
 {
   "name": "@backframe/admin",
   "version": "0.0.0",
-  "description": "The backframe admin package",
-  "main": "index.js",
-  "homepage": "/admin",
+  "description": "The backframe admin ui dashboard and plugin",
+  "main": "scripts/index.js",
+  "homepage": "/static",
+  "author": "Victor Ndaba <mwangindaba@gmail.com>",
+  "license": "MIT",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node index.js",
+    "prebuild": "rimraf dist",
+    "dev": "cross-env NODE_ENV=development node scripts/dev.js",
     "build": "tsc && pnpm build:client && pnpm build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
-    "serve": "cross-env NODE_ENV=production node index.js",
-    "prebuild": "rimraf dist"
+    "serve": "cross-env NODE_ENV=production node scripts/dev.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write ./src/**/*.{ts,tsx} ./scripts/**/*.{js,ts}",
+    "format:check": "prettier --check ./src/**/*.{ts,tsx} ./scripts/**/*.{js,ts}"
   },
   "dependencies": {
     "@backframe/core": "workspace:^0.0.0",
