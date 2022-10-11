@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const { createServer } = require("vite");
+const adminRouter = require("../server/router");
 
 async function ssr(app) {
   let vite;
@@ -9,7 +10,13 @@ async function ssr(app) {
 
   if (process.env.NODE_ENV === "development") {
     vite = await createServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        watch: {
+          usePolling: true,
+          interval: 100,
+        },
+      },
       appType: "custom",
     });
 
@@ -18,6 +25,7 @@ async function ssr(app) {
     app.use("/static", express.static(root("dist/client")));
   }
 
+  app.use("/__admin", adminRouter);
   app.use("/admin", async (req, res, next) => {
     const url = req.path;
     let template, render;
