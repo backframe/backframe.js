@@ -1,19 +1,21 @@
 import type {
   BfRequestHandler,
   BfResourceConfig,
+  IBfConfigInternal,
   IHandlerContext,
   MethodName,
 } from "@backframe/core";
 import { logger } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, {
+  ErrorRequestHandler,
   Express,
   Request as ExpressReq,
   Response as ExpressRes,
 } from "express";
 import helmet from "helmet";
 import { Server as HttpServer } from "http";
-import { z } from "zod";
+import { resolveRoutes } from "./routes.js";
 
 // cors options
 // request logger
@@ -30,15 +32,49 @@ interface ServerConfig {
 export class BfServer {
   public _app: Express;
   public _handle!: HttpServer;
+  public _resources!: BfResourceConfig[];
+  private _appCfg!: IBfConfigInternal;
 
   constructor(public cfg: ServerConfig) {
     this._app = express();
   }
 
+  async __initialize(cfg: IBfConfigInternal) {
+    this._appCfg = cfg;
+    cfg.server = this;
+    const resources = await resolveRoutes(cfg);
+    resources.forEach((r) => {
+      this.addResource(r);
+    });
+    this._resources = resources;
+
+    // invoke plugins before server starts
+    const listeners = cfg.listeners?._beforeServerStart;
+    listeners?.length && logger.info("invoking backframe plugins");
+    listeners?.forEach((fn) => {
+      cfg = fn(cfg);
+    });
+    return cfg;
+  }
+
+  async __resolveRoutes(cfg: IBfConfigInternal) {
+    const resources = await resolveRoutes(cfg);
+    resources.forEach((r) => {
+      this.addResource(r);
+    });
+    this._resources = resources;
+  }
+
   public start(port = this.cfg.port) {
     this.applyMiddleware();
     this._handle = this._app.listen(port, () => {
-      logger.info(`server started on port: ${port}`);
+      logger.info(`server started on http://localhost:${port}`);
+      const listeners = this._appCfg.listeners?._afterServerStart;
+      listeners?.forEach(
+        (fn: (arg0: IBfConfigInternal) => IBfConfigInternal) => {
+          this._appCfg = fn(this._appCfg);
+        }
+      );
     });
   }
 
@@ -49,21 +85,27 @@ export class BfServer {
   private applyMiddleware() {
     this._app.use(helmet());
     this.cfg.cors?.enabled && this._app.use(cors(this.cfg.cors.options ?? {}));
-    if (this.cfg.logRequests !== false) this._app.use(RequestLogger());
+    if (this.cfg.logRequests) this._app.use(RequestLogger());
+
+    const errHandler: ErrorRequestHandler = (err, req, res, next) => {
+      res.status(404).json({
+        statusCode: 404,
+        error: "Not Found",
+        msg: `Cannot ${req.method} ${req.path}`,
+      });
+    };
+    this._app.use(errHandler);
   }
 
   private _wrapHandler(method: MethodName, r: BfResourceConfig) {
     return (req: ExpressReq, res: ExpressRes) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const model = r.routeConfig.model!;
-      const schema = model.__genSchema();
-      const input: z.infer<typeof schema> = req.body;
       const ctx: IHandlerContext = {
         _req: req,
         _res: res,
         db: {},
         auth: {},
-        input: input as z.infer<typeof schema>,
+        input: req.body,
         params: req.params,
         query: req.query,
       };
@@ -98,6 +140,11 @@ export class BfServer {
         );
       }
     });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addMiddleware(m: any) {
+    this._app.use(m);
   }
 }
 
