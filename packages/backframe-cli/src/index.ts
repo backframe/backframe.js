@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { program } from "commander";
-import serve from "./cmd/serve.js";
-import watch from "./cmd/watch.js";
+import { serve } from "./cmd/serve.js";
+import { watch } from "./cmd/watch.js";
 
 program
   .name("bf-js")
@@ -21,7 +21,7 @@ program
 program
   .command("watch")
   .alias("w")
-  .description("Start the app server in watch mode")
+  .description("Start the backframe project in watch mode")
   .action(() => {
     watch();
   });
