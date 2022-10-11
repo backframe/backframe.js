@@ -26,10 +26,12 @@ export const BfConfigSchema = z.object({
     .optional(),
   plugins: z
     .array(
-      z.object({
-        resolve: z.string(),
-        options: z.any(),
-      }) || z.string()
+      z
+        .object({
+          resolve: z.string(),
+          options: z.any(),
+        })
+        .or(z.string())
     )
     .optional(),
   providers: z
@@ -95,6 +97,7 @@ export interface IResourceHandlers {
   patch?: BfRequestHandler;
 }
 
+type PluginListener = (cfg: IBfConfigInternal) => IBfConfigInternal;
 export interface IBfConfigInternal extends BfConfig {
   auth?: any;
   database?: any;
@@ -104,7 +107,14 @@ export interface IBfConfigInternal extends BfConfig {
     fileSrc: string;
   };
   globalMiddleware?: any;
-  pluginsOptions?: object;
+  pluginsOptions?: {
+    [plugin: string]: any;
+  };
+  listeners?: {
+    _afterLoadConfig: PluginListener[];
+    _beforeServerStart: PluginListener[];
+    _afterServerStart: PluginListener[];
+  };
   getFileSource: () => string;
 }
 
@@ -139,6 +149,8 @@ export interface IModuleConfig {
 export interface IBfServer {
   _app: Express;
   _handle: HttpServer;
+  __initialize: (cfg: IBfConfigInternal) => typeof cfg;
+  __resolveRoutes: (cfg: IBfConfigInternal) => typeof cfg;
   start: (port?: number) => void | undefined;
   stop: (
     callback?: (err?: Error | undefined) => void | undefined
