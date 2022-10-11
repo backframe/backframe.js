@@ -1,4 +1,4 @@
-import { BfConfig } from "./types.js";
+import { BfConfig, IBfConfigInternal } from "./types.js";
 
 export function generateDefaultConfig(): BfConfig {
   return {
@@ -21,5 +21,15 @@ export function generateTsConfig(config: BfConfig) {
     paths: {
       "~/*": [`./${srcDir}/*`],
     },
+  };
+}
+
+const Listener = (cfg: IBfConfigInternal) => cfg;
+
+export function definePlugin() {
+  return {
+    beforeServerStart: Listener,
+    afterLoadConfig: Listener,
+    afterServerStart: Listener,
   };
 }
