@@ -2,15 +2,14 @@
   "name": "@backframe/rest",
   "version": "0.0.0",
   "main": "dist/index.js",
-  "type": "module",
   "license": "MIT",
   "author": {
     "name": "Victor Ndaba",
     "email": "vndabam@gmail.com"
   },
   "scripts": {
-    "build": "pnpm prebuild && tsc",
-    "prebuild": "rm -rf dist"
+    "build": "tsc",
+    "prebuild": "rimraf dist"
   },
   "dependencies": {
     "@backframe/utils": "workspace:^0.0.0",
