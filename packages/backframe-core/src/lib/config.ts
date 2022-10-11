@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { logger } from "@backframe/utils";
+import { logger, resolvePackage } from "@backframe/utils";
 import dotenv from "dotenv";
 import { buildSync } from "esbuild";
+import fs from "fs";
 import pkg from "glob";
 import path from "path";
 import { BfConfig, BfConfigSchema, IBfConfigInternal } from "./types.js";
@@ -9,21 +10,33 @@ import { generateDefaultConfig } from "./utils.js";
 const { glob } = pkg;
 
 const current = (...s: string[]) => path.join(process.cwd(), ...s);
-const load = async (s: string) => await import(`file://${s}`);
+const load = async (s: string) => await import(`${s}`);
 
 export async function loadConfig() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let module: any;
   let config: BfConfig;
-  const pkg = require(path.join(process.cwd(), "package.json"));
+  const pkg = require(current("package.json"));
   const format = pkg.type === "module" ? "esm" : "cjs";
-  const cfgMatches = glob.sync("./bf.config.*");
+  const matches = glob.sync("./bf.config.*");
 
-  if (!cfgMatches.length) {
+  if (!matches.length) {
     logger.warn("no config file found, using default backframe config");
     config = generateDefaultConfig();
   } else {
-    module = await load(current(cfgMatches[0]));
+    // check if cfg file is esm
+    if (format === "esm" || matches[0].includes(".mjs")) {
+      const outdir = "./node_modules/.bf";
+      buildSync({
+        outdir,
+        format: "cjs",
+        platform: "node",
+        entryPoints: [matches[0]],
+      });
+      module = await load(current(`${outdir}/bf.config.js`));
+    } else {
+      module = await load(current(matches[0]));
+    }
     logger.info("loaded config successfully");
   }
 
@@ -34,13 +47,23 @@ export async function loadConfig() {
     process.exit(1);
   }
 
-  const expanded: IBfConfigInternal = { ...config, getFileSource: () => "src" };
+  let expanded: IBfConfigInternal = {
+    ...config,
+    getFileSource: () => "src",
+    listeners: {
+      _afterLoadConfig: [],
+      _beforeServerStart: [],
+      _afterServerStart: [],
+    },
+    pluginsOptions: {},
+  };
 
   // Probe fs
   const src = config.settings.srcDir ?? "src";
-  if (glob.sync(`./${src}/**/*.ts`).length) {
+  const files = glob.sync(`./${src}/**/*.ts`);
+  if (files.length || format === "esm") {
     buildSync({
-      format,
+      format: "cjs",
       outdir: ".bf",
       entryPoints: glob.sync(`./${src}/**/*.{ts,js}`),
       keepNames: true,
@@ -50,6 +73,15 @@ export async function loadConfig() {
       ...expanded.metadata,
       ...{ fileSrc: ".bf", typescript: true },
     };
+
+    const pkg = {
+      type: "commonjs",
+    };
+    format === "esm" &&
+      fs.writeFileSync(
+        current(".bf/package.json"),
+        JSON.stringify(pkg, null, 2)
+      );
   }
 
   // 1: Load env
@@ -67,6 +99,27 @@ export async function loadConfig() {
     if (expanded.metadata?.fileSrc) return expanded.metadata.fileSrc;
     return expanded.settings.srcDir;
   };
+
+  // Start reading plugins
+  const plugins = expanded.plugins ?? [];
+  plugins.length && logger.info("loading configured plugins...");
+  for (const plugin of plugins) {
+    let pkg;
+
+    if (typeof plugin === "string") pkg = plugin;
+    else pkg = plugin.resolve;
+    const module = resolvePackage(pkg);
+
+    if (module.afterLoadConfig) {
+      expanded = await module.afterLoadConfig(expanded);
+    }
+    if (module.beforeServerStart) {
+      expanded.listeners?._beforeServerStart.push(module.beforeServerStart);
+    }
+    if (module.afterServerStart) {
+      expanded.listeners?._afterServerStart.push(module.afterServerStart);
+    }
+  }
 
   // TODO: Expand config: set defaults etc
   // TODO: Traverse plugins and begin invoking them.
