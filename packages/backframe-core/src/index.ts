@@ -1,4 +1,4 @@
-import { BfConfig, IBfConfigInternal } from "./lib/types.js";
+import { BfConfig } from "./lib/types.js";
 
 export { loadConfig as default } from "./lib/config.js";
 export {
@@ -14,5 +14,5 @@ export {
   MethodName,
   MethodNameAlias,
 } from "./lib/types.js";
+export { definePlugin } from "./lib/utils.js";
 export const defineConfig = (cfg: BfConfig) => cfg;
-export const definePlugin = (cfg: IBfConfigInternal) => cfg;
