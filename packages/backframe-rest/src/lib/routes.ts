@@ -10,9 +10,8 @@ import path from "path";
 import { _parseHandlers } from "./handlers.js";
 const { glob } = pkg;
 
-// const require = createRequire(import.meta.url);
 const current = (...s: string[]) => path.join(process.cwd(), ...s);
-const load = async (s: string) => await import(`file://${s}`);
+const load = async (s: string) => await import(`${s}`);
 
 export async function resolveRoutes(bfConfig: IBfConfigInternal) {
   const src = bfConfig.getFileSource();
