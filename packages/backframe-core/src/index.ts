@@ -1,10 +1,26 @@
-import { BfConfig } from "./lib/types.js";
+import { DateTime } from "./models/datetime.js";
+import { ID } from "./models/id.js";
+import { Model, ModelType } from "./models/index.js";
+import { Float, Int } from "./models/number.js";
+import { Str } from "./models/string.js";
+import { BfUserConfig } from "./utils/types.js";
 
-export { loadConfig as default } from "./lib/config.js";
+export const t = {
+  id: () => new ID(),
+  str: () => new Str(),
+  int: () => new Int(),
+  float: () => new Float(),
+  datetime: () => new DateTime(),
+  model: (name: string, fields: { [prop: string]: ModelType }) =>
+    new Model(name, fields),
+};
+
+export { BfConfig, loadConfig as default } from "./lib/config.js";
+export { definePlugin, Listener, Plugin, PluginFn } from "./lib/plugins.js";
 export {
-  BfConfig,
   BfRequestHandler,
   BfResourceConfig,
+  BfUserConfig,
   IBfConfigInternal,
   IBfServer,
   IHandlerContext,
@@ -13,6 +29,5 @@ export {
   IRouteConfig,
   MethodName,
   MethodNameAlias,
-} from "./lib/types.js";
-export { definePlugin } from "./lib/utils.js";
-export const defineConfig = (cfg: BfConfig) => cfg;
+} from "./utils/types.js";
+export const defineConfig = (cfg: BfUserConfig) => cfg;
