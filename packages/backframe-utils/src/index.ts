@@ -1,2 +1,2 @@
 export { logger } from "./logger.js";
-export { resolvePackage } from "./pkg.js";
+export { loadModule, resolveCwd, resolvePackage } from "./pkg.js";
