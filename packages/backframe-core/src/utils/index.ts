@@ -1,6 +1,6 @@
-import { BfConfig, IBfConfigInternal } from "./types.js";
+import { BfUserConfig, IBfConfigInternal } from "./types.js";
 
-export function generateDefaultConfig(): BfConfig {
+export function generateDefaultConfig(): BfUserConfig {
   return {
     settings: {
       srcDir: "src",
@@ -8,7 +8,7 @@ export function generateDefaultConfig(): BfConfig {
   };
 }
 
-export function generateTsConfig(config: BfConfig) {
+export function generateTsConfig(config: BfUserConfig) {
   const srcDir = config.settings.srcDir ?? "src";
   return {
     module: "commonjs",
