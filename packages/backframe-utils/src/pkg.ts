@@ -9,3 +9,11 @@ export function resolvePackage(name: string) {
   const module = require(current(name, main));
   return module;
 }
+
+export function resolveCwd(...s: string[]) {
+  return path.join(process.cwd(), ...s);
+}
+
+export async function loadModule(s: string) {
+  return await import(s);
+}
