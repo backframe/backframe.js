@@ -4,18 +4,9 @@ const { logger } = require("@backframe/utils");
 
 const p = definePlugin();
 
-p.beforeServerStart = async (cfg) => {
+p.register("beforeServerStart", async (cfg) => {
   process.env.BF_DEBUG && console.log("beforeServerStart called");
-  const app = cfg.server._app;
-  await ssr(app);
-  // TODO: pass db and auth objects to plugin
-  return cfg;
-};
-
-p.afterServerStart = (cfg) => {
-  logger.debug(
-    `admin ui ready on http://localhost:${cfg.server.cfg.port}/admin`
-  );
-};
+  await ssr(cfg.getServer());
+});
 
 module.exports = p;
