@@ -18,6 +18,7 @@
     "format:check": "prettier --check ./src/**/*.ts"
   },
   "devDependencies": {
+    "@backframe/eslint-config": "workspace:*",
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^8.0.0"
   },
