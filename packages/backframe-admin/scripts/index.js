@@ -1,6 +1,5 @@
 const { definePlugin } = require("@backframe/core");
 const { ssr } = require("./utils");
-const { logger } = require("@backframe/utils");
 
 const p = definePlugin();
 
