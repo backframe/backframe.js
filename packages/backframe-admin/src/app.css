@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: "Asap";
-  src: url("/fonts/Asap.ttf");
+  font-family: "Inter";
+  src: url("/public/fonts/Inter-variable.woff2") format("woff2");
+  font-display: optional;
+  font-style: normal;
+  font-weight: 100 400 500 600 700;
 }
