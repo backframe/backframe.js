@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Asap", ...defaultTheme.fontFamily.sans],
+        sans: ["Inter", ...defaultTheme.fontFamily.sans],
       },
     },
   },
@@ -17,4 +17,5 @@ module.exports = {
     require("@tailwindcss/line-clamp"),
     require("@tailwindcss/typography"),
   ],
+  darkMode: "class",
 };
