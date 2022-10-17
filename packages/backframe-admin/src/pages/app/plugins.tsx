@@ -1,7 +1,7 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "~/components/Header";
-import Installed from "./installed";
-import Marketplace from "./marketplace";
+import Installed from "./plugins/installed";
+import Marketplace from "./plugins/marketplace";
 
 export default function Plugins() {
   return (
@@ -9,6 +9,7 @@ export default function Plugins() {
       <Header links={["installed", "marketplace"]} />
       <div className="px-10 py-5">
         <Routes>
+          <Route index element={<Navigate to="installed" />} />
           <Route path="installed" element={<Installed />} />
           <Route path="marketplace" element={<Marketplace />} />
         </Routes>
