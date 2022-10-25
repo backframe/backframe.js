@@ -1,8 +1,9 @@
 import type {
+  BfConfig,
   BfRequestHandler,
   BfResourceConfig,
-  IBfConfigInternal,
   IHandlerContext,
+  Listener,
   MethodName,
 } from "@backframe/core";
 import { logger } from "@backframe/utils";
@@ -33,34 +34,30 @@ export class BfServer {
   public _app: Express;
   public _handle!: HttpServer;
   public _resources!: BfResourceConfig[];
-  private _appCfg!: IBfConfigInternal;
+  private _appCfg!: BfConfig;
 
   constructor(public cfg: ServerConfig) {
     this._app = express();
   }
 
-  async __initialize(cfg: IBfConfigInternal) {
+  async __initialize(cfg: BfConfig) {
+    cfg._setServer(this);
     this._appCfg = cfg;
-    cfg.server = this;
     const resources = await resolveRoutes(cfg);
     resources.forEach((r) => {
-      this.addResource(r);
+      this.addResource(r as BfResourceConfig);
     });
     this._resources = resources;
 
     // invoke plugins before server starts
-    const listeners = cfg.listeners?._beforeServerStart;
-    listeners?.length && logger.info("invoking backframe plugins");
-    listeners?.forEach((fn) => {
-      cfg = fn(cfg);
-    });
+    cfg._invokePlugins("beforeServerStart");
     return cfg;
   }
 
-  async __resolveRoutes(cfg: IBfConfigInternal) {
+  async __resolveRoutes(cfg: BfConfig) {
     const resources = await resolveRoutes(cfg);
     resources.forEach((r) => {
-      this.addResource(r);
+      this.addResource(r as BfResourceConfig);
     });
     this._resources = resources;
   }
@@ -68,13 +65,11 @@ export class BfServer {
   public start(port = this.cfg.port) {
     this.applyMiddleware();
     this._handle = this._app.listen(port, () => {
-      logger.info(`server started on http://localhost:${port}`);
-      const listeners = this._appCfg.listeners?._afterServerStart;
-      listeners?.forEach(
-        (fn: (arg0: IBfConfigInternal) => IBfConfigInternal) => {
-          this._appCfg = fn(this._appCfg);
-        }
-      );
+      const host = `http://localhost:${port}`;
+      logger.info(`server started on ${host}`);
+      if (this._appCfg._cfg.plugins?.includes("@backframe/admin" as Listener)) {
+        logger.info(`admin ui ready on ${host}/admin`);
+      }
     });
   }
 
@@ -164,7 +159,7 @@ export function defaultServer() {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RequestLogger = () => (req: ExpressReq, res: ExpressRes, next: any) => {
-  logger.info(
+  logger.http(
     `${req.method} ${req.path} HTTP/${req.httpVersion} -> ${res.statusCode}`
   );
   next();
