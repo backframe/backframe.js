@@ -14,7 +14,7 @@ export function Login() {
   }, []);
 
   return (
-    <main className="relative w-full flex min-h-[100vh] text-slate-900 bg-gray-100/40 dark:bg-zinc-900">
+    <main className="relative w-full flex min-h-[100vh] text-slate-900 bg-gray-100/40 ">
       <section className="mx-auto flex flex-col justify-center text-center w-[90%] md:w-[30%]">
         <Link
           to="/"
