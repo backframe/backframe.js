@@ -1,11 +1,20 @@
 import { logger } from "@backframe/utils";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import chokidar from "chokidar";
-import serve from "./serve.js";
+import path from "path";
 
-export default async function () {
-  const app = await serve();
-  const watcher = chokidar.watch(["src", "bf.config.js"], {
+export async function watch() {
+  let child: ChildProcessWithoutNullStreams;
+  const current = (...s: string[]) => path.join(process.cwd(), ...s);
+
+  const start = () => {
+    child = spawn("sh", [current("./node_modules/.bin/bf"), "serve"]);
+    child.stdout.pipe(process.stdout);
+  };
+
+  const watcher = chokidar.watch(["src", "bf.config.js", "bf.config.mjs"], {
     persistent: false,
+    ignoreInitial: true,
   });
 
   watcher.on("ready", () => {
@@ -13,13 +22,10 @@ export default async function () {
 
     watcher.on("all", () => {
       logger.warn("changes detected, restarting server...");
-      restart();
+      child.kill("SIGHUP");
+      start();
     });
   });
 
-  const restart = () => {
-    app.stop(() => {
-      serve();
-    });
-  };
+  start();
 }
