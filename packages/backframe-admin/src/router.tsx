@@ -8,10 +8,10 @@ import { Login } from "~/pages/login";
 import { Register } from "~/pages/register";
 import "./app.css";
 import { Index } from "./pages";
-import Auth from "./pages/app/auth/auth";
-import Overview from "./pages/app/overview/overview";
-import Plugins from "./pages/app/plugins/plugins";
-import Storage from "./pages/app/storage/storage";
+import Auth from "./pages/app/auth";
+import Overview from "./pages/app/overview";
+import Plugins from "./pages/app/plugins";
+import Storage from "./pages/app/storage";
 
 export const Router = () => {
   return (
