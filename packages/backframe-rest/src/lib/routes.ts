@@ -1,19 +1,16 @@
 import {
+  BfConfig,
   BfResourceConfig,
-  IBfConfigInternal,
   IModuleConfig,
   IRouteConfig,
 } from "@backframe/core";
-import { logger } from "@backframe/utils";
+import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import pkg from "glob";
 import path from "path";
 import { _parseHandlers } from "./handlers.js";
 const { glob } = pkg;
 
-const current = (...s: string[]) => path.join(process.cwd(), ...s);
-const load = async (s: string) => await import(`${s}`);
-
-export async function resolveRoutes(bfConfig: IBfConfigInternal) {
+export async function resolveRoutes(bfConfig: BfConfig) {
   const src = bfConfig.getFileSource();
   const dir = `./${src}/routes/**/*.js`;
   const matches = glob.sync(dir);
@@ -24,10 +21,9 @@ export async function resolveRoutes(bfConfig: IBfConfigInternal) {
     process.exit(1);
   }
 
-  const prefix = bfConfig.interfaces?.rest?.urlPrefix ?? "/";
+  const prefix = bfConfig.getRestConfig()?.urlPrefix ?? "/";
   const resources = await Promise.all(
     matches.map(async (match) => {
-      // 1: Generate route from file system
       let file = match.replace(`./${src}/routes`, "");
       file = path.join(prefix, file);
 
@@ -46,13 +42,17 @@ export async function resolveRoutes(bfConfig: IBfConfigInternal) {
       const route = path.join(path.dirname(file), base).replace(/\\/g, "/");
 
       // 2: import file and parse required options
-      const module: IModuleConfig = await load(current(match));
+      const module: IModuleConfig = await loadModule(resolveCwd(match));
+      const isResource = () => {
+        const { default: d, config } = module;
+        return d.handlers?.length || config;
+      };
+
       const config: BfResourceConfig = {
         route,
         handlers: _parseHandlers(module, route),
-        routeConfig: { ...generateRouteConfig(), ...(module.config ?? {}) },
+        routeConfig: Object.assign(generateRouteConfig(), module.config ?? {}),
       };
-
       return config;
     })
   );
