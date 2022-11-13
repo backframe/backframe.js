@@ -17,6 +17,7 @@
 - [ ] Resolve addon/plugin concerned with db
 - [ ] Attach db instance to config
 - [ ] Return transformed config
+- [ ] create orm best suited for gql, rest schemas and type safety too
 
 <!-- t.str().maxLen(200).nullish().methods([]) -->
 
@@ -54,6 +55,7 @@ Parse config and list best alternatives
 # Others
 
 Full text search with elastic-search
+Open api plugins and postman and insomnia doc-gen
 
 # Plugins
 
