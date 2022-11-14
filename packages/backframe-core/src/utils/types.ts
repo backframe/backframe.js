@@ -6,7 +6,6 @@ import {
 } from "express";
 import { Server as HttpServer } from "http";
 import { z } from "zod";
-import { PluginsConfig } from "../lib/plugins.js";
 import { Model } from "../models/index.js";
 
 export const BfConfigSchema = z.object({
@@ -108,7 +107,6 @@ export interface IBfConfigInternal extends BfUserConfig {
     fileSrc: string;
   };
   globalMiddleware?: any;
-  pluginsConfig?: PluginsConfig;
   listeners?: {
     _afterLoadConfig: PluginListener[];
     _beforeServerStart: PluginListener[];
