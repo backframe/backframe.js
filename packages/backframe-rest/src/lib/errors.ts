@@ -1,9 +1,11 @@
-export class GenericException {
+export class GenericException extends Error {
   constructor(
-    private statusCode: number,
-    private message: string,
-    private description: string
-  ) {}
+    public statusCode: number,
+    public message: string,
+    public description: string
+  ) {
+    super(message);
+  }
 
   getValues() {
     const { description, statusCode, message } = this;
@@ -29,7 +31,7 @@ export function ForbiddenException(
   return new GenericException(403, msg, body);
 }
 
-export function UnathorizedException(
+export function UnauthorizedException(
   msg = "Unauthorized",
   body = "You must be authenticated to perfom this action"
 ) {
