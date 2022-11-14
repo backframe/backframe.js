@@ -15,8 +15,7 @@ export const t = {
     new Model(name, fields),
 };
 
-export { BfConfig, loadConfig as default } from "./lib/config.js";
-export { definePlugin, Listener, Plugin, PluginFn } from "./lib/plugins.js";
+export { BfConfig, loadConfig as default, PluginFn } from "./lib/config.js";
 export {
   BfRequestHandler,
   BfResourceConfig,
