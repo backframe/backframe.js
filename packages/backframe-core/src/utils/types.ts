@@ -75,12 +75,7 @@ export type MethodName =
   | "delete"
   | "options"
   | "patch";
-export type MethodNameAlias =
-  | "find"
-  | "findOne"
-  | "create"
-  | "updated"
-  | "delete";
+export type Methods = "create" | "read" | "update" | "delete";
 export type BfResourceConfig = {
   route: string;
   handlers: IResourceHandlers;
