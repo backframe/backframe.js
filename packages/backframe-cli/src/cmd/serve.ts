@@ -26,7 +26,7 @@ export async function serve() {
   }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  server.__initialize(cfg);
+  server._initialize(cfg);
   server.start();
   return server;
 }
