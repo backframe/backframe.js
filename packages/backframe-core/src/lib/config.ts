@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import {
   loadModule,
@@ -13,86 +14,16 @@ import { generateDefaultConfig } from "../utils/index.js";
 import { BfConfigSchema, BfUserConfig, IBfServer } from "../utils/types.js";
 const { glob } = pkg;
 
+type Event = "beforeServerStart" | "afterLoadConfig" | "afterServerStart";
+interface IListeners {
+  beforeServerStart?: Function[];
+  afterLoadConfig?: Function[];
+  afterServerStart?: Function[];
+}
 const pkgJson = require(resolveCwd("package.json"));
 const format = pkgJson.type === "module" ? "esm" : "cjs";
+const events = ["beforeServerStart", "afterLoadConfig", "afterServerStart"];
 
-export async function loadConfig() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let module: any;
-  let userCfg: BfUserConfig;
-  const matches = glob.sync("./bf.config.*");
-
-  // TODO: Hash and cache and compare config files
-  if (!matches.length) {
-    logger.warn("no config file found, using default backframe config");
-    userCfg = generateDefaultConfig();
-  } else {
-    const m = matches[0];
-    const shouldCompile = () => {
-      return m.includes(".mjs") || m.includes(".ts");
-    };
-
-    if (format === "esm" || shouldCompile()) {
-      const outdir = "./node_modules/.bf";
-      buildSync({
-        outdir,
-        format: "cjs",
-        entryPoints: [m],
-      });
-      module = await loadModule(resolveCwd(`${outdir}/bf.config.js`));
-    } else {
-      module = await loadModule(resolveCwd(m));
-    }
-    logger.info("loaded config successfully");
-  }
-
-  const exported = module?.default ?? module;
-  userCfg = Object.assign(generateDefaultConfig(), exported);
-  const opts = BfConfigSchema.safeParse(userCfg);
-  if (!opts.success) {
-    logger.error("your config file is not valid");
-    process.exit(1);
-  } // Step 1 done: user-defined config parsed and validated
-
-  let env = glob.sync(".env*");
-  env = env.filter((f) => f !== ".env.example");
-  if (env.length) {
-    dotenv.config({
-      path: env[0],
-    });
-    logger.info(`loaded env variables from \`${env[0]}\``);
-  } // Step 2 done: loaded env vars for use in later stages
-
-  const bfConfig = new BfConfig(userCfg);
-  const plugins = bfConfig._userCfg.plugins ?? [];
-
-  if (plugins.length) {
-    // console animations?!
-    logger.info("loading configured plugins...");
-    for (const plugin of plugins) {
-      let pkg;
-      if (typeof plugin == "string") pkg = plugin;
-      else pkg = plugin.resolve;
-
-      // load and execute default export from pkg
-      resolvePackage(pkg)(bfConfig);
-    }
-
-    bfConfig._invokeListeners("afterLoadConfig");
-  } // Step 4 done: Loaded plugins and invoke for current stage
-
-  bfConfig._buildFiles(); // Step 5 done: built typescript files or esm files
-
-  return bfConfig;
-}
-
-interface IListeners {
-  beforeServerStart?: PluginFn[];
-  afterLoadConfig?: PluginFn[];
-}
-
-type Event = "beforeServerStart" | "afterLoadConfig";
-export type PluginFn = (cfg: BfConfig) => BfConfig | void;
 export class BfConfig {
   private fileSrc?: string;
   private server!: IBfServer;
@@ -101,7 +32,6 @@ export class BfConfig {
 
   constructor(public _userCfg: BfUserConfig) {
     this._builder = defaultBuilder(this);
-    const events = ["beforeServerStart", "afterLoadConfig"];
     const listeners: IListeners = {};
     events.forEach((e) => (listeners[e as Event] = []));
     this._listeners = listeners;
@@ -143,8 +73,12 @@ export class BfConfig {
     return this.fileSrc ?? this._userCfg.settings.srcDir;
   }
 
-  getServer() {
+  getInternalApp() {
     return this.server._app;
+  }
+
+  getServer() {
+    return this.server;
   }
 
   getRestConfig() {
@@ -182,6 +116,9 @@ export class BfConfig {
 
 function defaultBuilder(cfg: BfConfig) {
   return () => {
+    if (fs.existsSync(resolveCwd(".bf"))) {
+      fs.rmSync(resolveCwd(".bf"), { force: true, recursive: true });
+    }
     const dir = cfg.getFileSource() ?? "src";
     const files = glob.sync(`./${dir}/**/*.ts`);
     const shouldBuild = () => {
@@ -208,4 +145,73 @@ function defaultBuilder(cfg: BfConfig) {
       );
     }
   };
+}
+
+export async function loadConfig() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let module: any;
+  let userCfg: BfUserConfig;
+  const matches = glob.sync("./bf.config.*");
+
+  // TODO: Hash and cache and compare config files
+  if (!matches.length) {
+    logger.warn("no config file found, using default backframe config");
+    userCfg = generateDefaultConfig();
+  } else {
+    const m = matches[0];
+    const shouldCompile = () => {
+      return m.includes(".mjs") || m.includes(".ts");
+    };
+
+    if (format === "esm" || shouldCompile()) {
+      const outdir = "./node_modules/.bf";
+      buildSync({
+        outdir,
+        format: "cjs",
+        entryPoints: [m],
+      });
+      module = await loadModule(resolveCwd(`${outdir}/bf.config.js`));
+    } else {
+      module = await loadModule(resolveCwd(m));
+    }
+    logger.info("loaded config successfully");
+  }
+
+  userCfg = Object.assign(generateDefaultConfig(), module.default ?? module);
+  const opts = BfConfigSchema.safeParse(userCfg);
+  if (!opts.success) {
+    logger.error("your config file is not valid");
+    process.exit(1);
+  } // Step 1 done: user-defined config parsed and validated
+
+  let env = glob.sync(".env*");
+  env = env.filter((f) => f !== ".env.example");
+  if (env.length) {
+    dotenv.config({
+      path: env[0],
+    });
+    logger.info(`loaded env variables from \`${env[0]}\``);
+  } // Step 2 done: loaded env vars for use in later stages
+
+  const bfConfig = new BfConfig(userCfg);
+  const plugins = bfConfig._userCfg.plugins ?? [];
+
+  if (plugins.length) {
+    // console animations?!
+    logger.info("loading configured plugins...");
+    for (const plugin of plugins) {
+      let pkg;
+      if (typeof plugin == "string") pkg = plugin;
+      else pkg = plugin.resolve;
+
+      // load and execute default export from pkg
+      resolvePackage(pkg)(bfConfig);
+    }
+
+    bfConfig._invokeListeners("afterLoadConfig");
+  } // Step 4 done: Loaded plugins and invoke for current stage
+
+  bfConfig._buildFiles(); // Step 5 done: built typescript files or esm files
+
+  return bfConfig;
 }
