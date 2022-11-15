@@ -13,9 +13,10 @@ import express, {
   Response as ExpressRes,
 } from "express";
 import helmet from "helmet";
-import { Server as HttpServer } from "http";
+import { Server as HttpServer, ServerResponse } from "http";
+import { createContext } from "./context.js";
 import { GenericException, NotFoundExeption } from "./errors.js";
-import { resolveRoutes } from "./routes.js";
+import { BfRequestHandler, loadResources, Resource } from "./resources.js";
 
 interface IBfServerConfig {
   port?: number;
@@ -46,11 +47,15 @@ export class BfServer {
     // TODO: Invoke plugins beforeStart
     // TODO: setup error handlers
     this._applyMiddleware();
-    const resources = await resolveRoutes(cfg);
+    // const resources = await resolveRoutes(cfg);
+    // resources.forEach((r) => {
+    //   this.addResource(r as BfResourceConfig);
+    // });
+    // this._resources = resources;
+    const resources = await loadResources(this._bfConfig);
     resources.forEach((r) => {
-      this.addResource(r as BfResourceConfig);
+      this._registerResource(r);
     });
-    this._resources = resources;
     cfg._invokeListeners("beforeServerStart");
     this._setupErrHandlers();
   }
@@ -93,6 +98,7 @@ export class BfServer {
   }
 
   private _generateHandler(method: MethodName, r: BfResourceConfig) {
+    // @ts-ignore
     return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const ctx: IHandlerContext = {
@@ -110,24 +116,74 @@ export class BfServer {
 
       if (value instanceof GenericException) {
         next(value);
+      } else {
+        const t = typeof value === "string" ? "text/html" : "application/json";
+        return res.status(200).setHeader("Content-Type", t).json(value);
       }
-      const t = typeof value === "string" ? "text/html" : "application/json";
-      return res.status(200).setHeader("Content-Type", t).json(value);
     };
+  }
+
+  private _wrapMiddleware(m: BfRequestHandler) {
+    return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
+      const ctx = createContext(req, res, next);
+      const value = m(ctx);
+
+      if (value instanceof GenericException) next(value);
+      else return;
+    };
+  }
+
+  private _wrapHandler(handler: BfRequestHandler) {
+    // @ts-ignore
+    return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
+      const ctx = createContext(req, res, next);
+      const value = handler(ctx);
+
+      if (value instanceof GenericException) next(value);
+      else if (value instanceof ServerResponse) return;
+      else {
+        const t = typeof value === "string" ? "text/html" : "application/json";
+        return res.status(200).setHeader("Content-Type", t).json(value);
+      }
+    };
+  }
+
+  private _registerResource(r: Resource) {
+    const mw = r.middleware ?? [];
+    const methods = Object.keys(r.handlers);
+
+    type M = "create" | "read" | "update" | "delete";
+    methods.forEach((m) => {
+      const method = this.resolveMethod(m);
+      const middleware = mw.map((mw) => {
+        return this._wrapMiddleware(mw);
+      });
+      const handler = this._wrapHandler(r.handlers[m as M]!.action);
+      this._app[method](r.route, middleware, handler);
+    });
   }
 
   async start(port = this._cfg.port || 6969) {
     this._handle = this._app.listen(port, () => {
       // TODO: expose flags etc...
-      const host = `http://localhost:${port}`;
-      logger.info(`server started on ${host}`);
-      if (this._bfConfig._includesPlugin("@backframe/admin"))
-        logger.info(`admin ui ready on ${host}/admin`);
+      logger.info(`server started on ${this.getHost(port)}`);
+      this._bfConfig._invokeListeners("afterServerStart");
     });
   }
 
   stop(callback?: (err?: Error | undefined) => void | undefined) {
     this._handle.close(callback);
+  }
+
+  getHost(port = this._cfg.port || 6969) {
+    return `http://localhost:${port}`;
+  }
+
+  resolveMethod(m: string) {
+    if (m === "create") return "post";
+    if (m === "read") return "get";
+    if (m === "update") return "put";
+    return "delete";
   }
 
   addResource(r: BfResourceConfig) {
