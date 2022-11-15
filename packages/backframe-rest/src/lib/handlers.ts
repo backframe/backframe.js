@@ -1,9 +1,11 @@
-import { BfRequestHandler, IModuleConfig, MethodName } from "@backframe/core";
+import { IModuleConfig, Methods } from "@backframe/core";
+import { BfRequestHandler } from "./resources.js";
 
-class Handler {
+export class Handler {
   constructor(
-    public method: MethodName,
+    public method: Methods,
     public action: BfRequestHandler,
+    public middleware: BfRequestHandler[],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public input?: any
   ) {}
@@ -13,7 +15,7 @@ class HandlersConfig {
   constructor(private handlers: Handler[]) {}
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handle(method: MethodName, cfg: { input?: any; action: BfRequestHandler }) {
+  handle(method: Methods, cfg: { input?: any; action: BfRequestHandler }) {
     this.handlers.push(new Handler(method, cfg.action, cfg.input));
     return this;
   }
@@ -28,8 +30,9 @@ export function _parseHandlers(module: IModuleConfig, route: string) {
   const values: any = {};
   const handlers = module.default?.handlers ?? [];
 
+  // @ts-ignore
   handlers.map((h: Handler) => {
-    values[h.method] = h.action;
+    values[h.method] = h;
   });
 
   if (!Object.keys(values).length) {
@@ -46,7 +49,7 @@ export function _parseHandlers(module: IModuleConfig, route: string) {
 }
 
 function getDefaultEnabled() {
-  return ["get", "getOne", "put", "post", "delete"];
+  return ["create", "read", "update", "delete"];
 }
 
 function generateHandler(method: string, route: string) {
