@@ -15,7 +15,8 @@ export const t = {
     new Model(name, fields),
 };
 
-export { BfConfig, loadConfig as default, PluginFn } from "./lib/config.js";
+export { BfConfig, loadConfig as default } from "./lib/config.js";
+export { Model, ModelType } from "./models/index.js";
 export {
   BfRequestHandler,
   BfResourceConfig,
@@ -27,6 +28,6 @@ export {
   IResourceHandlers,
   IRouteConfig,
   MethodName,
-  MethodNameAlias,
+  Methods,
 } from "./utils/types.js";
 export const defineConfig = (cfg: BfUserConfig) => cfg;
