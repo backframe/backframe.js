@@ -1,49 +1,72 @@
-import { IModuleConfig, Methods } from "@backframe/core";
-import { BfRequestHandler } from "./resources.js";
+import { Model } from "@backframe/core";
+import {
+  BfRequestHandler,
+  IModuleConfig,
+  IResourceHandlers,
+  MethodName,
+  _resolveMethod,
+} from "./util.js";
 
-export class Handler {
+export class _Handler {
   constructor(
-    public method: Methods,
+    public method: MethodName,
     public action: BfRequestHandler,
-    public middleware: BfRequestHandler[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public input?: any
+    public middleware?: BfRequestHandler[],
+    public input?: Model
   ) {}
 }
 
-class HandlersConfig {
-  constructor(private handlers: Handler[]) {}
+export class ModuleHandlers {
+  constructor(private handlers: _Handler[]) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handle(method: Methods, cfg: { input?: any; action: BfRequestHandler }) {
-    this.handlers.push(new Handler(method, cfg.action, cfg.input));
+  handle(
+    method: MethodName,
+    cfg: {
+      input?: Model;
+      action: BfRequestHandler;
+      middleware: BfRequestHandler[];
+    }
+  ) {
+    this.handlers.push(
+      new _Handler(method, cfg.action, cfg.middleware, cfg.input)
+    );
     return this;
+  }
+
+  beforeAll(cb: BfRequestHandler) {
+    this.handlers.forEach((h) => {
+      if (!h.middleware?.length) h.middleware = [];
+      h.middleware.unshift(cb);
+    });
+  }
+
+  afterAll(cb: BfRequestHandler) {
+    this.handlers.forEach((h) => {
+      if (!h.middleware?.length) h.middleware = [];
+      h.middleware.push(cb);
+    });
   }
 }
 
 export function defineHandlers() {
-  return new HandlersConfig([]);
+  return new ModuleHandlers([]);
 }
 
 export function _parseHandlers(module: IModuleConfig, route: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const values: any = {};
-  const handlers = module.default?.handlers ?? [];
+  const values: IResourceHandlers = {};
 
-  // @ts-ignore
-  handlers.map((h: Handler) => {
-    values[h.method] = h;
+  const enabled = module.config?.enabled ?? getDefaultEnabled();
+  // TODO: Implement dynamic handlers where model is involved
+  enabled.map((method: string) => {
+    values[method as MethodName] = generateHandler(method as MethodName, route);
   });
 
-  if (!Object.keys(values).length) {
-    // generate default handlers for enabled methods
-    const enabled = module.config?.enabled ?? getDefaultEnabled();
-
-    // TODO: Implement dynamic handlers where model is involved
-    enabled.map((method: string) => {
-      values[method] = generateHandler(method, route);
-    });
-  }
+  // @ts-ignore
+  const handlers = module.default?.handlers ?? [];
+  handlers.map((h: _Handler) => {
+    values[h.method] = h;
+  });
 
   return values;
 }
@@ -52,10 +75,15 @@ function getDefaultEnabled() {
   return ["create", "read", "update", "delete"];
 }
 
-function generateHandler(method: string, route: string) {
-  return () => ({
-    status: "Okay",
-    msg: `The "${method}" method for the \`${route}\` route is working successfully.`,
-    body: `This is a default static handler. It can be overriden by defining your own handler for the "${method}" method or by defining a model in the config of the \`${route}\` route.`,
-  });
+function generateHandler(method: MethodName, route: string) {
+  const m = _resolveMethod(method).toUpperCase();
+  return new _Handler(
+    method,
+    () => ({
+      status: "Okay",
+      msg: `The \`${m}\` method for the \`${route}\` route is working successfully.`,
+      body: `This is a default static handler. It can be overriden by defining your own handler for the \`${m}\` method or by defining a model in the config of the \`${route}\` route.`,
+    }),
+    []
+  );
 }
