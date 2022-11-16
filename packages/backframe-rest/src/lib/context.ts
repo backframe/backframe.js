@@ -1,8 +1,13 @@
+import { BfConfig } from "@backframe/core";
+import { resolveCwd } from "@backframe/utils";
 import {
   NextFunction,
   Request as ExpressReq,
   Response as ExpressRes,
 } from "express";
+import pkg from "glob";
+import path from "path";
+const { glob } = pkg;
 
 interface IResponseOptions {
   headers?: {
@@ -14,9 +19,9 @@ export function createContext(
   req: ExpressReq,
   res: ExpressRes,
   next: NextFunction,
-  _model?: any
+  _cfg?: BfConfig
 ) {
-  const ctx = new Context(req, res, next);
+  const ctx = new Context(req, res, next, _cfg);
   return ctx;
 }
 
@@ -24,7 +29,8 @@ export class Context {
   constructor(
     private req: ExpressReq,
     private res: ExpressRes,
-    private _next: NextFunction
+    private _next: NextFunction,
+    private _bfConfig?: BfConfig
   ) {}
 
   getReq(): ExpressReq {
@@ -72,5 +78,17 @@ export class Context {
   file(contents: string, status = 200, options?: IResponseOptions) {
     this._applyHeaders(options || {});
     return this.res.status(status).send(contents);
+  }
+
+  redirect() {}
+  rewrite() {}
+
+  render(name: string, _data?: object) {
+    const src = this._bfConfig!.getFileSource() ?? "src";
+    const file = resolveCwd(path.join(src, "views", `${name}.js`));
+    const module = require(file);
+    const contents = module.default(_data);
+
+    return this.res.send(contents);
   }
 }
