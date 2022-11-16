@@ -10,8 +10,7 @@ import dotenv from "dotenv";
 import { buildSync } from "esbuild";
 import fs from "fs";
 import pkg from "glob";
-import { generateDefaultConfig } from "../utils/index.js";
-import { BfConfigSchema, BfUserConfig, IBfServer } from "../utils/types.js";
+import { BfConfigSchema, BfUserConfig, generateDefaultConfig } from "./util.js";
 const { glob } = pkg;
 
 type Event = "beforeServerStart" | "afterLoadConfig" | "afterServerStart";
@@ -26,23 +25,20 @@ const events = ["beforeServerStart", "afterLoadConfig", "afterServerStart"];
 
 export class BfConfig {
   private fileSrc?: string;
-  private server!: IBfServer;
-  private _builder!: () => void | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private server!: any;
   private _listeners!: IListeners;
+  private _builders!: [() => void | undefined];
 
   constructor(public _userCfg: BfUserConfig) {
-    this._builder = defaultBuilder(this);
+    this._builders.push(defaultBuilder(this));
     const listeners: IListeners = {};
     events.forEach((e) => (listeners[e as Event] = []));
     this._listeners = listeners;
   }
 
-  set builder(builder: () => void | undefined) {
-    this._builder = builder;
-  }
-
   _buildFiles() {
-    this._builder();
+    this._builders.forEach((b) => b());
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,6 +108,10 @@ export class BfConfig {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._listeners[event]!.push(cb);
   }
+
+  addBuilder(builder: () => void | undefined) {
+    this._builders.push(builder);
+  }
 }
 
 function defaultBuilder(cfg: BfConfig) {
@@ -120,7 +120,7 @@ function defaultBuilder(cfg: BfConfig) {
       fs.rmSync(resolveCwd(".bf"), { force: true, recursive: true });
     }
     const dir = cfg.getFileSource() ?? "src";
-    const files = glob.sync(`./${dir}/**/*.ts`);
+    const files = glob.sync(`./${dir}/**/*.{ts,js}`);
     const shouldBuild = () => {
       return format === "esm" || files.length;
     };
@@ -129,20 +129,29 @@ function defaultBuilder(cfg: BfConfig) {
       buildSync({
         format: "cjs",
         outdir: ".bf",
-        entryPoints: [...glob.sync(`./${dir}/**/*.{ts,js}`)],
-      });
-    }
-    cfg._updateFileSrc(".bf");
-
-    if (format === "esm") {
-      const newPkg = Object.assign(pkgJson, {
-        type: "commonjs",
+        entryPoints: [...files],
       });
 
-      fs.writeFileSync(
-        resolveCwd(".bf/package.json"),
-        JSON.stringify(newPkg, null, 2)
-      );
+      // copy other files over
+      let others = glob.sync(`./${dir}/**/*.*`);
+      others = others.filter((o) => ![".js", ".ts"].some((e) => o.includes(e)));
+      others.forEach((o) => {
+        const file = o.replace(`./${dir}`, "./.bf");
+        const contents = fs.readFileSync(o, { encoding: "utf-8" });
+        fs.writeFileSync(file, contents);
+      });
+
+      cfg._updateFileSrc(".bf");
+      if (format === "esm") {
+        const newPkg = Object.assign(pkgJson, {
+          type: "commonjs",
+        });
+
+        fs.writeFileSync(
+          resolveCwd(".bf/package.json"),
+          JSON.stringify(newPkg, null, 2)
+        );
+      }
     }
   };
 }
