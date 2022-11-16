@@ -1,9 +1,9 @@
+import { BfUserConfig } from "./lib/util.js";
 import { DateTime } from "./models/datetime.js";
 import { ID } from "./models/id.js";
 import { Model, ModelType } from "./models/index.js";
 import { Float, Int } from "./models/number.js";
 import { Str } from "./models/string.js";
-import { BfUserConfig } from "./utils/types.js";
 
 export const t = {
   id: () => new ID(),
@@ -16,18 +16,6 @@ export const t = {
 };
 
 export { BfConfig, loadConfig as default } from "./lib/config.js";
+export { BfUserConfig } from "./lib/util.js";
 export { Model, ModelType } from "./models/index.js";
-export {
-  BfRequestHandler,
-  BfResourceConfig,
-  BfUserConfig,
-  IBfConfigInternal,
-  IBfServer,
-  IHandlerContext,
-  IModuleConfig,
-  IResourceHandlers,
-  IRouteConfig,
-  MethodName,
-  Methods,
-} from "./utils/types.js";
 export const defineConfig = (cfg: BfUserConfig) => cfg;
