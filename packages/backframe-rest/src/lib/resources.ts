@@ -1,34 +1,10 @@
-import { BfConfig, Methods, Model } from "@backframe/core";
+import { BfConfig, Model } from "@backframe/core";
 import { logger, resolveCwd } from "@backframe/utils";
-import { Response as ExpressRes } from "express";
 import pkg from "glob";
 import path from "path";
-import { Context } from "./context.js";
-import { Handler, _parseHandlers } from "./handlers.js";
+import { _parseHandlers } from "./handlers.js";
+import { BfRequestHandler, IResourceHandlers, IRouteConfig } from "./util.js";
 const { glob } = pkg;
-
-export type BfRequestHandler = (
-  ctx: Context
-) => string | object | string[] | ExpressRes;
-export interface BfResourceConfig {
-  route: string;
-  handlers: IResourceHandlers;
-  config: IRouteConfig;
-}
-
-export interface IResourceHandlers {
-  create?: Handler;
-  read?: Handler;
-  update?: Handler;
-  delete?: Handler;
-}
-
-export interface IRouteConfig {
-  model?: Model;
-  middleware?: BfRequestHandler[];
-  enabled?: Methods[];
-  public?: Methods[];
-}
 
 export class Resource {
   private bfConfig: BfConfig;
@@ -112,7 +88,7 @@ export class Resource {
   }
 }
 
-export async function loadResources(bfConfig: BfConfig) {
+export function loadResources(bfConfig: BfConfig) {
   // TODO: Duplicate routes found
   // first, traverse dir tree and get route files
   const src = bfConfig.getFileSource();
