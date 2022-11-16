@@ -1,9 +1,4 @@
-import {
-  BfConfig,
-  BfResourceConfig,
-  IHandlerContext,
-  MethodName,
-} from "@backframe/core";
+import { BfConfig } from "@backframe/core";
 import { logger } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, {
@@ -16,7 +11,13 @@ import helmet from "helmet";
 import { Server as HttpServer, ServerResponse } from "http";
 import { createContext } from "./context.js";
 import { GenericException, NotFoundExeption } from "./errors.js";
-import { BfRequestHandler, loadResources, Resource } from "./resources.js";
+import { loadResources, Resource } from "./resources.js";
+import {
+  BfRequestHandler,
+  BfResourceConfig,
+  MethodName,
+  _resolveMethod,
+} from "./util.js";
 
 interface IBfServerConfig {
   port?: number;
@@ -42,22 +43,18 @@ export class BfServer {
   async _initialize(cfg: BfConfig) {
     cfg._setServer(this);
     this._bfConfig = cfg;
-    // TODO: apply middleware
-    // TODO: load resources
-    // TODO: Invoke plugins beforeStart
-    // TODO: setup error handlers
+
     this._applyMiddleware();
-    // const resources = await resolveRoutes(cfg);
-    // resources.forEach((r) => {
-    //   this.addResource(r as BfResourceConfig);
-    // });
-    // this._resources = resources;
-    const resources = await loadResources(this._bfConfig);
+    this._loadResources();
+    cfg._invokeListeners("beforeServerStart");
+    this._setupErrHandlers();
+  }
+
+  private _loadResources() {
+    const resources = loadResources(this._bfConfig);
     resources.forEach((r) => {
       this._registerResource(r);
     });
-    cfg._invokeListeners("beforeServerStart");
-    this._setupErrHandlers();
   }
 
   private _applyMiddleware() {
@@ -84,7 +81,6 @@ export class BfServer {
       throw NotFoundExeption();
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-implicit-any
     this._app.use(
       (
         err: GenericException,
@@ -95,32 +91,6 @@ export class BfServer {
         res.status(err.statusCode).json(err.getValues());
       }
     );
-  }
-
-  private _generateHandler(method: MethodName, r: BfResourceConfig) {
-    // @ts-ignore
-    return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const ctx: IHandlerContext = {
-        _req: req,
-        _res: res,
-        db: {},
-        auth: {},
-        input: req.body,
-        params: req.params,
-        query: req.query,
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const value = r.handlers[method as MethodName]!(ctx);
-
-      if (value instanceof GenericException) {
-        next(value);
-      } else {
-        const t = typeof value === "string" ? "text/html" : "application/json";
-        return res.status(200).setHeader("Content-Type", t).json(value);
-      }
-    };
   }
 
   private _wrapMiddleware(m: BfRequestHandler) {
@@ -136,7 +106,7 @@ export class BfServer {
   private _wrapHandler(handler: BfRequestHandler) {
     // @ts-ignore
     return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = createContext(req, res, next);
+      const ctx = createContext(req, res, next, this._bfConfig);
       const value = handler(ctx);
 
       if (value instanceof GenericException) next(value);
@@ -149,17 +119,14 @@ export class BfServer {
   }
 
   private _registerResource(r: Resource) {
-    const mw = r.middleware ?? [];
+    const mware = r.middleware ?? [];
     const methods = Object.keys(r.handlers);
 
-    type M = "create" | "read" | "update" | "delete";
     methods.forEach((m) => {
-      const method = this.resolveMethod(m);
-      const middleware = mw.map((mw) => {
-        return this._wrapMiddleware(mw);
-      });
-      const handler = this._wrapHandler(r.handlers[m as M]!.action);
-      this._app[method](r.route, middleware, handler);
+      const method = _resolveMethod(m);
+      const _middleware = mware.map((mw) => this._wrapMiddleware(mw));
+      const handler = this._wrapHandler(r.handlers[m as MethodName]!.action);
+      this._app[method](r.route, _middleware, handler);
     });
   }
 
@@ -177,35 +144,6 @@ export class BfServer {
 
   getHost(port = this._cfg.port || 6969) {
     return `http://localhost:${port}`;
-  }
-
-  resolveMethod(m: string) {
-    if (m === "create") return "post";
-    if (m === "read") return "get";
-    if (m === "update") return "put";
-    return "delete";
-  }
-
-  addResource(r: BfResourceConfig) {
-    const middleware = r.routeConfig.middleware ?? [];
-    const methods = Object.keys(r.handlers);
-
-    methods.forEach((m) => {
-      if (m === "getOne") {
-        this._app.get(
-          `${r.route}/:id`,
-          middleware,
-          this._generateHandler("getOne", r)
-        );
-      } else {
-        type value = "get" | "post" | "put" | "delete" | "patch";
-        this._app[m as value](
-          r.route,
-          middleware,
-          this._generateHandler(m as MethodName, r)
-        );
-      }
-    });
   }
 }
 
