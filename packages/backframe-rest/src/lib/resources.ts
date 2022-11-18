@@ -38,12 +38,12 @@ export class Resource {
     this._mwMap = config.middleware;
     this._middleware = [];
 
-    this.resolveName(file);
+    this.resolveRoute(file);
     this.loadMiddleware(file);
     this.loadHandlers(file);
   }
 
-  private resolveName(match: string) {
+  private resolveRoute(match: string) {
     let segments: string[] = [];
     const bfConfig = this.bfConfig;
     const urlPrefix = bfConfig.getRestConfig()?.urlPrefix ?? "/";
