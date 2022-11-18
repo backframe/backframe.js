@@ -10,6 +10,7 @@ import dotenv from "dotenv";
 import { buildSync } from "esbuild";
 import fs from "fs";
 import pkg from "glob";
+import path from "path";
 import { BfConfigSchema, BfUserConfig, generateDefaultConfig } from "./util.js";
 const { glob } = pkg;
 
@@ -31,7 +32,7 @@ export class BfConfig {
   private _builders!: [() => void | undefined];
 
   constructor(public _userCfg: BfUserConfig) {
-    this._builders.push(defaultBuilder(this));
+    this._builders = [defaultBuilder(this)];
     const listeners: IListeners = {};
     events.forEach((e) => (listeners[e as Event] = []));
     this._listeners = listeners;
@@ -75,6 +76,10 @@ export class BfConfig {
 
   getServer() {
     return this.server;
+  }
+
+  getSettings() {
+    return this._userCfg.settings;
   }
 
   getRestConfig() {
@@ -137,8 +142,10 @@ function defaultBuilder(cfg: BfConfig) {
       others = others.filter((o) => ![".js", ".ts"].some((e) => o.includes(e)));
       others.forEach((o) => {
         const file = o.replace(`./${dir}`, "./.bf");
-        const contents = fs.readFileSync(o, { encoding: "utf-8" });
-        fs.writeFileSync(file, contents);
+        if (!fs.existsSync(path.dirname(file))) {
+          fs.mkdirSync(path.dirname(file));
+        }
+        fs.copyFileSync(o, file);
       });
 
       cfg._updateFileSrc(".bf");
