@@ -1,5 +1,5 @@
 import { BfConfig } from "@backframe/core";
-import { logger } from "@backframe/utils";
+import { logger, resolveCwd } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, {
   Express,
@@ -7,17 +7,18 @@ import express, {
   Request as ExpressReq,
   Response as ExpressRes,
 } from "express";
+import fs from "fs";
 import helmet from "helmet";
 import { Server as HttpServer, ServerResponse } from "http";
+import path from "path";
 import { createContext } from "./context.js";
-import { GenericException, NotFoundExeption } from "./errors.js";
-import { loadResources, Resource } from "./resources.js";
 import {
-  BfRequestHandler,
-  BfResourceConfig,
-  MethodName,
-  _resolveMethod,
-} from "./util.js";
+  GenericException,
+  MethodNotAllowed,
+  NotFoundExeption,
+} from "./errors.js";
+import { loadResources, Resource } from "./resources.js";
+import { BfRequestHandler, MethodName, _resolveMethod } from "./util.js";
 
 interface IBfServerConfig {
   port?: number;
@@ -32,7 +33,7 @@ export class BfServer {
   private _handle!: HttpServer;
   private _bfConfig!: BfConfig;
   private _middleware!: (() => void)[];
-  private _resources!: BfResourceConfig[];
+  private _resources!: Resource[];
 
   constructor(cfg: IBfServerConfig) {
     this._cfg = cfg;
@@ -51,10 +52,18 @@ export class BfServer {
   }
 
   private _loadResources() {
-    const resources = loadResources(this._bfConfig);
-    resources.forEach((r) => {
+    this._resources = loadResources(this._bfConfig);
+    this._resources.forEach((r) => {
       this._registerResource(r);
     });
+
+    const source = this._bfConfig.getFileSource() ?? "src";
+    const staticDir = this._bfConfig.getSettings().staticDir ?? "static";
+    const staticPath = resolveCwd(path.join(source, staticDir));
+    if (fs.existsSync(staticPath)) {
+      logger.info(`using \`${staticDir}\` as static directory`);
+      this._app.use(`/${staticDir}`, express.static(staticPath));
+    }
   }
 
   private _applyMiddleware() {
@@ -77,7 +86,12 @@ export class BfServer {
 
   private _setupErrHandlers() {
     // at this point, no route has been found
-    this._app.use("*", (_req, _res, _next) => {
+    this._app.use("*", (req, _res, _next) => {
+      if (this._resources.some((r) => r.route === req.originalUrl))
+        throw MethodNotAllowed(
+          "Method Not Allowed",
+          `The \`${req.method}\` method is not allowed on this resource`
+        );
       throw NotFoundExeption();
     });
 
@@ -99,6 +113,7 @@ export class BfServer {
       const value = m(ctx);
 
       if (value instanceof GenericException) next(value);
+      else if (typeof value === "undefined") next();
       else return;
     };
   }
@@ -111,9 +126,16 @@ export class BfServer {
 
       if (value instanceof GenericException) next(value);
       else if (value instanceof ServerResponse) return;
-      else {
-        const t = typeof value === "string" ? "text/html" : "application/json";
-        return res.status(200).setHeader("Content-Type", t).json(value);
+      else if (typeof value === "undefined") {
+        if (res.hasHeader("content-type")) return;
+        return res
+          .status(200)
+          .setHeader("Content-Type", "text/html")
+          .send("Okay!");
+      } else {
+        const t = typeof value === "object" ? "application/json" : "text/html";
+        const m = typeof value === "object" ? "json" : "send";
+        return res.status(200).setHeader("Content-Type", t)[m](value);
       }
     };
   }
