@@ -24,7 +24,7 @@ export class ModuleHandlers {
     cfg: {
       input?: Model;
       action: BfRequestHandler;
-      middleware: BfRequestHandler[];
+      middleware?: BfRequestHandler[];
     }
   ) {
     this.handlers.push(
