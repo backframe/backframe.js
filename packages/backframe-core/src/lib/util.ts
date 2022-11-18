@@ -36,7 +36,9 @@ export const BfConfigSchema = z.object({
     .optional(),
   settings: z.object({
     srcDir: z.string().optional(),
-    server: z.string().optional(),
+    staticDir: z.string().optional(),
+    viewsDir: z.string().optional(),
+    entryPoint: z.string().optional(),
   }),
 });
 
@@ -46,6 +48,9 @@ export function generateDefaultConfig(): BfUserConfig {
   return {
     settings: {
       srcDir: "src",
+      entryPoint: "server.js",
+      staticDir: "static",
+      viewsDir: "views",
     },
   };
 }
