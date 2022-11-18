@@ -6,7 +6,7 @@ import { ModuleHandlers, _Handler } from "./handlers.js";
 export type MethodName = "create" | "read" | "update" | "delete";
 export type BfRequestHandler = (
   ctx: Context
-) => string | object | string[] | ExpressRes;
+) => string | object | string[] | ExpressRes | void;
 
 export interface BfResourceConfig {
   route: string;
