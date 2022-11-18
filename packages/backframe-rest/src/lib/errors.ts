@@ -44,3 +44,10 @@ export function InternalException(
 ) {
   return new GenericException(500, msg, body);
 }
+
+export function MethodNotAllowed(
+  msg = "Method Not Allowed",
+  body = "This method is not allowed on this resource"
+) {
+  return new GenericException(405, msg, body);
+}
