@@ -113,7 +113,6 @@ export class BfServer {
       const value = m(ctx);
 
       if (value instanceof GenericException) next(value);
-      else if (typeof value === "undefined") next();
       else return;
     };
   }
@@ -126,13 +125,7 @@ export class BfServer {
 
       if (value instanceof GenericException) next(value);
       else if (value instanceof ServerResponse) return;
-      else if (typeof value === "undefined") {
-        if (res.hasHeader("content-type")) return;
-        return res
-          .status(200)
-          .setHeader("Content-Type", "text/html")
-          .send("Okay!");
-      } else {
+      else {
         const t = typeof value === "object" ? "application/json" : "text/html";
         const m = typeof value === "object" ? "json" : "send";
         return res.status(200).setHeader("Content-Type", t)[m](value);

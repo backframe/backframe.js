@@ -10,4 +10,5 @@ export {
 } from "./lib/errors.js";
 export { defineHandlers } from "./lib/handlers.js";
 export { createServer, defaultServer } from "./lib/server.js";
+export { BfRequestHandler, BfResourceConfig } from "./lib/util.js";
 export const defineRouteConfig = (cfg: IRouteConfig) => cfg;
