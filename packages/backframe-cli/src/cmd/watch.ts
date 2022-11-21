@@ -3,7 +3,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import chokidar from "chokidar";
 import path from "path";
 
-export async function watch() {
+export default async function watch() {
   let child: ChildProcessWithoutNullStreams;
   const current = (...s: string[]) => path.join(process.cwd(), ...s);
 
