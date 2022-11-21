@@ -11,6 +11,9 @@
     "build": "tsc",
     "prebuild": "rimraf dist"
   },
+  "peerDependencies": {
+    "@backframe/core": "^0.0.0"
+  },
   "dependencies": {
     "@backframe/utils": "workspace:^0.0.0",
     "@types/cors": "^2.8.12",
