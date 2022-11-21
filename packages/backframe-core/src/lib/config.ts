@@ -102,7 +102,7 @@ export class BfConfig {
 
   getProviderOptions(provider: string) {
     let config: object = {};
-    this._userCfg.providers?.forEach((p) => {
+    this._userCfg.authentication?.providers?.forEach((p) => {
       if (p.provider === provider) config = p.config;
     });
     return config;

@@ -26,19 +26,24 @@ export const BfConfigSchema = z.object({
         .or(z.string())
     )
     .optional(),
-  providers: z
-    .array(
-      z.object({
-        provider: z.string(),
-        config: z.any(),
-      })
-    )
+  authentication: z
+    .object({
+      type: z.enum(["token-based", "session-based"]).default("token-based"),
+      providers: z
+        .array(
+          z.object({
+            provider: z.string(),
+            config: z.any(),
+          })
+        )
+        .optional(),
+    })
     .optional(),
   settings: z.object({
-    srcDir: z.string().optional(),
-    staticDir: z.string().optional(),
-    viewsDir: z.string().optional(),
-    entryPoint: z.string().optional(),
+    srcDir: z.string().optional().default("src"),
+    staticDir: z.string().optional().default("static"),
+    viewsDir: z.string().optional().default("views"),
+    entryPoint: z.string().optional().default("server.js"),
   }),
 });
 
