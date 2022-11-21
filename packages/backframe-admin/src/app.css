@@ -9,3 +9,27 @@
   font-style: normal;
   font-weight: 100 400 500 600 700;
 }
+
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url(../public/fonts/SourceSansPro-Regular.ttf) format("ttf");
+  font-display: optional;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url(../public/fonts/SourceSansPro-SemiBold.ttf) format("ttf");
+  font-display: optional;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url(../public/fonts/SourceSansPro-Bold.ttf) format("ttf");
+  font-display: optional;
+  font-style: normal;
+  font-weight: 700;
+}

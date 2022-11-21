@@ -6,6 +6,6 @@ export function Index() {
   if (loggedIn === "true") {
     return <Navigate to="/auth/login" />;
   } else {
-    return <Navigate to="/app/metrics" />;
+    return <Navigate to="/app/overview/" />;
   }
 }
