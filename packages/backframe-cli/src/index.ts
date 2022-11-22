@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { program } from "commander";
+import { serve } from "./cmd/serve";
 
 program
   .name("bf")
@@ -11,8 +12,17 @@ program
 program
   .command("serve")
   .alias("s")
-  .description("Serve the project in the current working directory");
-// .action(serve);
+  .description("Serve the project in the current working directory")
+  .option(
+    "-p, --port <portNumber>",
+    "Pass the custom port number to start the server on"
+  )
+  .option(
+    "-o, --open",
+    "Open the backframe admin dashboard in a browser window, default is false"
+  )
+  .description("Starts the backframe server present in the working directory")
+  .action(serve);
 
 program
   .command("watch")
