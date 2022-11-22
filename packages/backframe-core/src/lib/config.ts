@@ -229,5 +229,18 @@ export async function loadConfig() {
 
   bfConfig._buildFiles(); // Step 5 done: built typescript files or esm files
 
+  const src = bfConfig.getFileSource() ?? "src";
+  const entry = bfConfig.getSettings().entryPoint ?? "server.js";
+  const file = path.join(src, entry);
+
+  if (fs.existsSync(file)) {
+    const module = await loadModule(resolveCwd(file));
+    if (!Object.keys(module.default).length) {
+      logger.error(`please export a default object from \`${"server.js"}\``);
+      process.exit(1);
+    }
+    bfConfig._setServer(module.default);
+  }
+
   return bfConfig;
 }
