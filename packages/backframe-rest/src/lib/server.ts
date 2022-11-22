@@ -42,7 +42,7 @@ export class BfServer {
   }
 
   async _initialize(cfg: BfConfig) {
-    cfg._setServer(this);
+    if (!cfg.getServer()) cfg._setServer(this);
     this._bfConfig = cfg;
 
     this._applyMiddleware();
@@ -61,7 +61,7 @@ export class BfServer {
     const staticDir = this._bfConfig.getSettings().staticDir ?? "static";
     const staticPath = resolveCwd(path.join(source, staticDir));
     if (fs.existsSync(staticPath)) {
-      logger.info(`using \`${staticDir}\` as static directory`);
+      logger.info(`serving static assets from: "./${staticDir}/"`);
       this._app.use(`/${staticDir}`, express.static(staticPath));
     }
   }
@@ -146,6 +146,7 @@ export class BfServer {
   }
 
   async start(port = this._cfg.port || 6969) {
+    this._cfg.port = port;
     this._handle = this._app.listen(port, () => {
       // TODO: expose flags etc...
       logger.info(`server started on ${this.getHost(port)}`);
