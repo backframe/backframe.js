@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { program } from "commander";
-import { serve } from "./cmd/serve";
+import { create } from "./cmd/create";
 
 program
   .name("bf")
@@ -21,8 +21,8 @@ program
     "-o, --open",
     "Open the backframe admin dashboard in a browser window, default is false"
   )
-  .description("Starts the backframe server present in the working directory")
-  .action(serve);
+  .description("Starts the backframe server present in the working directory");
+// .action(serve);
 
 program
   .command("watch")
@@ -34,7 +34,16 @@ program
   .command("new")
   .alias("n")
   .description("Create a new backframe project")
-  .argument("[app-name]", "The name of the new project");
-// .action(newApp);
+  .argument("[app-name]", "The name of the new project")
+  .option("-d, --default", "Skip prompts and use default values")
+  .option("-g, --git ", "Initialize the project with git")
+  .option("-n, --no-git", "Skip git initialization")
+  .option("-f, --force", "Overwrite target directory if it exists")
+  .option("-t, --typescript", "Set the project up with typescript")
+  .option(
+    "-s, --stack <stack-name>",
+    "Initialize project with preconfigured stack/preset"
+  )
+  .action(create);
 
 program.parse();
