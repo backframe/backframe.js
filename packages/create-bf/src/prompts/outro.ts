@@ -6,7 +6,7 @@ export const outroPrompts = (): PromptObject[] => {
     {
       type: "select",
       name: "deployTarget",
-      message: `Where would you like to deploy? ${gray(
+      message: `Where would you like to deploy ? ${gray(
         "You can change this later"
       )}`,
       choices: [
@@ -19,18 +19,22 @@ export const outroPrompts = (): PromptObject[] => {
         { title: "fly.io", value: "fly" },
         { title: "render.com", value: "render" },
         { title: "cyclic.sh", value: "cyclic" },
+        { title: "I'll set this later", value: "none" },
       ],
     },
     {
       type: "confirm",
       name: "installDeps",
-      message: `Would you like to run ${"npm"} install?`,
+      message: `Would you like to run ${"npm"} install ?`,
       initial: true,
     },
     {
-      type: "confirm",
+      type: (_, { track }) => {
+        if (track === "manually") return "confirm";
+        return null;
+      },
       name: "savePreset",
-      message: "Save this as a preset for later?",
+      message: "Save this as a preset for later ?",
       initial: false,
     },
     {
@@ -39,7 +43,7 @@ export const outroPrompts = (): PromptObject[] => {
         return null;
       },
       name: "presetName",
-      message: "What should the preset be saved as?",
+      message: "What should the preset be saved as ?",
       initial: "backframe-preset",
     },
   ];
