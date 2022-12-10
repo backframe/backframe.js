@@ -72,10 +72,10 @@ export const featurePrompts = (): PromptObject[] => {
       name: "additional",
       message: "Select additional server features:",
       choices: [
-        { title: "Add a file storage provider", value: "storageProvider" },
+        { title: "Configure storage provider", value: "storageProvider" },
         { title: "Configure an email provider", value: "emailProvider" },
-        { title: "Enable web sockets", value: "sockets" },
-        { title: "Configure server with pub-sub", value: "pubsub" },
+        { title: "Configure web sockets", value: "sockets" },
+        { title: "Configure pub-sub", value: "pubsub" },
         { title: "Install admin dashboard", value: "admin" },
         { title: "Install testing utilities", value: "testing" },
       ],
@@ -83,7 +83,7 @@ export const featurePrompts = (): PromptObject[] => {
     },
     {
       type: (_, { additional }) => {
-        if (additional?.["emailProvider"]) return "select";
+        if (additional?.includes("emailProvider")) return "select";
         return null;
       },
       name: "emailProvider",
@@ -92,6 +92,21 @@ export const featurePrompts = (): PromptObject[] => {
         { title: "Node mailer", value: "mailer" },
         { title: "Sendgrid", value: "sendgrid" },
         { title: "Mailchimp", value: "mailchimp" },
+      ],
+    },
+    {
+      type: (_, { additional }) => {
+        if (additional?.includes("storageProvider")) return "select";
+        return null;
+      },
+      name: "storageProvider",
+      message: "Select a storage provider:",
+      choices: [
+        { title: "Local", value: "local" },
+        { title: "Cloudinary", value: "cloudinary" },
+        { title: "AWS Storage", value: "aws" },
+        { title: "GCP Storage", value: "gcp" },
+        { title: "Azure Storage", value: "azure" },
       ],
     },
   ];

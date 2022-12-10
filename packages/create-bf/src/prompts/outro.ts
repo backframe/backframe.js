@@ -1,4 +1,4 @@
-import { gray } from "kleur";
+import { gray } from "kleur/colors";
 import { PromptObject } from "prompts";
 
 export const outroPrompts = (): PromptObject[] => {

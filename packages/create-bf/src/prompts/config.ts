@@ -1,5 +1,5 @@
 import fs from "fs";
-import { cyan, green, yellow } from "kleur";
+import { cyan, green, yellow } from "kleur/colors";
 import path from "path";
 import { PromptObject } from "prompts";
 import { IPromptFnArgs } from "./utils";

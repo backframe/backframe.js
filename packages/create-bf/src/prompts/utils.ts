@@ -1,4 +1,8 @@
-import { cyan, gray } from "kleur";
+import { cyan, gray } from "kleur/colors";
+
+export const MANUAL_TRACK = "manually";
+export const TEMPLATE_TRACK = "templates";
+export const MINIMIST_TRACK = "minimal";
 
 export interface IPromptFnArgs {
   argTargetDir: string | undefined;
