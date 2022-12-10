@@ -4,6 +4,14 @@ export const MANUAL_TRACK = "manually";
 export const TEMPLATE_TRACK = "templates";
 export const MINIMIST_TRACK = "minimal";
 
+export const isManualTrack = (t: string) => {
+  return t === MANUAL_TRACK;
+};
+
+export const isTemplateTrack = (t: string) => {
+  return t === TEMPLATE_TRACK;
+};
+
 export interface IPromptFnArgs {
   argTargetDir: string | undefined;
   targetDir: string;
