@@ -1,10 +1,11 @@
 import { PromptObject } from "prompts";
+import { isTemplateTrack } from "./utils";
 
 export const templatePrompts = (): PromptObject[] => {
   return [
     {
       type: (_, { track }) => {
-        if (track === "templates") return "select";
+        if (isTemplateTrack(track)) return "select";
         return null;
       },
       name: "template",

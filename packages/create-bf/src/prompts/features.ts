@@ -1,11 +1,11 @@
 import { PromptObject } from "prompts";
-import { instructions } from "./utils";
+import { instructions, isManualTrack } from "./utils";
 
 export const featurePrompts = (): PromptObject[] => {
   return [
     {
       type: (_, { track }) => {
-        if (track === "manually") return "multiselect";
+        if (isManualTrack(track)) return "multiselect";
         return null;
       },
       name: "apiTypes",
@@ -18,7 +18,7 @@ export const featurePrompts = (): PromptObject[] => {
     },
     {
       type: (_, { track }) => {
-        if (track === "manually") return "select";
+        if (isManualTrack(track)) return "select";
         return null;
       },
       name: "database",
@@ -66,7 +66,7 @@ export const featurePrompts = (): PromptObject[] => {
     },
     {
       type: (_, { track }) => {
-        if (track === "manually") return "multiselect";
+        if (isManualTrack(track)) return "multiselect";
         return null;
       },
       name: "additional",

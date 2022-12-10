@@ -2,7 +2,12 @@ import fs from "fs";
 import { cyan, green, yellow } from "kleur/colors";
 import path from "path";
 import { PromptObject } from "prompts";
-import { IPromptFnArgs } from "./utils";
+import {
+  IPromptFnArgs,
+  MANUAL_TRACK,
+  MINIMIST_TRACK,
+  TEMPLATE_TRACK,
+} from "./utils";
 
 export const configPrompts = ({
   argTargetDir,
@@ -73,15 +78,15 @@ export const configPrompts = ({
       choices: [
         {
           title: cyan("Create minimal starter app"),
-          value: "minimalStarter",
+          value: MINIMIST_TRACK,
         },
         {
           title: green("Choose from preconfigured stacks/templates"),
-          value: "templates",
+          value: TEMPLATE_TRACK,
         },
         {
           title: yellow("Manually select features"),
-          value: "manually",
+          value: MANUAL_TRACK,
         },
       ],
     },

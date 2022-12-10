@@ -1,11 +1,12 @@
 import { gray } from "kleur/colors";
 import { PromptObject } from "prompts";
+import { isManualTrack } from "./utils";
 
 export const outroPrompts = (): PromptObject[] => {
   return [
     {
       type: (_, { track }) => {
-        if (track === "manually") return "select";
+        if (isManualTrack(track)) return "select";
         return null;
       },
       name: "deployTarget",
@@ -33,7 +34,7 @@ export const outroPrompts = (): PromptObject[] => {
     },
     {
       type: (_, { track }) => {
-        if (track === "manually") return "confirm";
+        if (isManualTrack(track)) return "confirm";
         return null;
       },
       name: "savePreset",
