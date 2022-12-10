@@ -4,7 +4,10 @@ import { PromptObject } from "prompts";
 export const outroPrompts = (): PromptObject[] => {
   return [
     {
-      type: "select",
+      type: (_, { track }) => {
+        if (track === "manually") return "select";
+        return null;
+      },
       name: "deployTarget",
       message: `Where would you like to deploy ? ${gray(
         "You can change this later"
