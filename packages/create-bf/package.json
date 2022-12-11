@@ -2,9 +2,9 @@
   "name": "create-bf",
   "version": "1.0.0",
   "description": "Create a new Backframe app",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "bin": {
     "create-bf": "./bin/index.js",
     "create-bf-app": "./bin/index.js"
@@ -15,7 +15,8 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "templates"
   ],
   "repository": "backframe/backframe.js",
   "keywords": [
