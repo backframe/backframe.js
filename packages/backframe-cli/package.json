@@ -8,12 +8,13 @@
     "bf": "dist/index.mjs"
   },
   "scripts": {
-    "build": "tsc",
+    "dev": "unbuild --stub",
+    "build": "unbuild",
     "prebuild": "rimraf dist",
     "lint": "eslint .",
+    "fmt": "prettier --write ./src/**/*.ts",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ./src/**/*.ts",
-    "format:check": "prettier --check ./src/**/*.ts"
+    "lint:fmt": "prettier --check ./src/**/*.ts"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.15",
