@@ -1,9 +1,11 @@
 {
   "name": "@backframe/cli",
   "version": "0.0.0",
+  "description": "Backframe command line interface",
+  "type": "module",
   "license": "MIT",
   "bin": {
-    "bf": "dist/index.js"
+    "bf": "dist/index.mjs"
   },
   "scripts": {
     "build": "tsc",
@@ -13,30 +15,10 @@
     "format": "prettier --write ./src/**/*.ts",
     "format:check": "prettier --check ./src/**/*.ts"
   },
-  "dependencies": {
-    "@backframe/core": "workspace:*",
-    "@backframe/utils": "workspace:*",
-    "@swc/cli": "^0.1.57",
-    "@swc/core": "^1.3.0",
-    "chalk": "^4.0.0",
-    "chalk-animation": "^2.0.3",
-    "chokidar": "^3.5.3",
-    "commander": "^9.4.0",
-    "execa": "^6.1.0",
-    "figlet": "^1.5.2",
-    "fs-extra": "^10.1.0",
-    "glob": "^8.0.3",
-    "gradient-string": "^2.0.2",
-    "inquirer": "^8.0.0",
-    "listr2": "^5.0.5",
-    "prompts": "^2.4.2",
-    "yargs": "^17.6.2"
-  },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "@types/glob": "^8.0.0",
-    "@types/inquirer": "^9.0.1",
-    "@types/prompts": "^2.4.1",
-    "@types/yargs": "^17.0.15"
+    "@types/yargs": "^17.0.15",
+    "create-bf": "workspace:^1.0.0",
+    "unbuild": "^1.0.2",
+    "yargs": "^17.6.2"
   }
 }
