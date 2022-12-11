@@ -1,0 +1,16 @@
+{
+  "name": "backframe-minimal-starter",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bf watch",
+    "start": "node ./server.js"
+  },
+  "dependencies": {
+    "@backframe/core": "0.0.0",
+    "@backframe/rest": "0.0.0"
+  },
+  "devDependencies": {
+    "@backframe/cli": "0.0.0"
+  }
+}
