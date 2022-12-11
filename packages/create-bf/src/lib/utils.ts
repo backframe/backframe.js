@@ -31,16 +31,12 @@ export function showFiglet() {
   const name = "backframe.js";
 
   // TODO: show additional banners, if any
-  // @ts-ignore
-  console.log(
-    "\n",
-    gradient.pastel.multiline(
-      figlet.textSync(name, {
-        horizontalLayout: "fitted",
-      })
-    ),
-    "\n\n"
-  );
+
+  const fig = figlet.textSync(name, {
+    font: "Doom",
+  });
+
+  console.log("\n", gradient.teen(fig), "\n");
 }
 
 export function emptyDir(dir: string) {
