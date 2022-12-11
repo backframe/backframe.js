@@ -11,10 +11,11 @@ export const featurePrompts = (): PromptObject[] => {
       name: "apiTypes",
       message: "What type of API(s) would you like to implement?",
       choices: [
-        { title: "REST", value: "rest", selected: true },
+        { title: "REST", value: "rest" },
         { title: "GraphQL", value: "gql" },
       ],
       instructions,
+      min: 1,
     },
     {
       type: (_, { track }) => {

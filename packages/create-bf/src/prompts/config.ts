@@ -51,6 +51,9 @@ export const configPrompts = ({
       onState: (state) => {
         targetDir = state.value || defaultCfg.projectName;
       },
+      validate: (dir) =>
+        (dir?.length > 0 && isValidPackageName(dir)) ||
+        "Please provide a value",
     },
     {
       type: () => (isValidPackageName(getProjectName()) ? null : "text"),

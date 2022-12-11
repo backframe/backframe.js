@@ -12,22 +12,24 @@ export const templatePrompts = (): PromptObject[] => {
       message: "Select a template/stack: (You can customize them later)",
       // TODO: update choices config,
       choices: [
-        { title: "Pull custom template from github", value: "github" },
-        { title: "Typical API (Rest, Gql, Postgres, Auth)", value: "typical" },
         { title: "SSR App (Postgres, Auth, Templating)", value: "ssr" },
+        { title: "Typical API (Rest, Gql, Postgres, Auth)", value: "typical" },
         {
           title: "Full Backend (API + AdminUI, Storage, Email etc...)",
           value: "backend",
         },
+        { title: "Pull custom template", value: "custom" },
       ],
     },
     {
       type: (_, { template }) => {
-        if (template === "github") return "text";
+        if (template === "custom") return "text";
         return null;
       },
-      name: "ghTemplate",
-      message: "Enter repo url in @username/repo format:",
+      name: "templateUrl",
+      message: "Enter the repository url:",
+      validate: (url) =>
+        /^https:\/\/[\w+.]+$/.test(url) || "Please enter a valid url",
     },
   ];
 };

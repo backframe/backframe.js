@@ -12,10 +12,15 @@ export const isTemplateTrack = (t: string) => {
   return t === TEMPLATE_TRACK;
 };
 
+export const isMinimalTrack = (t: string) => {
+  return t === MINIMIST_TRACK;
+};
+
 export interface IPromptFnArgs {
   argTargetDir: string | undefined;
   targetDir: string;
   defaultCfg: IPromptsConfig;
+  options: { [key: string]: string };
 }
 
 export interface IPromptsConfig {
@@ -24,5 +29,5 @@ export interface IPromptsConfig {
 }
 
 export const instructions = gray(
-  `Press ${cyan("<space>")} to select, ${cyan("<enter>")} to proceed`
+  `Press ${cyan("<space>")} to select, ${cyan("<enter>")} to proceed  `
 );
