@@ -1,49 +1,30 @@
 #!/usr/bin/env node
-import { program } from "commander";
-import { create } from "./cmd/create";
 
-program
-  .name("bf")
-  .version("0.0.0")
-  .description(
-    "A framework for rapid development and deployment of APIs/backends"
-  );
+import yargs from "yargs";
+import { buildCommands } from "./util";
 
-program
-  .command("serve")
-  .alias("s")
-  .description("Serve the project in the current working directory")
-  .option(
-    "-p, --port <portNumber>",
-    "Pass the custom port number to start the server on"
-  )
-  .option(
-    "-o, --open",
-    "Open the backframe admin dashboard in a browser window, default is false"
-  )
-  .description("Starts the backframe server present in the working directory");
-// .action(serve);
+let cli = yargs(process.env.argv).parserConfiguration({
+  "boolean-negation": true,
+});
 
-program
-  .command("watch")
-  .alias("w")
-  .description("Start the backframe project in watch mode");
-// .action(require("./cmd/watch"));
+cli
+  .scriptName("bf")
+  .usage("Usage: $0 <command> [options]")
+  .alias("h", "help")
+  .alias("v", "version");
 
-program
-  .command("new")
-  .alias("n")
-  .description("Create a new backframe project")
-  .argument("[app-name]", "The name of the new project")
-  .option("-d, --default", "Skip prompts and use default values")
-  .option("-g, --git ", "Initialize the project with git")
-  .option("-n, --no-git", "Skip git initialization")
-  .option("-f, --force", "Overwrite target directory if it exists")
-  .option("-t, --typescript", "Set the project up with typescript")
-  .option(
-    "-s, --stack <stack-name>",
-    "Initialize project with preconfigured stack/preset"
-  )
-  .action(create);
+try {
+  const { version } = require("../package.json");
+  cli.version("version", "Show the backframe CLI version info", version);
+} catch (e) {
+  // ignore
+}
 
-program.parse();
+buildCommands(cli);
+
+cli
+  .wrap(cli.terminalWidth())
+  .demandCommand(1, "Pass --help to see all available commands and options.")
+  .strict()
+  .recommendCommands()
+  .parse(process.argv.slice(2));
