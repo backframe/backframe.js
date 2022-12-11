@@ -29,15 +29,18 @@
   "author": "Victor Ndaba",
   "license": "MIT",
   "devDependencies": {
+    "@types/chalk-animation": "^1.6.1",
+    "@types/figlet": "^1.5.5",
+    "@types/gradient-string": "^1.1.2",
     "@types/minimist": "^1.2.2",
     "@types/prompts": "^2.4.1",
     "chalk-animation": "^2.0.3",
     "consola": "^2.15.3",
     "figlet": "^1.5.2",
+    "giget": "^1.0.0",
     "gradient-string": "^2.0.2",
     "kleur": "^4.1.5",
     "minimist": "^1.2.7",
-    "mri": "^1.2.0",
     "prompts": "^2.4.2",
     "unbuild": "^1.0.2"
   }
