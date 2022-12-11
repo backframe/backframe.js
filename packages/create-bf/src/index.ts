@@ -1,6 +1,8 @@
 import consola from "consola";
 import minimist from "minimist";
 import prompts from "prompts";
+import { create } from "./lib/create";
+import { IConfig, showFiglet } from "./lib/utils";
 import { resolvePrompts } from "./prompts";
 
 const defaultCfg = {
@@ -8,12 +10,22 @@ const defaultCfg = {
   languageVariant: "ts",
 };
 
-async function _main() {
-  const _argv = process.argv.slice(2);
-  const args = minimist(_argv, {
-    boolean: true,
-    string: ["_"],
-  });
+type Argv = string[] | { [key: string]: string };
+
+async function _main(_argv: Argv) {
+  showFiglet();
+  consola.wrapConsole();
+
+  let args;
+  if (Array.isArray(_argv)) {
+    // Args passed from bin target
+    args = minimist(_argv as string[], {
+      string: ["_"],
+    });
+  } else {
+    // Args passed from bf cli
+    args = _argv as minimist.ParsedArgs;
+  }
 
   const argTargetDir = args._[0]?.trim().replace(/\/+$/g, "");
   const targetDir = argTargetDir || defaultCfg.projectName;
@@ -22,12 +34,20 @@ async function _main() {
     argTargetDir,
     defaultCfg,
     targetDir,
+    options: args,
   });
 
-  await prompts(questions);
-}
+  // TODO: Check for skip prompts in args
+  const results = (await prompts(questions, {
+    onCancel: () => {
+      consola.error("❌ Operation was cancelled");
+      process.exit(1);
+    },
+  })) as IConfig;
+  results.targetDir = results.projectName;
 
-consola.wrapConsole();
+  await create(results);
+}
 
 process.on("unhandledRejection", (err) =>
   consola.error("[unhandledRejection]", err)
@@ -36,8 +56,8 @@ process.on("uncaughtException", (err) =>
   consola.error("[uncaughtException]", err)
 );
 
-export function main() {
-  _main().catch((error) => {
+export function main(args: Argv) {
+  _main(args).catch((error) => {
     consola.error(error);
     process.exit(1);
   });
