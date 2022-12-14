@@ -3,34 +3,34 @@
   "version": "0.0.0",
   "main": "dist/index.js",
   "license": "MIT",
-  "types": "types/index.d.ts",
+  "type": "module",
+  "author": "Victor Ndaba <vndabam@gmail.com>",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/",
-    "types/",
     "README.md"
   ],
   "scripts": {
     "build": "tsc",
-    "prebuild": "rimraf dist types",
-    "lint": "eslint .",
+    "lint": "lint:types && lint:fmt",
     "lint:fix": "eslint . --fix",
+    "lint:types": "eslint .",
     "format": "prettier --write ./src/**/*.ts",
-    "format:check": "prettier --check ./src/**/*.ts"
+    "lint:fmt": "prettier --check ./src/**/*.ts",
+    "prebuild": "rimraf dist"
   },
   "devDependencies": {
-    "@backframe/eslint-config": "workspace:*",
-    "@types/fs-extra": "^9.0.13",
-    "@types/glob": "^8.0.0"
+    "@backframe/eslint-config": "workspace:*"
   },
   "dependencies": {
-    "@backframe/db": "workspace:^0.0.0",
-    "@backframe/rest": "workspace:^0.0.0",
-    "@backframe/utils": "workspace:^0.0.0",
-    "chalk": "^5.0.1",
+    "@backframe/utils": "workspace:*",
     "dotenv": "^16.0.2",
     "esbuild": "^0.15.7",
-    "fs-extra": "^10.1.0",
-    "glob": "^8.0.3",
+    "globby": "^13.1.2",
+    "tsconfig-resolver": "^3.0.1",
     "zod": "^3.19.1"
-  }
+  },
+  "eslintIgnore": [
+    "dist/"
+  ]
 }
