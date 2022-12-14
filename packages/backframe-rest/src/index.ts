@@ -1,6 +1,8 @@
-import { IRouteConfig } from "./lib/util.js";
+import { IRouteConfig } from "./lib/types.js";
 
-export { Context } from "./lib/context.js";
+export { Context } from "./app/context.js";
+export { createHandler, defineHandlers } from "./app/handlers.js";
+export { BfServer, createServer, defaultServer } from "./app/index.js";
 export {
   ForbiddenException,
   GenericException,
@@ -8,7 +10,11 @@ export {
   NotFoundExeption,
   UnauthorizedException,
 } from "./lib/errors.js";
-export { defineHandlers } from "./lib/handlers.js";
-export { createServer, defaultServer } from "./lib/server.js";
-export { BfRequestHandler, BfResourceConfig } from "./lib/util.js";
-export const defineRouteConfig = (cfg: IRouteConfig) => cfg;
+export {
+  Handler,
+  IHandlerConfig,
+  IModuleConfig,
+  IRouteConfig,
+  Method,
+} from "./lib/types.js";
+export const defineRouteConfig = <T>(cfg: IRouteConfig<T>) => cfg;
