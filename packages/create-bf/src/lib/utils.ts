@@ -68,3 +68,26 @@ export function copyDir(srcDir: string, destDir: string) {
     copy(srcFile, destFile);
   }
 }
+
+export function generateDefaults(): IConfig {
+  return {
+    track: "minimal",
+    apiTypes: ["rest"],
+    database: "postgres",
+    installDeps: true,
+    authProviders: [],
+    additional: [],
+    authStrategy: "",
+    deployTarget: "",
+    emailProvider: "",
+    languageVariant: "js",
+    overwrite: false,
+    presetName: "none",
+    projectName: "my-backframe-app",
+    savePreset: false,
+    storageProvider: "none",
+    targetDir: "my-backframe-app",
+    template: "none",
+    templateUrl: "none",
+  };
+}
