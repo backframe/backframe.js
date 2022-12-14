@@ -32,5 +32,8 @@
   },
   "eslintIgnore": [
     "dist/"
-  ]
+  ],
+  "eslintConfig": {
+    "extends": "@backframe/eslint-config"
+  }
 }
