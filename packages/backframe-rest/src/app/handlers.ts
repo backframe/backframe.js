@@ -1,35 +1,5 @@
 import { ZodRawShape } from "zod";
-import {
-  Handler,
-  IHandlerConfig,
-  IModuleConfig,
-  Method,
-} from "../lib/types.js";
-import { DEFAULT_ENABLED } from "./resources.js";
-
-// extract handlers from a file
-export function __getHandlers(module: IModuleConfig<unknown>, route: string) {
-  const enabled = module.config?.enabled ?? DEFAULT_ENABLED;
-  if (!module.default) {
-    const rh = new ResourceHandlers();
-    enabled.forEach(
-      // @ts-ignore
-      (e) => (rh[resolveMethod(e)] = _staticHandler(e, route))
-    );
-    return rh;
-  } else {
-    enabled.forEach((e) => {
-      // @ts-ignore
-      const value = module.default[resolveMethod(e)];
-      if (!value) {
-        // @ts-ignore
-        module.default[resolveMethod(e)] = _staticHandler(e, route);
-      }
-    });
-
-    return module.default;
-  }
-}
+import { Handler, IHandlerConfig, Method } from "../lib/types.js";
 
 export function defineHandlers() {
   return new ResourceHandlers();
@@ -40,11 +10,11 @@ export function createHandler<T extends ZodRawShape>(h: IHandlerConfig<T>) {
 }
 
 export class ResourceHandlers {
-  // NOTE(vndaba): This props are defined privately to prevent the user from accessing them directly. They will still be used outside this class by breaking ts rules with @ts-ignore
-  #GET?: IHandlerConfig<{}>;
-  #POST?: IHandlerConfig<{}>;
-  #PUT?: IHandlerConfig<{}>;
-  #DELETE?: IHandlerConfig<{}>;
+  GET?: IHandlerConfig<{}>;
+  POST?: IHandlerConfig<{}>;
+  PUT?: IHandlerConfig<{}>;
+  DELETE?: IHandlerConfig<{}>;
+  PATCH?: IHandlerConfig<{}>;
 
   __middleware?: Handler<{}>[];
 
@@ -53,46 +23,29 @@ export class ResourceHandlers {
   }
 
   handle<T extends ZodRawShape>(method: Method, config: IHandlerConfig<T>) {
-    const m = resolveMethod(method);
-    // @ts-ignore
+    const m = _crudToStd(method);
     this[m] = config;
     return this;
   }
 
   middleware(m: Handler<{}>) {
-    // resource level middleware cannot be typed
+    // resource level middleware
     this.__middleware?.push(m);
     return this;
   }
 }
 
-export function isHandlerKey(k: string) {
-  return k === "#GET" || k === "#POST" || k === "#PUT" || k === "#DELETE";
+// transform "create" | "read" | "update" -> GET etc...
+export function _crudToStd(m: Method) {
+  if (m === "create") return "POST";
+  if (m === "read") return "GET";
+  if (m === "update") return "PUT";
+  if (m === "delete") return "DELETE";
+  throw new Error(`found invalid method name while converting to std: ${m}`);
 }
 
-export function resolveMethod(m: Method) {
-  if (m === "create") return "#POST";
-  if (m === "read") return "#GET";
-  if (m === "update") return "#PUT";
-  return "#DELETE";
-}
-
-export function standardizeMethod(m: string) {
-  if (m === "#GET") return "get";
-  if (m === "#POST") return "post";
-  if (m === "#PUT") return "put";
-  return "delete";
-}
-
-export function _resolveMethod(m: string) {
-  if (m === "create") return "post";
-  if (m === "read") return "get";
-  if (m === "update") return "put";
-  return "delete";
-}
-
-function _staticHandler(method: Method, route: string) {
-  const m = _resolveMethod(method).toUpperCase();
+export function _getStaticHandler(method: Method, route: string) {
+  const m = _crudToStd(method);
   return createHandler({
     action(ctx) {
       return ctx.json({
