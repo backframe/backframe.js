@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BfPluginConfig } from "./plugins.js";
+import { BfPluginConfig } from "../plugins/index.js";
 
 export const BF_CONFIG_DEFAULTS = {
   root: "src",
