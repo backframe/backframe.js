@@ -2,7 +2,7 @@ import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import dotenv from "dotenv";
 import { buildSync } from "esbuild";
 import { globby } from "globby";
-import { BfConfig, PluginKey } from "./index.js";
+import { BfConfig } from "./index.js";
 import { BfUserConfig, BfUserConfigSchema } from "./schema.js";
 
 export function defineConfig(config: BfUserConfig) {
@@ -60,23 +60,11 @@ export async function loadConfig() {
       }
     });
 
+  // expand config
   const bfConfig = new BfConfig(cfg);
 
-  // Start loading plugins
-  cfg.plugins?.forEach((p) => {
-    const { modifyServer, ...others } = p;
-
-    // can be an array of plugins
-    bfConfig.__addServerModifier(modifyServer ?? null);
-
-    // can only be one plugin (eg. databaseProvider)
-    Object.keys(others).forEach((k) => {
-      bfConfig[k as PluginKey] = others[k as PluginKey];
-    });
-  });
-
-  // invoke compiler(it'll only run if typescript detected)
-  bfConfig.__compileFiles();
+  // initialize - will load plugins, compile files etc
+  bfConfig.__initialize();
 
   return bfConfig;
 }
