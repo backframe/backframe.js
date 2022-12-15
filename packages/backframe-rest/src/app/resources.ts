@@ -1,5 +1,5 @@
 import { BfConfig } from "@backframe/core";
-import { debug, loadModule, logger, resolveCwd } from "@backframe/utils";
+import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import {
   Handler,
   IHandlerConfig,
@@ -68,7 +68,7 @@ export class Resource<T> {
       logger.error(
         `an error occurred while trying to load resources at ${this.#route}`
       );
-      debug(error);
+      console.error(error);
       process.exit(1);
     }
   }
