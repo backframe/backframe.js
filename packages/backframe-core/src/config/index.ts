@@ -3,34 +3,51 @@ import { buildSync } from "esbuild";
 import type { Express } from "express";
 import fs from "fs";
 import { globbySync } from "globby";
+import merge from "lodash.merge";
 import path from "path";
+import { PluginListener } from "../plugins/index.js";
+import { PluginManifest } from "../plugins/manifest.js";
 import { BfUserConfig, BF_CONFIG_DEFAULTS } from "./schema.js";
 import { loadTsConfig } from "./tsconfig.js";
 
-export type PluginFn = (cfg: BfConfig) => void;
-export type PluginKey = "emailProvider" | "storageProvider";
+// each key corresponds to a prop of the BfConfig class
+export type PluginKey = "emailProvider" | "storageProvider" | "compiler";
 
-interface IBfServer {
+export const BF_OUT_DIR = ".bf";
+
+export interface IBfServer {
   _app: Express;
 }
 
-const BF_OUT_DIR = ".bf";
-
 // TODO: Create Manifest of plugins, provider, etc... that can be used for analysis later
 export class BfConfig {
-  server!: { _app: Express };
-  serverModifiers: PluginFn[];
+  #pluginManifest: PluginManifest;
 
-  compiler: PluginFn;
-  emailProvider?: PluginFn;
-  storageProvider?: PluginFn;
+  server?: IBfServer;
+  serverModifiers: PluginListener[];
+
+  compiler: PluginListener;
+  emailProvider?: PluginListener;
+  storageProvider?: PluginListener;
 
   constructor(public userCfg: BfUserConfig) {
     this.serverModifiers = [];
     this.compiler = defaultBuilder;
+
+    this.userCfg = merge(BF_CONFIG_DEFAULTS, userCfg);
+    this.#pluginManifest = new PluginManifest(this);
   }
 
-  __compileFiles() {
+  __initialize() {
+    const plugins = this.userCfg.plugins;
+    plugins.forEach((p) => {
+      this.#pluginManifest.register(p);
+    });
+
+    // if any plugin overrides the compiler
+    this.__invokePlugin("compiler");
+
+    // invoke compiler(it'll only run if typescript detected)
     this.compiler(this);
   }
 
@@ -38,11 +55,11 @@ export class BfConfig {
     this.serverModifiers.forEach((m) => m(this));
   }
 
-  __addServerModifier(m: PluginFn | null) {
+  __addServerModifier(m: PluginListener | null) {
     m && this.serverModifiers.push(m);
   }
 
-  __addPlugin(key: PluginKey, p: PluginFn) {
+  __addPlugin(key: PluginKey, p: PluginListener) {
     this[key] = p;
   }
 
@@ -59,29 +76,27 @@ export class BfConfig {
   }
 
   getRootDirName() {
-    return this.userCfg.root ?? BF_CONFIG_DEFAULTS.root;
+    return this.userCfg.root;
   }
 
   getRoutesDirName() {
-    return this.userCfg.routesDir ?? BF_CONFIG_DEFAULTS.routesDir;
+    return this.userCfg.routesDir;
   }
 
   getGqlDirName() {
-    return this.userCfg.gqlDir ?? BF_CONFIG_DEFAULTS.gqlDir;
+    return this.userCfg.gqlDir;
   }
 
   getEntryPointName() {
-    return this.userCfg.entryPoint ?? BF_CONFIG_DEFAULTS.entryPoint;
+    return this.userCfg.entryPoint;
   }
 
   getRestConfig() {
-    return this.userCfg.interfaces?.rest ?? BF_CONFIG_DEFAULTS.interfaces.rest;
+    return this.userCfg.interfaces?.rest;
   }
 
   getGqlConfig() {
-    return (
-      this.userCfg.interfaces?.graphql ?? BF_CONFIG_DEFAULTS.interfaces.graphql
-    );
+    return this.userCfg.interfaces?.graphql;
   }
 }
 
