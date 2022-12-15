@@ -1,6 +1,7 @@
 {
   "name": "@backframe/core",
   "version": "0.0.0",
+  "description": "The core backframe package responsible for loading the config and invoking plugins",
   "main": "dist/index.js",
   "license": "MIT",
   "type": "module",
@@ -12,7 +13,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "lint": "lint:types && lint:fmt",
+    "lint": "pnpm lint:types && pnpm lint:fmt",
     "lint:fix": "eslint . --fix",
     "lint:types": "eslint .",
     "format": "prettier --write ./src/**/*.ts",
