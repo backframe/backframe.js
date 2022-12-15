@@ -9,18 +9,21 @@ import express, {
 } from "express";
 import helmet from "helmet";
 import { Server as HttpServer, ServerResponse } from "http";
-import { ZodObject, ZodRawShape } from "zod";
+import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
   GenericException,
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
 import { Handler, IHandlerConfig } from "../lib/types.js";
-import { getManifest } from "../routing/index.js";
-import { ManifestData } from "../routing/manifest.js";
+import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
-import { isHandlerKey, standardizeMethod } from "./handlers.js";
-import { Resource } from "./resources.js";
+import {
+  BfMethod,
+  ExpressMethods as ExpressMethod,
+  Resource,
+  STD_METHODS,
+} from "./resources.js";
 
 interface IBfServerConfig {
   port?: number;
@@ -35,9 +38,10 @@ const DEFAULT_PORT = 6969;
 export class BfServer {
   _app: Express;
   _handle?: HttpServer;
+
+  #router: Router;
   #bfConfig!: BfConfig;
   #resources!: Resource<unknown>[];
-  #manifest!: ManifestData;
   #middleware: Handler<{}>[];
 
   constructor(private _cfg: IBfServerConfig) {
@@ -48,11 +52,16 @@ export class BfServer {
 
   async __init(cfg: BfConfig) {
     cfg.server = this;
-    this.#bfConfig = cfg;
 
+    this.#bfConfig = cfg;
+    this.#router = new Router(cfg);
+
+    this.#router.init();
     this.#applyMiddleware();
+
     await this.#loadResources();
     cfg.__invokeServerModifiers();
+
     this.#setupErrHandlers(); // ensure called last
   }
 
@@ -71,13 +80,13 @@ export class BfServer {
   }
 
   #wrapHandler<T extends ZodRawShape>(handler: Handler<T>) {
-    // @ts-ignore
+    // @ts-ignore (same reason)
     return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
       const ctx = new Context<ZodObject<T>>(req, res, next, this.#bfConfig);
       const value = handler(ctx);
 
       if (value instanceof GenericException) next(value);
-      // @ts-ignore
+      // @ts-ignore (response has already been sent)
       else if (value instanceof ServerResponse) return;
       else {
         const t = typeof value === "object" ? "application/json" : "text/html";
@@ -88,58 +97,61 @@ export class BfServer {
   }
 
   #loadResources() {
-    this.#manifest = getManifest(this.#bfConfig);
-    const items = this.#manifest.getItems();
-    items.forEach((i) => {
+    const manifest = this.#router.manifest;
+    manifest.items.forEach((i) => {
       const r = new Resource(i, this.#bfConfig);
       if (!this.#resources.some((_) => _.route === r.route))
         this.#resources.push(r);
     });
 
-    // resources added
+    // init all resources
     return Promise.all(
       this.#resources.map(async (r) => {
-        await r.loadHandlers();
+        await r.initialize();
         const handlers = r.handlers ?? {};
         const globalMware = this.#middleware?.concat(r.middleware ?? []);
 
         Object.keys(handlers).forEach((k) => {
-          if (isHandlerKey(k)) {
-            const method = standardizeMethod(k);
+          if (STD_METHODS.includes(k)) {
+            const method = k.toLowerCase() as ExpressMethod;
             let wrapped = globalMware.map((m) => this.#wrapMiddleware(m));
 
-            // @ts-ignore
             const { action, input, middleware } = r.handlers[
-              k
+              k as BfMethod
             ] as IHandlerConfig<{}>;
 
             // add validator
             if (input) {
-              wrapped.push((req, _res, next) => {
-                const opts = input.safeParse(req.body);
-                if (!opts.success) {
-                  next(
-                    new GenericException(
-                      400,
-                      "Invalid request body",
-                      "The request body is not valid"
-                    )
-                  );
-                } else {
-                  next();
-                }
-              });
+              wrapped.push(this.#validator(input));
             }
 
             // wrap handlers in format express understands
-            wrapped.concat(middleware?.map((m) => this.#wrapMiddleware(m)));
+            middleware?.forEach((m) => wrapped.push(this.#wrapMiddleware(m)));
             wrapped.push(this.#wrapHandler(action));
 
+            // mount resource on express app
             this._app[method](r.route, wrapped);
           }
         });
       })
     );
+  }
+
+  #validator(input: ZodType) {
+    return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
+      const opts = input.safeParse(req.body);
+      if (!opts.success) {
+        next(
+          new GenericException(
+            400,
+            "Invalid request body",
+            "The request body is not valid"
+          )
+        );
+      } else {
+        next();
+      }
+    };
   }
 
   #applyMiddleware() {
@@ -187,6 +199,10 @@ export class BfServer {
         res.status(err.statusCode).json(err.getValues());
       }
     );
+  }
+
+  listRoutes() {
+    console.log(this.#router.manifest.routes);
   }
 
   async start(port = this._cfg.port || DEFAULT_PORT) {
