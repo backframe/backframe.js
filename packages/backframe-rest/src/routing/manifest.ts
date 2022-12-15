@@ -1,13 +1,39 @@
-import { Item } from "./index.js";
+import { BfConfig } from "@backframe/core";
+import { logger } from "@backframe/utils";
+import { Item } from "./router.js";
 
-export class ManifestData {
-  constructor(private items: Item[]) {}
+export class Manifest {
+  #items: Item[];
 
-  getItems() {
-    return this.items;
+  constructor(private bfConfig: BfConfig) {
+    this.#items = [];
   }
 
-  getRoutes() {
-    return this.items.map((i) => i.route);
+  get items() {
+    return this.#items;
+  }
+
+  get routes() {
+    return this.#items.map(($) => $.route);
+  }
+
+  add(i: Item) {
+    if (this.#items.some(($) => $.route === i.route)) {
+      logger.warn(`duplicate route: ${i.route} found`);
+      logger.warn("one of the routes will be overriden");
+    }
+    this.#items.push(i);
+  }
+
+  formatted() {
+    this.#items.forEach((_i) => {
+      // load js module from file path
+      // Get Enabled methods/default ones
+      // format these values and return table string
+    });
+  }
+
+  listRoutes() {
+    return this.#items.map(($) => `${$.route}\n`);
   }
 }
