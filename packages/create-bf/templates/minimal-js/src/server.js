@@ -4,4 +4,4 @@ const server = createServer({
   port: 8989,
 });
 
-server.start();
+export default server;

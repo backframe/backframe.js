@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bf watch",
-    "start": "node ./server.js"
+    "dev": "bf serve",
+    "start": "node bin/serve.mjs"
   },
   "dependencies": {
     "@backframe/core": "0.0.0",
