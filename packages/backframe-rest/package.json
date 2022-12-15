@@ -4,8 +4,9 @@
   "main": "dist/index.js",
   "type": "module",
   "license": "MIT",
-  "bin": {
-    "backframe": "./dist/backframe.js"
+  "exports": {
+    ".": "./dist/index.js",
+    "./serve": "./dist/serve/index.js"
   },
   "author": {
     "name": "Victor Ndaba",
