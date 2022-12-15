@@ -2,6 +2,7 @@ import { logger } from "@backframe/utils";
 import { BfConfig, PluginKey } from "../config/index.js";
 import { BfPluginConfig } from "./index.js";
 
+// don't add modifyServer here, multiple values are allowed for it
 export const PluginTypes = ["emailProvider", "storageProvider", "compiler"];
 
 export class PluginManifest {
@@ -12,6 +13,7 @@ export class PluginManifest {
   }
 
   register(p: BfPluginConfig) {
+    this.inspect(p);
     this.#plugins.push(p);
     const { modifyServer, ...others } = p;
 
@@ -23,18 +25,26 @@ export class PluginManifest {
       if (PluginTypes.includes(k)) {
         // tis a listener
         const listener = others[k as PluginKey];
+        this.cfg[k as PluginKey] = listener;
+      }
+    });
+  }
 
-        // already included
-        if (this.cfg[k as PluginKey]) {
-          const name =
-            p.name ?? `unknown-plugin-${Math.round(Math.random() * 100000)}`;
-          logger.error("conflicting plugins found");
-          logger.error(
-            `plugin: \`${name}\` tried to modify the \`${k}\` which is already set`
-          );
-          process.exit(1);
-        } else {
-          this.cfg[k as PluginKey] = listener;
+  inspect(p: BfPluginConfig) {
+    // iterate through keys
+    Object.keys(p).forEach((key) => {
+      if (PluginTypes.includes(key)) {
+        // check conflict
+        const conflict = this.#plugins.find(($) => $[key as PluginKey]);
+        if (conflict) {
+          const rand = () =>
+            `unknown-plugin-${Math.round(Math.random() * 100000)}`;
+          const n1 = conflict.name || rand();
+          const n2 = p.name || rand();
+
+          logger.warn(`conflicting plugins: \`${n1}\` and \`${n2}\` found`);
+          logger.warn(`both plugins are modifying the \`${key}\``);
+          logger.warn("this might cause unexpected behaviour");
         }
       }
     });
