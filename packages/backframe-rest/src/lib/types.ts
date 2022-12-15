@@ -1,11 +1,14 @@
+import { ServerResponse } from "http";
 import { ZodObject, ZodRawShape } from "zod";
 import { Context } from "../app/context.js";
 import { ResourceHandlers } from "../app/handlers.js";
+import { GenericException } from "./errors.js";
 
 export type Method = "create" | "read" | "update" | "delete";
+
 export type Handler<T extends ZodRawShape> = (
   ctx: Context<ZodObject<T>>
-) => string | object | string[];
+) => string | object | string[] | GenericException | ServerResponse;
 
 export interface IHandlerConfig<T extends ZodRawShape> {
   input?: ZodObject<T>;
@@ -17,6 +20,7 @@ export interface IHandlerConfig<T extends ZodRawShape> {
 export interface IModuleConfig<T> {
   config: IRouteConfig<T>;
   default: ResourceHandlers;
+  [key: string]: unknown;
 }
 
 export interface IRouteConfig<T> {
