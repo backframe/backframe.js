@@ -1,3 +1,4 @@
+import type { BfConfig } from "@backframe/core";
 import type { BfServer } from "@backframe/rest";
 import {
   debug,
@@ -8,7 +9,14 @@ import {
 } from "@backframe/utils";
 import chokidar from "chokidar";
 import { spawn } from "cross-spawn";
+import { globbySync } from "globby";
 import { defineBfCommand } from "./index.js";
+
+const respawn = () =>
+  spawn(resolveCwd("node_modules/.bin/bf"), process.argv.slice(2), {
+    env: process.env,
+    stdio: "inherit",
+  });
 
 export default defineBfCommand({
   command: "serve",
@@ -31,56 +39,60 @@ export default defineBfCommand({
       });
   },
   handler: async (_args) => {
-    const server = await getServer();
+    try {
+      // TODO: validate in core that values specified in cfg exist
+      const core = await resolvePackage("@backframe/core");
+      const config: BfConfig = await core.default();
 
-    if (_args["watch"]) {
-      const watcher = chokidar.watch(["src/"], {
-        ignored: ["node_modules/", ".bf/"],
-      });
+      const root = config.getRootDirName();
+      const entry = config.getEntryPointName();
 
-      watcher.on("ready", () => {
-        logger.debug("watching for file changes...");
-        watcher.on("all", () => {
-          logger.debug("changes detected, restarting server... \n\n");
-          server._handle?.close(async () => {
-            await watcher.close();
+      const file = await loadModule(resolveCwd(root, entry));
+      if (!file.default) {
+        logger.error(`expected a default export from ${entry}`);
+        process.exit(1);
+      }
 
-            const args = process.argv.slice(2);
-            spawn(resolveCwd("node_modules/.bin/bf"), args, {
-              env: process.env,
-              stdio: "inherit",
+      const server: BfServer = file.default;
+      await server.__init(config);
+
+      if (_args["watch"]) {
+        // get sources
+        const toWatch = () => {
+          const files = [config.userCfg.root!];
+          const m = globbySync("./bf.config.*");
+          m.length && files.push(m[0]);
+          return files;
+        };
+
+        const watcher = chokidar.watch([...toWatch()], {
+          ignored: ["node_modules/", ".bf/"],
+        });
+
+        watcher.on("ready", () => {
+          logger.debug("watching for file changes...");
+
+          watcher.on("all", () => {
+            logger.debug("changes detected, restarting server...");
+
+            server._handle?.close(async () => {
+              await watcher.close();
+              respawn();
             });
           });
         });
-      });
-    }
+      }
 
-    server.start(Number(_args["port"]));
+      server.start(Number(_args["port"]));
+    } catch (error) {
+      debug(error as string);
+      logger.error("an error occurred while trying to start the server");
+      logger.error(
+        "make sure you have installed @backframe/core and @backframe/rest"
+      );
+      process.exit(1);
+    }
   },
 });
 
-async function getServer() {
-  try {
-    const core = await resolvePackage("@backframe/core");
-    const config = await core.default();
-
-    const root = config.getRootDirName();
-    const entry = config.getEntryPointName();
-
-    const file = await loadModule(resolveCwd(root, entry));
-    if (!file.default) {
-      logger.error(`expected a default export from ${entry}`);
-      process.exit(1);
-    }
-
-    const server: BfServer = file.default;
-    await server.__init(config);
-
-    return server;
-  } catch (error) {
-    debug(error as string);
-    logger.error("an error occurred while trying to start the server");
-    logger.error("please make sure you have installed @backframe/core");
-    process.exit(1);
-  }
-}
+// TODO: listen for exits
