@@ -17,6 +17,7 @@
     "lint:fmt": "prettier --check ./src/**/*.ts"
   },
   "devDependencies": {
+    "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
     "@backframe/utils": "workspace:*",
     "@types/cross-spawn": "^6.0.2",
@@ -25,6 +26,7 @@
     "consola": "^2.15.3",
     "create-bf": "workspace:*",
     "cross-spawn": "^7.0.3",
+    "globby": "^13.1.2",
     "unbuild": "^1.0.2",
     "yargs": "^17.6.2"
   }
