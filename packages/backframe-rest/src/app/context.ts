@@ -20,11 +20,11 @@ export class Context<T extends ZodType> {
     private _bfConfig?: BfConfig
   ) {}
 
-  getReq(): ExpressReq {
+  get request(): ExpressReq {
     return this.req;
   }
 
-  getRes() {
+  get response() {
     return this.res;
   }
 
