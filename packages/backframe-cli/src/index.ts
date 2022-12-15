@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
+import consola from "consola";
 import yargs from "yargs";
 import { buildCommands } from "./util";
+
+// only work for errors;
+consola.wrapConsole();
 
 let cli = yargs(process.env.argv).parserConfiguration({
   "boolean-negation": true,
