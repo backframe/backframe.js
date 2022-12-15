@@ -1,15 +1,11 @@
 import { IRouteConfig } from "./lib/types.js";
 
+// re-export to house all-in-one
+export { z } from "zod";
 export { Context } from "./app/context.js";
 export { createHandler, defineHandlers } from "./app/handlers.js";
 export { BfServer, createServer, defaultServer } from "./app/index.js";
-export {
-  ForbiddenException,
-  GenericException,
-  InternalException,
-  NotFoundExeption,
-  UnauthorizedException,
-} from "./lib/errors.js";
+export * from "./lib/errors.js";
 export {
   Handler,
   IHandlerConfig,
