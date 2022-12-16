@@ -1,6 +1,6 @@
 import { resolveCwd } from "@backframe/utils";
 import { buildSync } from "esbuild";
-import type { Express } from "express";
+import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
 import { globbySync } from "globby";
 import merge from "lodash.merge";
@@ -21,17 +21,24 @@ export interface IBfServer {
 
 // TODO: Create Manifest of plugins, provider, etc... that can be used for analysis later
 export class BfConfig {
+  #updatedRootDir: string;
   #pluginManifest: PluginManifest;
 
   server?: IBfServer;
   serverModifiers: PluginListener[];
+  configModifiers: PluginListener[];
 
   compiler: PluginListener;
   emailProvider?: PluginListener;
   storageProvider?: PluginListener;
 
+  __auth?: RequestHandler;
+  __authStrategies?: () => void;
+  __authMiddleware?: NextFunction;
+
   constructor(public userCfg: BfUserConfig) {
     this.serverModifiers = [];
+    this.configModifiers = [];
     this.compiler = defaultBuilder;
 
     this.userCfg = merge(BF_CONFIG_DEFAULTS, userCfg);
@@ -46,9 +53,10 @@ export class BfConfig {
 
     // if any plugin overrides the compiler
     this.__invokePlugin("compiler");
+    this.compiler(this); // invoke compiler(it'll only run if typescript detected)
 
-    // invoke compiler(it'll only run if typescript detected)
-    this.compiler(this);
+    // invoke config modifiers
+    this.configModifiers.forEach((m) => m(this));
   }
 
   __invokeServerModifiers() {
@@ -57,6 +65,10 @@ export class BfConfig {
 
   __addServerModifier(m: PluginListener | null) {
     m && this.serverModifiers.push(m);
+  }
+
+  __addConfigModifier(m: PluginListener | null) {
+    m && this.configModifiers.push(m);
   }
 
   __addPlugin(key: PluginKey, p: PluginListener) {
@@ -68,7 +80,7 @@ export class BfConfig {
   }
 
   __updateRootDir(name: string) {
-    this.userCfg.root = name;
+    this.#updatedRootDir = name;
   }
 
   __setServer(server: IBfServer) {
@@ -76,7 +88,7 @@ export class BfConfig {
   }
 
   getRootDirName() {
-    return this.userCfg.root;
+    return this.#updatedRootDir || this.userCfg.root;
   }
 
   getRoutesDirName() {
