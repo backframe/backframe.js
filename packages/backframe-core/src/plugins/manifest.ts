@@ -15,10 +15,13 @@ export class PluginManifest {
   register(p: BfPluginConfig) {
     this.inspect(p);
     this.#plugins.push(p);
-    const { modifyServer, ...others } = p;
+    const { modifyServer, modifyConfig, ...others } = p;
 
     // add server modifiers
     this.cfg.__addServerModifier(modifyServer ?? null);
+
+    // add config modifiers
+    this.cfg.__addConfigModifier(modifyConfig ?? null);
 
     // other keys
     Object.keys(others).forEach((k) => {
