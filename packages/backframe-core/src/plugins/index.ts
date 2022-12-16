@@ -56,4 +56,8 @@ export interface BfPluginConfig {
    *
    */
   compiler?: PluginListener;
+  /**
+   * @docs
+   */
+  modifyConfig?: PluginListener;
 }
