@@ -16,7 +16,7 @@ function getDevLogger() {
     level: process.env.BF_LOG_LEVEL || "debug",
     format: combine(
       colorize({ all: true }),
-      timestamp({ format: "YY-MM-DD HH:mm:ss.mss" }),
+      timestamp({ format: "YY-MM-DD HH:mm:ss" }),
       fmt
     ),
     transports: [new transports.Console()],
