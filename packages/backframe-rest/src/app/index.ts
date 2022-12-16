@@ -212,6 +212,10 @@ export class BfServer {
       logger.info(`server started on: ${this.#getHost()}`);
     });
   }
+
+  stop(cb: (e?: Error) => void) {
+    this._handle.close(cb);
+  }
 }
 
 export function defaultServer() {
