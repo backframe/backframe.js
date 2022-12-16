@@ -12,8 +12,8 @@ import { spawn } from "cross-spawn";
 import { globbySync } from "globby";
 import { defineBfCommand } from "./index.js";
 
-const respawn = () =>
-  spawn(resolveCwd("node_modules/.bin/bf"), process.argv.slice(2), {
+const respawn = (args: string[]) =>
+  spawn(resolveCwd("node_modules/.bin/bf"), args, {
     env: process.env,
     stdio: "inherit",
   });
@@ -72,18 +72,19 @@ export default defineBfCommand({
         watcher.on("ready", () => {
           logger.debug("watching for file changes...");
 
-          watcher.on("all", () => {
+          watcher.on("all", async () => {
             logger.debug("changes detected, restarting server...");
 
-            server._handle?.close(async () => {
-              await watcher.close();
-              respawn();
+            await watcher.close();
+            // FIXME:
+            server.stop(() => {
+              respawn(process.argv.slice(2));
             });
           });
         });
       }
 
-      server.start(Number(_args["port"]));
+      server.start();
     } catch (error) {
       debug(error as string);
       logger.error("an error occurred while trying to start the server");
@@ -94,5 +95,3 @@ export default defineBfCommand({
     }
   },
 });
-
-// TODO: listen for exits
