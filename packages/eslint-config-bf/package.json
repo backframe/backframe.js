@@ -1,14 +1,17 @@
 {
   "name": "@backframe/eslint-config",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@backframe"
+  },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "eslint-config-prettier": "^8.5.0",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
