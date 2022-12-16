@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bf serve",
+    "dev": "bf serve --watch",
     "start": "node bin/serve.mjs"
   },
   "dependencies": {
