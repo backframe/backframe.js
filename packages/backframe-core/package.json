@@ -1,6 +1,6 @@
 {
   "name": "@backframe/core",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.1",
   "description": "The core backframe package responsible for loading the config and invoking plugins",
   "main": "dist/index.js",
   "license": "MIT",
@@ -11,6 +11,9 @@
     "dist/",
     "README.md"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@backframe"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "pnpm lint:types && pnpm lint:fmt",
