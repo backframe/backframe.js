@@ -20,11 +20,12 @@ export class Resource<T> {
   #model?: T;
   #route!: string;
   #item: Item;
-  #public?: Method[];
-  #enabled?: Method[];
   #bfConfig!: BfConfig;
   #middleware?: Handler<{}>[];
   #handlers!: ResourceHandlers;
+
+  public?: Method[];
+  enabled?: Method[];
 
   constructor(item: Item, config: BfConfig) {
     this.#route = item.route;
@@ -60,8 +61,8 @@ export class Resource<T> {
         mod.config ?? {}
       );
       this.#model = config.model;
-      this.#public = config.public;
-      this.#enabled = config.enabled;
+      this.public = config.public;
+      this.enabled = config.enabled;
 
       this.#getHandlers(mod);
     } catch (error) {
