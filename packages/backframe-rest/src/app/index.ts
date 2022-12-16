@@ -18,6 +18,7 @@ import {
 import { Handler, IHandlerConfig } from "../lib/types.js";
 import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
+import { _stdToCrud } from "./handlers.js";
 import {
   BfMethod,
   ExpressMethods as ExpressMethod,
@@ -129,6 +130,13 @@ export class BfServer {
             middleware?.forEach((m) => wrapped.push(this.#wrapMiddleware(m)));
             wrapped.push(this.#wrapHandler(action));
 
+            // passport secured route middleware
+            // if method enabled, if strategy included, if
+            if (!r.public.includes(_stdToCrud(k)) && this.#bfConfig.__auth) {
+              // -> insert as first middleware
+              wrapped.unshift(this.#bfConfig.__authMiddleware);
+            }
+
             // mount resource on express app
             this._app[method](r.route, wrapped);
           }
@@ -158,6 +166,13 @@ export class BfServer {
     this._app.use(helmet());
     this._app.use(express.json({ limit: "20mb" }));
     this._app.use(express.urlencoded({ extended: true }));
+    if (this.#bfConfig.__auth) {
+      // -> passport.initialize()
+      this._app.use(this.#bfConfig.__auth);
+
+      // -> passport strategies
+      this.#bfConfig.__authStrategies();
+    }
 
     const useCors = this._cfg.enableCors;
     const log = this._cfg.logRequests;
