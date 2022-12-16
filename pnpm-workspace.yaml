@@ -4,3 +4,6 @@ packages:
   - "examples/*"
   - "packages/*"
   - "packages/plugins/*"
+options:
+  prefer-workspace-packages: true
+  strict-peer-dependencies: false
