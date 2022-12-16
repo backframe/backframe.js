@@ -44,6 +44,14 @@ export function _crudToStd(m: Method) {
   throw new Error(`found invalid method name while converting to std: ${m}`);
 }
 
+export function _stdToCrud(m: string) {
+  if (m === "POST") return "create";
+  if (m === "GET") return "read";
+  if (m === "PUT") return "update";
+  if (m === "DELETE") return "delete";
+  throw new Error(`found invalid method name while converting to crud: ${m}`);
+}
+
 export function _getStaticHandler(method: Method, route: string) {
   const m = _crudToStd(method);
   return createHandler({
