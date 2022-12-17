@@ -6,7 +6,6 @@ import { isMinimalTrack, isTemplateTrack } from "../prompts/utils";
 import { copy, emptyDir, IConfig, rocketAscii } from "./utils";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function create(cfg: IConfig) {
   //  minimal app
