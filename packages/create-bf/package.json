@@ -1,6 +1,6 @@
 {
-  "name": "create-bf",
-  "version": "1.0.0",
+  "name": "@backframe/create-bf",
+  "version": "0.0.0-alpha.1",
   "description": "Create a new Backframe app",
   "type": "module",
   "main": "dist/index.mjs",
@@ -12,6 +12,9 @@
   "scripts": {
     "dev": "unbuild --stub",
     "build": "unbuild"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@backframe"
   },
   "files": [
     "bin",
@@ -28,6 +31,9 @@
   ],
   "author": "Victor Ndaba",
   "license": "MIT",
+  "dependencies": {
+    "figlet": "^1.5.2"
+  },
   "devDependencies": {
     "@types/chalk-animation": "^1.6.1",
     "@types/figlet": "^1.5.5",
@@ -36,7 +42,6 @@
     "@types/prompts": "^2.4.1",
     "chalk-animation": "^2.0.3",
     "consola": "^2.15.3",
-    "figlet": "^1.5.2",
     "giget": "^1.0.0",
     "gradient-string": "^2.0.2",
     "kleur": "^4.1.5",
