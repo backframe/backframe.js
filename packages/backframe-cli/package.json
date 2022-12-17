@@ -1,14 +1,21 @@
 {
   "name": "@backframe/cli",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.0",
   "description": "Backframe command line interface",
   "type": "module",
   "license": "MIT",
   "bin": {
     "bf": "dist/index.mjs"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@backframe"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "dev": "unbuild --stub",
     "build": "unbuild",
     "prebuild": "rimraf dist",
     "lint": "eslint .",
@@ -16,20 +23,23 @@
     "lint:fix": "eslint . --fix",
     "lint:fmt": "prettier --check ./src/**/*.ts"
   },
+  "dependencies": {
+    "@backframe/create-bf": "workspace:*",
+    "@backframe/utils": "workspace:*",
+    "chokidar": "^3.5.3",
+    "consola": "^2.15.3",
+    "cross-spawn": "^7.0.3",
+    "globby": "^13.1.2",
+    "killable": "^1.0.1",
+    "prompts": "^2.4.2",
+    "yargs": "^17.6.2"
+  },
   "devDependencies": {
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
-    "@backframe/utils": "workspace:*",
     "@types/cross-spawn": "^6.0.2",
     "@types/prompts": "^2.4.1",
     "@types/yargs": "^17.0.15",
-    "chokidar": "^3.5.3",
-    "consola": "^2.15.3",
-    "create-bf": "workspace:*",
-    "cross-spawn": "^7.0.3",
-    "globby": "^13.1.2",
-    "prompts": "^2.4.2",
-    "unbuild": "^1.0.2",
-    "yargs": "^17.6.2"
+    "unbuild": "^1.0.2"
   }
 }
