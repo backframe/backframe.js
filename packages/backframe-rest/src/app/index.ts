@@ -220,6 +220,10 @@ export class BfServer {
     console.log(this.#router.manifest.routes);
   }
 
+  mountRoute() {
+    //
+  }
+
   async start(port = this._cfg.port || DEFAULT_PORT) {
     this._cfg.port = port;
     this._handle = this._app.listen(port, () => {
@@ -245,3 +249,8 @@ export function defaultServer() {
 export function createServer(cfg: IBfServerConfig) {
   return new BfServer(cfg);
 }
+
+// TODO: Make app private
+// TODO: add settings options
+// TODO: Router/Manifest to check for routing conflicts
+// TODO: Make router plugin friendly... i.e. route value, route provider/origin

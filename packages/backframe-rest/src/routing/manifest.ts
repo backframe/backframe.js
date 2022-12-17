@@ -36,4 +36,8 @@ export class Manifest {
   listRoutes() {
     return this.#items.map(($) => `${$.route}\n`);
   }
+
+  addPlainRoute() {
+    //
+  }
 }

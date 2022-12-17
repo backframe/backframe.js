@@ -140,4 +140,8 @@ export class Router {
       });
     });
   }
+
+  addRoute() {
+    //
+  }
 }
