@@ -7,10 +7,4 @@ export default defineBuildConfig({
     inlineDependencies: true,
   },
   entries: ["src/index"],
-  externals: [
-    "create-bf",
-    "@backframe/utils",
-    "@backframe/rest",
-    "@backframe/core",
-  ],
 });
