@@ -1,4 +1,4 @@
-import { main as create } from "create-bf";
+import { main as create } from "@backframe/create-bf";
 import { defineBfCommand } from "./index";
 
 export default defineBfCommand({

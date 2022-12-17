@@ -10,6 +10,7 @@ import {
 import chokidar from "chokidar";
 import { spawn } from "cross-spawn";
 import { globbySync } from "globby";
+import killable from "killable";
 import { defineBfCommand } from "./index.js";
 
 const respawn = (args: string[]) =>
@@ -76,15 +77,18 @@ export default defineBfCommand({
             logger.debug("changes detected, restarting server...");
 
             await watcher.close();
-            // FIXME:
-            server.stop(() => {
+            // @ts-ignore
+            server._handle?.kill(() => {
               respawn(process.argv.slice(2));
             });
+            setImmediate(() => server._app.emit("close"));
           });
         });
       }
 
       server.start();
+      // add killable to server
+      killable(server._handle);
     } catch (error) {
       debug(error as string);
       logger.error("an error occurred while trying to start the server");
