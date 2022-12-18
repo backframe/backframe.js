@@ -6,9 +6,11 @@ import { GenericException } from "./errors.js";
 
 export type Method = "create" | "read" | "update" | "delete";
 
+export type HandlerResult = string | object | GenericException | ServerResponse;
+
 export type Handler<T extends ZodRawShape> = (
   ctx: Context<ZodObject<T>>
-) => string | object | string[] | GenericException | ServerResponse;
+) => HandlerResult | Promise<HandlerResult>;
 
 export interface IHandlerConfig<T extends ZodRawShape> {
   input?: ZodObject<T>;
