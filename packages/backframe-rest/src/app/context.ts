@@ -14,56 +14,47 @@ interface IResponseOptions {
 
 export class Context<T extends ZodType> {
   constructor(
-    private req: ExpressReq,
-    private res: ExpressRes,
-    private _next: NextFunction,
+    public request: ExpressReq,
+    public response: ExpressRes,
+    public next: NextFunction,
     private _bfConfig?: BfConfig
   ) {}
 
-  get request(): ExpressReq {
-    return this.req;
-  }
-
-  get response() {
-    return this.res;
-  }
-
-  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
-  next(): any {
-    return this._next();
-  }
-
   get input() {
-    return this.req.body as z.infer<T>;
+    return this.request.body as z.infer<T>;
   }
 
   get params(): object {
     // TODO: typed params
-    return this.req.params;
+    return this.request.params;
   }
 
   get query(): object {
-    return this.req.query;
+    return this.request.query;
   }
 
-  private _applyHeaders(options: IResponseOptions) {
+  #applyHeaders(options: IResponseOptions) {
     Object.keys(options.headers ?? {}).forEach((h) =>
-      this.res.setHeader(h, options.headers![h])
+      this.response.setHeader(h, options.headers[h])
     );
   }
 
+  redirect(url: string) {
+    this.response.redirect(url);
+  }
+
   string(value: string, status = 200, options?: IResponseOptions) {
-    this._applyHeaders(options || {});
-    return this.res.status(status).send(value);
+    this.#applyHeaders(options || {});
+    return this.response.status(status).send(value);
   }
 
   json(json: object, status = 200, options?: IResponseOptions) {
-    this._applyHeaders(options || {});
-    return this.res.status(status).json(json);
+    this.#applyHeaders(options || {});
+    return this.response.status(status).json(json);
   }
 
   file(contents: string, status = 200, options?: IResponseOptions) {
-    this._applyHeaders(options || {});
-    return this.res.status(status).send(contents);
+    this.#applyHeaders(options || {});
+    return this.response.status(status).send(contents);
   }
 }
