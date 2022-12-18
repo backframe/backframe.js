@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types  */
+
 import { ZodRawShape } from "zod";
 import { Handler, IHandlerConfig, Method } from "../lib/types.js";
 
