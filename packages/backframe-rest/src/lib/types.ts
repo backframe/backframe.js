@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 import { ServerResponse } from "http";
 import { ZodObject, ZodRawShape } from "zod";
 import { Context } from "../app/context.js";
-import { ResourceHandlers } from "../app/handlers.js";
+import { ResourceModule } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
 
-export type Method = "create" | "read" | "update" | "delete";
+export type Method = "get" | "post" | "put" | "patch" | "delete";
 
 export type HandlerResult = string | object | GenericException | ServerResponse;
 
@@ -18,10 +20,18 @@ export interface IHandlerConfig<T extends ZodRawShape> {
   middleware?: Handler<T>[];
 }
 
+export interface IHandlers {
+  get?: IHandlerConfig<{}>;
+  post?: IHandlerConfig<{}>;
+  put?: IHandlerConfig<{}>;
+  delete?: IHandlerConfig<{}>;
+  patch?: IHandlerConfig<{}>;
+}
+
 // expected shape of a file(module)
 export interface IModuleConfig<T> {
   config: IRouteConfig<T>;
-  default: ResourceHandlers;
+  default: ResourceModule;
   [key: string]: unknown;
 }
 
@@ -42,9 +52,9 @@ export interface IRouteConfig<T> {
    * @type Array<Method>
    * @default ["create"]
    */
-  enabled?: Method[];
+  enabledMethods?: Method[];
   /**
    * Define which methods/routes are publicly available without requiring the caller to be authenticated
    */
-  public?: Method[];
+  securedMethods?: Method[];
 }
