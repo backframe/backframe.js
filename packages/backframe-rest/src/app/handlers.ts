@@ -1,32 +1,27 @@
 /* eslint-disable @typescript-eslint/ban-types  */
 
 import { ZodRawShape } from "zod";
-import { Handler, IHandlerConfig, Method } from "../lib/types.js";
+import { Handler, IHandlerConfig, IHandlers, Method } from "../lib/types.js";
 
 export function defineHandlers() {
-  return new ResourceHandlers();
+  return new ResourceModule();
 }
 
 export function createHandler<T extends ZodRawShape>(h: IHandlerConfig<T>) {
   return h;
 }
 
-export class ResourceHandlers {
-  GET?: IHandlerConfig<{}>;
-  POST?: IHandlerConfig<{}>;
-  PUT?: IHandlerConfig<{}>;
-  DELETE?: IHandlerConfig<{}>;
-  PATCH?: IHandlerConfig<{}>;
-
+export class ResourceModule {
   __middleware?: Handler<{}>[];
+  __handlers?: IHandlers;
 
   constructor() {
+    this.__handlers = {};
     this.__middleware = [];
   }
 
   handle<T extends ZodRawShape>(method: Method, config: IHandlerConfig<T>) {
-    const m = _crudToStd(method);
-    this[m] = config;
+    this.__handlers[method] = config;
     return this;
   }
 
@@ -37,25 +32,8 @@ export class ResourceHandlers {
   }
 }
 
-// transform "create" | "read" | "update" -> GET etc...
-export function _crudToStd(m: Method) {
-  if (m === "create") return "POST";
-  if (m === "read") return "GET";
-  if (m === "update") return "PUT";
-  if (m === "delete") return "DELETE";
-  throw new Error(`found invalid method name while converting to std: ${m}`);
-}
-
-export function _stdToCrud(m: string) {
-  if (m === "POST") return "create";
-  if (m === "GET") return "read";
-  if (m === "PUT") return "update";
-  if (m === "DELETE") return "delete";
-  throw new Error(`found invalid method name while converting to crud: ${m}`);
-}
-
 export function _getStaticHandler(method: Method, route: string) {
-  const m = _crudToStd(method);
+  const m = method.toUpperCase();
   return createHandler({
     action(ctx) {
       return ctx.json({
