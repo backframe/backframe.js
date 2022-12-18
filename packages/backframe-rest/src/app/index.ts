@@ -8,7 +8,7 @@ import express, {
   type Express,
 } from "express";
 import helmet from "helmet";
-import { Server as HttpServer, ServerResponse } from "http";
+import { Server as HttpServer } from "http";
 import merge from "lodash.merge";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
@@ -17,16 +17,10 @@ import {
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
-import { Handler, IHandlerConfig } from "../lib/types.js";
+import { Handler, IHandlerConfig, Method } from "../lib/types.js";
 import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
-import { _stdToCrud } from "./handlers.js";
-import {
-  BfMethod,
-  ExpressMethods as ExpressMethod,
-  Resource,
-  STD_METHODS,
-} from "./resources.js";
+import { Resource } from "./resources.js";
 
 interface IBfServerConfig {
   port?: number;
@@ -88,16 +82,20 @@ export class BfServer {
       const ctx = new Context<ZodObject<T>>(req, res, next, this.#bfConfig);
       const value = await handler(ctx);
 
+      const isText = (v: unknown) => {
+        return (
+          typeof v === "bigint" ||
+          typeof v === "boolean" ||
+          typeof v === "number" ||
+          typeof v === "string"
+        );
+      };
+
       if (value instanceof GenericException) return next(value);
-      else if (value instanceof ServerResponse) return;
-      else if (typeof value === "undefined") {
-        logger.warn("handler has no return value");
-        logger.warn("sending `OK` as the default response");
-        return res.status(200).send("OK");
-      } else {
-        const t = typeof value === "object" ? "application/json" : "text/html";
-        const m = typeof value === "object" ? "json" : "send";
-        return res.status(200).setHeader("Content-Type", t)[m](value);
+      else if (isText(value)) {
+        return res.status(200).send(value);
+      } else if (typeof value === "object") {
+        return res.status(200).json(value);
       }
     };
   }
@@ -118,42 +116,38 @@ export class BfServer {
         const globalMware = this.#middleware?.concat(r.middleware ?? []);
 
         Object.keys(handlers).forEach((k) => {
-          if (STD_METHODS.includes(k)) {
-            type T = (
-              req: ExpressReq,
-              res: ExpressRes,
-              next: NextFunction
-            ) => void | Promise<void | ExpressRes> | ExpressRes;
+          const method = k as Method;
+          type T = (
+            req: ExpressReq,
+            res: ExpressRes,
+            next: NextFunction
+          ) => void | Promise<void | ExpressRes> | ExpressRes;
 
-            const method = k.toLowerCase() as ExpressMethod;
-            const wrapped: T[] = globalMware.map((m) =>
-              this.#wrapMiddleware(m)
-            );
+          const wrapped: T[] = globalMware.map((m) => this.#wrapMiddleware(m));
 
-            const { action, input, middleware } = r.handlers[
-              k as BfMethod
-              // eslint-disable-next-line @typescript-eslint/ban-types
-            ] as IHandlerConfig<{}>;
+          const { action, input, middleware } = r.handlers[
+            method as Method
+            // eslint-disable-next-line @typescript-eslint/ban-types
+          ] as IHandlerConfig<{}>;
 
-            // add validator
-            if (input) {
-              wrapped.push(this.#validator(input));
-            }
-
-            // wrap handlers in format express understands
-            middleware?.forEach((m) => wrapped.push(this.#wrapMiddleware(m)));
-            wrapped.push(this.#wrapHandler(action));
-
-            // passport secured route middleware
-            // if method enabled, if strategy included, if
-            if (!r.public.includes(_stdToCrud(k)) && this.#bfConfig.__auth) {
-              // -> insert as first middleware
-              wrapped.unshift(this.#bfConfig.__authMiddleware);
-            }
-
-            // mount resource on express app
-            this._app[method](r.route, wrapped);
+          // add validator
+          if (input) {
+            wrapped.push(this.#validator(input));
           }
+
+          // wrap handlers in format express understands
+          middleware?.forEach((m) => wrapped.push(this.#wrapMiddleware(m)));
+          wrapped.push(this.#wrapHandler(action));
+
+          // passport secured route middleware
+          // if method enabled, if strategy included, if
+          if (!r.public?.includes(method) && this.#bfConfig.__auth) {
+            // -> insert as first middleware
+            wrapped.unshift(this.#bfConfig.__authMiddleware);
+          }
+
+          // mount resource on express app
+          this._app[method](r.route, wrapped);
         });
       })
     );
