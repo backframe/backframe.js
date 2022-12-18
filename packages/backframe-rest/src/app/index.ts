@@ -9,9 +9,11 @@ import express, {
 } from "express";
 import helmet from "helmet";
 import { Server as HttpServer, ServerResponse } from "http";
+import merge from "lodash.merge";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
   GenericException,
+  InternalException,
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
@@ -43,6 +45,7 @@ export class BfServer {
   #router: Router;
   #bfConfig!: BfConfig;
   #resources!: Resource<unknown>[];
+  // eslint-disable-next-line @typescript-eslint/ban-types
   #middleware: Handler<{}>[];
 
   constructor(private _cfg: IBfServerConfig) {
@@ -71,9 +74,9 @@ export class BfServer {
   }
 
   #wrapMiddleware<T extends ZodRawShape>(m: Handler<T>) {
-    return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
+    return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
       const ctx = new Context<ZodObject<T>>(req, res, next);
-      const value = m(ctx);
+      const value = await m(ctx);
 
       if (value instanceof GenericException) next(value);
       else return;
@@ -81,15 +84,17 @@ export class BfServer {
   }
 
   #wrapHandler<T extends ZodRawShape>(handler: Handler<T>) {
-    // @ts-ignore (same reason)
-    return (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
+    return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
       const ctx = new Context<ZodObject<T>>(req, res, next, this.#bfConfig);
-      const value = handler(ctx);
+      const value = await handler(ctx);
 
-      if (value instanceof GenericException) next(value);
-      // @ts-ignore (response has already been sent)
+      if (value instanceof GenericException) return next(value);
       else if (value instanceof ServerResponse) return;
-      else {
+      else if (typeof value === "undefined") {
+        logger.warn("handler has no return value");
+        logger.warn("sending `OK` as the default response");
+        return res.status(200).send("OK");
+      } else {
         const t = typeof value === "object" ? "application/json" : "text/html";
         const m = typeof value === "object" ? "json" : "send";
         return res.status(200).setHeader("Content-Type", t)[m](value);
@@ -114,11 +119,20 @@ export class BfServer {
 
         Object.keys(handlers).forEach((k) => {
           if (STD_METHODS.includes(k)) {
+            type T = (
+              req: ExpressReq,
+              res: ExpressRes,
+              next: NextFunction
+            ) => void | Promise<void | ExpressRes> | ExpressRes;
+
             const method = k.toLowerCase() as ExpressMethod;
-            let wrapped = globalMware.map((m) => this.#wrapMiddleware(m));
+            const wrapped: T[] = globalMware.map((m) =>
+              this.#wrapMiddleware(m)
+            );
 
             const { action, input, middleware } = r.handlers[
               k as BfMethod
+              // eslint-disable-next-line @typescript-eslint/ban-types
             ] as IHandlerConfig<{}>;
 
             // add validator
@@ -211,13 +225,15 @@ export class BfServer {
         res: ExpressRes,
         _next: NextFunction
       ) => {
-        res.status(err.statusCode).json(err.getValues());
+        res
+          .status(err.statusCode)
+          .json((err || InternalException()).getValues());
       }
     );
   }
 
-  listRoutes() {
-    console.log(this.#router.manifest.routes);
+  middleware() {
+    //
   }
 
   mountRoute() {
@@ -237,20 +253,17 @@ export class BfServer {
   }
 }
 
+const DEFAULT_CFG = {
+  port: 6969,
+  enableCors: true,
+  logRequests: true,
+  logAdminRequests: false,
+};
+
 export function defaultServer() {
-  return new BfServer({
-    port: 6969,
-    enableCors: true,
-    logRequests: true,
-    logAdminRequests: false,
-  });
+  return new BfServer(DEFAULT_CFG);
 }
 
 export function createServer(cfg: IBfServerConfig) {
-  return new BfServer(cfg);
+  return new BfServer(merge(DEFAULT_CFG, cfg));
 }
-
-// TODO: Make app private
-// TODO: add settings options
-// TODO: Router/Manifest to check for routing conflicts
-// TODO: Make router plugin friendly... i.e. route value, route provider/origin
