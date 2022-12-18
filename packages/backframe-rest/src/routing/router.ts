@@ -11,11 +11,11 @@ export interface Item {
   dirname: string;
 }
 
-const stdRoute = /^([^\$\(\)\[\]]+).js$/;
+const stdRoute = /^([^$()[\]]+).js$/;
 const indexRoute = /^index.js$/;
-const indexShadow = /^\([^\)]+\).js$/;
+const indexShadow = /^\([^)]+\).js$/;
 const dynRoute = /^\$(\w+).js$/;
-const multiPart = /^((?:(?:\w+|\$\w+).){2,})js$/;
+const multiPart = /^((?:(?:\w+|\$\w+).){2,})js$/; // FIXME
 const catchAll = /^\$.js$/;
 
 const SPEC = [
@@ -78,14 +78,15 @@ export class Router {
     let route;
     this.#validateRoute(base);
 
-    SPEC.forEach((s) => {
+    for (const s of SPEC) {
       const re = s[0] as RegExp; // regex
       const cb = s[1] as (s: string) => string; // callback
 
       if (re.test(base)) {
         route = path.join(leading, cb(base)).replace(/\\/g, "/"); // windows backslashes
+        break;
       }
-    });
+    }
 
     // no match
     if (!route) {
@@ -99,7 +100,7 @@ export class Router {
       route,
       basename: base,
       filePath: r,
-      dirname: leading,
+      dirname: path.dirname(r),
     };
 
     this.manifest.add(item);
@@ -112,7 +113,7 @@ export class Router {
 
   #normalizeRoute(route: string) {
     // strip leading dirs and add prefix
-    let r = route.replace(`./${this.#rootDir}/${this.#sourceDir}`, "");
+    const r = route.replace(`./${this.#rootDir}/${this.#sourceDir}`, "");
     return path.join(this.#prefix, r);
   }
 
@@ -124,7 +125,7 @@ export class Router {
 
     const spec = {
       "unterminated parens": [/^\(\w+.js$/, /^\w+\).js$/],
-      "unallowed characters": [/^[\[\]].js$/],
+      "unallowed characters": [/^[[\]].js$/],
       "capitalized casing": [/^[A-Z]+.js$/],
     };
 
