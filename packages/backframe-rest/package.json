@@ -12,6 +12,10 @@
     "name": "Victor Ndaba",
     "email": "vndabam@gmail.com"
   },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@backframe"
   },
