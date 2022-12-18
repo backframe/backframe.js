@@ -142,7 +142,13 @@ export class Router {
     });
   }
 
-  addRoute() {
-    //
+  addRoute(route: string, origin?: string) {
+    // convert to dummy item
+    this.manifest.add({
+      basename: origin || route,
+      dirname: route,
+      filePath: route,
+      route,
+    });
   }
 }
