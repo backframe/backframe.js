@@ -1,73 +1,45 @@
-import type { BfConfig } from "@backframe/core";
-import type { BfServer } from "@backframe/rest";
-import {
-  debug,
-  loadModule,
-  logger,
-  resolveCwd,
-  resolvePackage,
-} from "@backframe/utils";
+import { logger, resolveCwd } from "@backframe/utils";
+import { ChildProcess } from "child_process";
 import chokidar from "chokidar";
 import { spawn } from "cross-spawn";
+import { existsSync } from "fs";
 import { globbySync } from "globby";
-import killable from "killable";
+import { ensureBfProject } from "../util.js";
 import { defineBfCommand } from "./index.js";
-
-const respawn = (args: string[]) =>
-  spawn(resolveCwd("node_modules/.bin/bf"), args, {
-    env: process.env,
-    stdio: "inherit",
-  });
 
 export default defineBfCommand({
   command: "serve",
-  description: "Serve local backframe project",
-  builder: (_) => {
-    _.option("port", {
-      alias: "p",
-      default: 6969,
-      description: "The port to start the server on",
-    })
-      .option("watch", {
-        alias: "w",
-        boolean: true,
-        description: "Start the server in watch mode",
-      })
-      .option("open", {
-        alias: "o",
-        boolean: true,
-        description: "Launch admin dashboard(if present)",
-      });
-  },
+  description: "Serve local backframe project in dev mode",
+  builder: (_) => _,
   handler: async (_args) => {
     try {
-      // TODO: validate in core that values specified in cfg exist
-      const core = await resolvePackage("@backframe/core");
-      const config: BfConfig = await core.default();
+      ensureBfProject();
 
-      const root = config.getRootDirName();
-      const entry = config.getEntryPointName();
-
-      const file = await loadModule(resolveCwd(root, entry));
-      if (!file.default) {
-        logger.error(`expected a default export from ${entry}`);
-        process.exit(1);
+      let child: ChildProcess;
+      if (!existsSync(resolveCwd("bin/serve.mjs"))) {
+        logger.error("could not find bin target: `bin/serve.mjs`");
+        logger.error("please make sure the file exists and try again");
+        process.exit(10);
       }
 
-      const server: BfServer = file.default;
-      await server.__init(config);
+      const start = () =>
+        spawn("node", [resolveCwd("bin/serve.mjs")], {
+          stdio: "inherit",
+        })
+          .on("spawn", () => {
+            setupWatcher();
+          })
+          .on("exit", (code, signal) => {
+            if (code !== 0 && signal !== "SIGTERM")
+              // not caused by child.kill()
+              logger.debug(
+                "server crashed, waiting for changes before restarting..."
+              );
+          });
 
-      if (_args["watch"]) {
-        // get sources
-        const toWatch = () => {
-          const files = [config.userCfg.root!];
-          const m = globbySync("./bf.config.*");
-          m.length && files.push(m[0]);
-          return files;
-        };
-
-        const watcher = chokidar.watch([...toWatch()], {
-          ignored: ["node_modules/", ".bf/"],
+      const setupWatcher = () => {
+        const watcher = chokidar.watch(["src/", ...globbySync("bf.config.*")], {
+          ignored: ["node_modules", ".bf/", ...globbySync("./.*")],
         });
 
         watcher.on("ready", () => {
@@ -77,20 +49,15 @@ export default defineBfCommand({
             logger.debug("changes detected, restarting server...");
 
             await watcher.close();
-            // @ts-ignore
-            server._handle?.kill(() => {
-              respawn(process.argv.slice(2));
-            });
-            setImmediate(() => server._app.emit("close"));
+            child.kill();
+            child = start();
           });
         });
-      }
+      };
 
-      server.start();
-      // add killable to server
-      killable(server._handle);
+      child = start();
     } catch (error) {
-      debug(error as string);
+      console.log(error);
       logger.error("an error occurred while trying to start the server");
       logger.error(
         "make sure you have installed @backframe/core and @backframe/rest"
