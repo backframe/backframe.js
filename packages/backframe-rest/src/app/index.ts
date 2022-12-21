@@ -8,7 +8,7 @@ import express, {
   type Express,
 } from "express";
 import helmet from "helmet";
-import { Server as HttpServer } from "http";
+import { Server as HttpServer, ServerResponse } from "http";
 import merge from "lodash.merge";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
@@ -91,11 +91,12 @@ export class BfServer {
         );
       };
 
-      if (value instanceof GenericException) return next(value);
-      else if (isText(value)) {
+      if (value instanceof GenericException)
+        return next(value); // forward error
+      else if (value instanceof ServerResponse) return; // response already sent
+      else if (isText(value) || typeof value === "object") {
+        // return plain values
         return res.status(200).send(value);
-      } else if (typeof value === "object") {
-        return res.status(200).json(value);
       }
     };
   }
@@ -156,6 +157,7 @@ export class BfServer {
   #validator(input: ZodType) {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
+      // TODO: Return better context in validator
       if (!opts.success) {
         next(
           new GenericException(
