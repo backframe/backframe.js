@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { BfConfig } from "@backframe/core";
 import type {
   NextFunction,
@@ -24,7 +25,8 @@ export class Context<T extends ZodType> {
     return this.request.body as z.infer<T>;
   }
 
-  get params(): object {
+  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
+  get params(): any {
     // TODO: typed params
     return this.request.params;
   }
