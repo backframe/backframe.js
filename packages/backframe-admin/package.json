@@ -54,7 +54,7 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@types/react-leaflet": "^2.8.2",
-    "@vitejs/plugin-react": "^2.1.0",
+    "@vitejs/plugin-react": "^3.0.0",
     "autoprefixer": "^10.4.12",
     "cross-env": "^7.0.3",
     "postcss": "^8.4.17",
