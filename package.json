@@ -1,7 +1,6 @@
 {
   "name": "backframe.js-monorepo",
   "private": true,
-  "version": "0.0.0",
   "repository": "https://github.com/backframe/backframe.js.git",
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
@@ -21,7 +20,8 @@
   ],
   "scripts": {
     "build": "pnpm recursive run build",
-    "prepare": "pnpm husky install"
+    "prepare": "pnpm husky install",
+    "ci:publish": "pnpm publish -r"
   },
   "devDependencies": {
     "@changesets/cli": "^2.25.2",
