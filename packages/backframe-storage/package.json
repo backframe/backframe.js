@@ -1,6 +1,21 @@
 {
-	"dependencies": {
-		"@backframe/core": "workspace:^0.0.0",
-		"multer": "1.4.5-lts.1"
-	}
+  "name": "@backframe/storage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Victor Ndaba",
+  "license": "ISC",
+  "dependencies": {
+    "@backframe/utils": "workspace:*",
+    "multer": "1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@backframe/core": "workspace:*",
+    "@types/multer": "^1.4.7"
+  }
 }
