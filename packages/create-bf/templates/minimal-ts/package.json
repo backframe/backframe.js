@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bf serve --watch",
+    "dev": "bf serve",
     "start": "node bin/serve.mjs"
   },
   "dependencies": {
-    "@backframe/core": "0.0.0",
-    "@backframe/rest": "0.0.0"
+    "@backframe/core": "^0.0.0",
+    "@backframe/rest": "^0.0.0"
   },
   "devDependencies": {
-    "@backframe/cli": "0.0.0",
-    "@types/node": "^18.7.17",
-    "typescript": "^4.8.3"
+    "@backframe/cli": "^0.0.0",
+    "@types/node": "^18.7.17"
   }
 }
