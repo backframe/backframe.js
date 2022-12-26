@@ -231,6 +231,7 @@ importers:
 
   packages/backframe-core:
     specifiers:
+      '@backframe/core': ^0.0.0-alpha.1
       '@backframe/eslint-config': workspace:*
       '@backframe/utils': workspace:*
       '@types/lodash.merge': ^4.6.7
