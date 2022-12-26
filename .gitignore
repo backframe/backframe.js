@@ -2,7 +2,8 @@ node_modules
 dist
 .bf
 example*
-!./examples/
+!examples/
 types
 todo.*
 pnpm-lock.yaml
+.npmrc
