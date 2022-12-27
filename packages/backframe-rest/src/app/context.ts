@@ -13,12 +13,13 @@ interface IResponseOptions {
   };
 }
 
-export class Context<T extends ZodType> {
+export class Context<T extends ZodType, U> {
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private _bfConfig?: BfConfig
+    private _bfConfig?: BfConfig,
+    private database?: U
   ) {}
 
   get input() {
@@ -33,6 +34,10 @@ export class Context<T extends ZodType> {
 
   get query(): object {
     return this.request.query;
+  }
+
+  get db(): U {
+    return this.database;
   }
 
   #applyHeaders(options: IResponseOptions) {
