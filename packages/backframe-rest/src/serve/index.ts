@@ -12,7 +12,7 @@ export async function startServer(config: BfConfig, port?: number) {
     process.exit(1);
   }
 
-  const server: BfServer = file.default;
+  const server: BfServer<unknown> = file.default;
   await server.__init(config);
 
   server.start(port);
