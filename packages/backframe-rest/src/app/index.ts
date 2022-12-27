@@ -22,19 +22,21 @@ import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
 import { Resource } from "./resources.js";
 
-interface IBfServerConfig {
+interface IBfServerConfig<T> {
   port?: number;
   enableCors?: boolean;
   corsOptions?: CorsOptions;
   logRequests?: boolean;
   logAdminRequests?: boolean;
+  database?: T;
 }
 
 const DEFAULT_PORT = 6969;
 
-export class BfServer {
+export class BfServer<T> {
   _app: Express;
   _handle?: HttpServer;
+  _database?: T;
 
   #router: Router;
   #bfConfig!: BfConfig;
@@ -42,8 +44,10 @@ export class BfServer {
   // eslint-disable-next-line @typescript-eslint/ban-types
   #middleware: Handler<{}>[];
 
-  constructor(private _cfg: IBfServerConfig) {
+  constructor(private _cfg: IBfServerConfig<T>) {
     this._app = express();
+    this._database = _cfg.database;
+
     this.#middleware = [];
     this.#resources = [];
   }
@@ -67,9 +71,15 @@ export class BfServer {
     return `http://localhost:${port}`;
   }
 
-  #wrapMiddleware<T extends ZodRawShape>(m: Handler<T>) {
+  #wrapMiddleware<Z extends ZodRawShape>(m: Handler<Z>) {
     return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = new Context<ZodObject<T>>(req, res, next);
+      const ctx = new Context<ZodObject<Z>, T>(
+        req,
+        res,
+        next,
+        this.#bfConfig,
+        this._database
+      );
       const value = await m(ctx);
 
       if (value instanceof GenericException) next(value);
@@ -77,9 +87,15 @@ export class BfServer {
     };
   }
 
-  #wrapHandler<T extends ZodRawShape>(handler: Handler<T>) {
+  #wrapHandler<Z extends ZodRawShape>(handler: Handler<Z>) {
     return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = new Context<ZodObject<T>>(req, res, next, this.#bfConfig);
+      const ctx = new Context<ZodObject<Z>, T>(
+        req,
+        res,
+        next,
+        this.#bfConfig,
+        this._database
+      );
       const value = await handler(ctx);
 
       const isText = (v: unknown) => {
@@ -260,6 +276,6 @@ export function defaultServer() {
   return new BfServer(DEFAULT_CFG);
 }
 
-export function createServer(cfg: IBfServerConfig) {
+export function createServer<T>(cfg: IBfServerConfig<T>) {
   return new BfServer(merge(DEFAULT_CFG, cfg));
 }
