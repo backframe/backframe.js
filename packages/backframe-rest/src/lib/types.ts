@@ -11,7 +11,7 @@ export type Method = "get" | "post" | "put" | "patch" | "delete";
 export type HandlerResult = string | object | GenericException | ServerResponse;
 
 export type Handler<T extends ZodRawShape> = (
-  ctx: Context<ZodObject<T>>
+  ctx: Context<ZodObject<T>, unknown>
 ) => HandlerResult | Promise<HandlerResult>;
 
 export interface IHandlerConfig<T extends ZodRawShape> {
