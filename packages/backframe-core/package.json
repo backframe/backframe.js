@@ -30,7 +30,7 @@
   "dependencies": {
     "@backframe/utils": "workspace:*",
     "dotenv": "^16.0.2",
-    "esbuild": "^0.15.7",
+    "esbuild": "^0.16.11",
     "globby": "^13.1.2",
     "lodash.merge": "^4.6.2",
     "tsconfig-resolver": "^3.0.1",
