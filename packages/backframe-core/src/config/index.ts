@@ -15,8 +15,9 @@ export type PluginKey = "emailProvider" | "storageProvider" | "compiler";
 
 export const BF_OUT_DIR = ".bf";
 
-export interface IBfServer {
+export interface IBfServer<T> {
   _app: Express;
+  database?: T;
 }
 
 // TODO: Create Manifest of plugins, provider, etc... that can be used for analysis later
@@ -24,7 +25,10 @@ export class BfConfig {
   #updatedRootDir: string;
   #pluginManifest: PluginManifest;
 
-  server?: IBfServer;
+  app?: Express;
+  server?: IBfServer<unknown>;
+  database?: unknown;
+
   serverModifiers: PluginListener[];
   configModifiers: PluginListener[];
 
@@ -83,8 +87,10 @@ export class BfConfig {
     this.#updatedRootDir = name;
   }
 
-  __setServer(server: IBfServer) {
+  __setServer<T>(server: IBfServer<T>) {
     this.server = server;
+    this.app = server._app;
+    this.database = server.database || {};
   }
 
   getRootDirName() {
