@@ -17,7 +17,13 @@ export const BF_OUT_DIR = ".bf";
 
 export interface IBfServer<T> {
   _app: Express;
-  database?: T;
+  _database?: T;
+}
+
+export interface IAuthDef {
+  initializers: RequestHandler[];
+  middleware: NextFunction[];
+  strategies: () => void;
 }
 
 // TODO: Create Manifest of plugins, provider, etc... that can be used for analysis later
@@ -28,6 +34,7 @@ export class BfConfig {
   app?: Express;
   server?: IBfServer<unknown>;
   database?: unknown;
+  authentication?: IAuthDef;
 
   serverModifiers: PluginListener[];
   configModifiers: PluginListener[];
@@ -90,7 +97,7 @@ export class BfConfig {
   __setServer<T>(server: IBfServer<T>) {
     this.server = server;
     this.app = server._app;
-    this.database = server.database || {};
+    this.database = server._database || {};
   }
 
   getRootDirName() {
