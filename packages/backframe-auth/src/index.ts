@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { BfPluginConfig } from "@backframe/core";
+import { hashSync } from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createRequire } from "module";
 import passport from "passport";
@@ -14,8 +16,11 @@ export default function (): BfPluginConfig {
     description: pkg.description || "Backframe auth plugin",
     modifyServer(cfg) {
       const app = cfg.server?._app;
+      const route = (r: string) => {
+        return cfg.getRestConfig().urlPrefix + r;
+      };
 
-      app?.post("/auth/local", (rq, rs) => {
+      app?.post(route("auth/local"), async (rq, rs) => {
         // TODO: Get access to database and create new user if not already exists
         const body = rq.body;
         if (!(body.email || body.password)) {
@@ -27,22 +32,47 @@ export default function (): BfPluginConfig {
           });
         }
 
-        // TODO: Sync with Database
+        // check if user exists
+        // rome-ignore lint/suspicious/noExplicitAny: <explanation>
+        const db = cfg.database as any;
+        let user = await db.user.findUnique({ where: { email: body.email } });
+        if (user) {
+          return rs.status(400).json({
+            status: "ERROR",
+            message: "Invalid credentials",
+            description: "User already exists",
+          });
+        }
+
+        // create new user
+        user = await db.user.create({
+          data: {
+            email: body.email,
+            passwordHash: hashSync(body.password, 10),
+          },
+        });
+
         return rs.status(200).json({
           status: "SUCCESS",
           message: "User authenticated successfully",
-          token: jwt.sign({ id: body.email }, "someSecretKey", {
-            expiresIn: "1d",
-          }),
+          token: jwt.sign(
+            { id: user.id },
+            process.env.JWT_SECRET || "someSecretKey",
+            {
+              expiresIn: "1d",
+            }
+          ),
         });
       });
     },
     async modifyConfig(cfg) {
       // TODO: Sync with userCfg and enabled strategies... etc
-      cfg.__auth = passport.initialize();
-      cfg.__authMiddleware = passport.authenticate("jwt", { session: false });
-      cfg.__authStrategies = () =>
-        import("./strategies/jwt.js").then(async (m) => await m.default(cfg));
+      cfg.authentication = {
+        initializers: [passport.initialize()],
+        middleware: [passport.authenticate("jwt", { session: false })],
+        strategies: () =>
+          import("./strategies/jwt.js").then((m) => m.default(cfg)),
+      };
     },
   };
 }
