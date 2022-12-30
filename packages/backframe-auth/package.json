@@ -10,7 +10,7 @@
   "dependencies": {
     "bcrypt": "^5.1.0",
     "express-session": "^1.17.3",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "openid-client": "^5.3.1",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
