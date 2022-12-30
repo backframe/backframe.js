@@ -1,6 +1,6 @@
 {
   "name": "@backframe/auth",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.0",
   "author": "Victor Ndaba <vndabam@gmail.com>",
   "main": "dist/index.js",
   "type": "module",
@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "express-session": "^1.17.3",
     "jsonwebtoken": "^8.5.1",
+    "openid-client": "^5.3.1",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
@@ -31,7 +33,7 @@
     "@types/passport-twitter": "^1.0.37"
   },
   "peerDependencies": {
-    "@backframe/core": "^0.0.0-alpha.0",
-    "@backframe/rest": "^0.0.0-alpha.0"
+    "@backframe/core": "^0.0.0",
+    "@backframe/rest": "^0.0.0"
   }
 }
