@@ -16,6 +16,7 @@ import {
   InternalException,
   MethodNotAllowed,
   NotFoundExeption,
+  UnauthorizedException,
 } from "../lib/errors.js";
 import { Handler, IHandlerConfig, Method } from "../lib/types.js";
 import { Router } from "../routing/router.js";
@@ -53,8 +54,7 @@ export class BfServer<T> {
   }
 
   async __init(cfg: BfConfig) {
-    cfg.server = this;
-
+    cfg.__setServer(this);
     this.#bfConfig = cfg;
     this.#router = new Router(cfg);
 
@@ -158,9 +158,13 @@ export class BfServer<T> {
 
           // passport secured route middleware
           // if method enabled, if strategy included, if
-          if (!r.public?.includes(method) && this.#bfConfig.__auth) {
+          const shouldSecure = () => {
+            return !r.public?.includes(method) && this.#bfConfig.authentication;
+          };
+
+          if (shouldSecure()) {
             // -> insert as first middleware
-            wrapped.unshift(this.#bfConfig.__authMiddleware);
+            wrapped.unshift(this.#protect());
           }
 
           // mount resource on express app
@@ -170,16 +174,31 @@ export class BfServer<T> {
     );
   }
 
+  #protect() {
+    return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (!req.user) {
+        next(UnauthorizedException());
+      } else {
+        next();
+      }
+    };
+  }
+
   #validator(input: ZodType) {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
-      // TODO: Return better context in validator
       if (!opts.success) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const errors = opts.error.flatten().fieldErrors;
+        const field = Object.keys(errors)[0];
         next(
           new GenericException(
             400,
             "Invalid request body",
-            "The request body is not valid"
+            `Error on field '${field}': ${errors[field][0].toLowerCase()}`
           )
         );
       } else {
@@ -192,12 +211,14 @@ export class BfServer<T> {
     this._app.use(helmet());
     this._app.use(express.json({ limit: "20mb" }));
     this._app.use(express.urlencoded({ extended: true }));
-    if (this.#bfConfig.__auth) {
+
+    const auth = this.#bfConfig.authentication;
+    if (auth) {
       // -> passport.initialize()
-      this._app.use(this.#bfConfig.__auth);
+      auth.initializers.forEach((i) => this._app.use(i));
 
       // -> passport strategies
-      this.#bfConfig.__authStrategies();
+      auth.strategies();
     }
 
     const useCors = this._cfg.enableCors;
