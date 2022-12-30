@@ -8,7 +8,8 @@
     "packages/*",
     "examples/*",
     "docs",
-    "packages/plugins/*"
+    "packages/plugins/*",
+    "tests/*"
   ],
   "keywords": [
     "nodejs",
