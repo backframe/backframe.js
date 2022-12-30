@@ -1,9 +1,11 @@
 # pnpm-workspace.yaml
 packages:
   - "docs/"
+  - "tests/*"
   - "examples/*"
   - "packages/*"
   - "packages/plugins/*"
 options:
+  git-checks: false
   prefer-workspace-packages: true
   strict-peer-dependencies: false
