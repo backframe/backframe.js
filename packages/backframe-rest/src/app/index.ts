@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import type { BfConfig } from "@backframe/core";
 import { logger } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
@@ -73,22 +74,6 @@ export class BfServer<T> {
     return `http://localhost:${port}`;
   }
 
-  #wrapMiddleware<Z extends ZodRawShape>(m: Handler<Z>) {
-    return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = new Context<ZodObject<Z>, T>(
-        req,
-        res,
-        next,
-        this.#bfConfig,
-        this._database
-      );
-      const value = await m(ctx);
-
-      if (value instanceof GenericException) next(value);
-      else return;
-    };
-  }
-
   #wrapHandler<Z extends ZodRawShape>(handler: Handler<Z>) {
     return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
       const ctx = new Context<ZodObject<Z>, T>(
@@ -142,21 +127,18 @@ export class BfServer<T> {
             next: NextFunction
           ) => void | Promise<void | ExpressRes> | ExpressRes;
 
-          const wrapped: T[] = globalMware.map((m) => this.#wrapMiddleware(m));
-
           const { action, input, middleware } = r.handlers[
             method as Method
-            // eslint-disable-next-line @typescript-eslint/ban-types
           ] as IHandlerConfig<{}>;
+
+          const handlers: T[] = [...globalMware, ...middleware, action].map(
+            (h) => this.#wrapHandler(h)
+          );
 
           // add validator
           if (input) {
-            wrapped.push(this.#validator(input));
+            handlers.unshift(this.#validator(input));
           }
-
-          // wrap handlers in format express understands
-          middleware?.forEach((m) => wrapped.push(this.#wrapMiddleware(m)));
-          wrapped.push(this.#wrapHandler(action));
 
           // passport secured route middleware
           // if method enabled, if strategy included, if
@@ -166,11 +148,11 @@ export class BfServer<T> {
 
           if (shouldSecure()) {
             // -> insert as first middleware
-            wrapped.unshift(this.#protect());
+            handlers.unshift(this.#protect());
           }
 
           // mount resource on express app
-          this._app[method](r.route, wrapped);
+          this._app[method](r.route, handlers);
         });
       })
     );
