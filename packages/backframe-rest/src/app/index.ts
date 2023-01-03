@@ -4,6 +4,7 @@ import cors, { CorsOptions } from "cors";
 import express, {
   NextFunction,
   Request as ExpressReq,
+  RequestHandler,
   Response as ExpressRes,
   type Express,
 } from "express";
@@ -270,8 +271,10 @@ export class BfServer<T> {
     //
   }
 
-  mountRoute() {
-    //
+  mountRoute(method: Method, route: string, handler: RequestHandler) {
+    const _route = this.#bfConfig.getRestConfig().urlPrefix + route;
+    this.#router.addRoute(route); // add route to manifest
+    this._app[method](_route, handler);
   }
 
   async start(port = this._cfg.port || DEFAULT_PORT) {
