@@ -8,7 +8,7 @@ import express, {
   type Express,
 } from "express";
 import helmet from "helmet";
-import { Server as HttpServer, ServerResponse } from "http";
+import http, { Server as HttpServer, ServerResponse } from "http";
 import merge from "lodash.merge";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
@@ -36,7 +36,7 @@ const DEFAULT_PORT = 6969;
 
 export class BfServer<T> {
   _app: Express;
-  _handle?: HttpServer;
+  _handle: HttpServer;
   _database?: T;
 
   #router: Router;
@@ -48,6 +48,7 @@ export class BfServer<T> {
   constructor(private _cfg: IBfServerConfig<T>) {
     this._app = express();
     this._database = _cfg.database;
+    this._handle = http.createServer(this._app);
 
     this.#middleware = [];
     this.#resources = [];
@@ -275,14 +276,10 @@ export class BfServer<T> {
 
   async start(port = this._cfg.port || DEFAULT_PORT) {
     this._cfg.port = port;
-    this._handle = this._app.listen(port, () => {
+    this._handle.listen(port, () => {
       // TODO: expose flags etc...
       logger.info(`server started on: ${this.#getHost()}`);
     });
-  }
-
-  stop(cb: (e?: Error) => void) {
-    this._handle.close(cb);
   }
 }
 
