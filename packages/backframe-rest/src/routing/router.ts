@@ -4,7 +4,7 @@ import { globbySync } from "globby";
 import path from "path";
 import { Manifest } from "./manifest.js";
 
-export interface Item {
+export interface RouteItem {
   route: string;
   filePath: string;
   basename: string;
@@ -96,7 +96,7 @@ export class Router {
       process.exit(1);
     }
 
-    const item: Item = {
+    const item: RouteItem = {
       route,
       basename: base,
       filePath: r,
