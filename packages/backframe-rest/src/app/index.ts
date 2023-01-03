@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import type { BfConfig } from "@backframe/core";
 import { logger } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, {
   NextFunction,
   Request as ExpressReq,
+  RequestHandler,
   Response as ExpressRes,
   type Express,
 } from "express";
 import helmet from "helmet";
-import { Server as HttpServer, ServerResponse } from "http";
+import http, { Server as HttpServer, ServerResponse } from "http";
 import merge from "lodash.merge";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
@@ -36,7 +38,7 @@ const DEFAULT_PORT = 6969;
 
 export class BfServer<T> {
   _app: Express;
-  _handle?: HttpServer;
+  _handle: HttpServer;
   _database?: T;
 
   #router: Router;
@@ -48,6 +50,7 @@ export class BfServer<T> {
   constructor(private _cfg: IBfServerConfig<T>) {
     this._app = express();
     this._database = _cfg.database;
+    this._handle = http.createServer(this._app);
 
     this.#middleware = [];
     this.#resources = [];
@@ -69,22 +72,6 @@ export class BfServer<T> {
 
   #getHost(port = this._cfg.port || DEFAULT_PORT) {
     return `http://localhost:${port}`;
-  }
-
-  #wrapMiddleware<Z extends ZodRawShape>(m: Handler<Z>) {
-    return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = new Context<ZodObject<Z>, T>(
-        req,
-        res,
-        next,
-        this.#bfConfig,
-        this._database
-      );
-      const value = await m(ctx);
-
-      if (value instanceof GenericException) next(value);
-      else return;
-    };
   }
 
   #wrapHandler<Z extends ZodRawShape>(handler: Handler<Z>) {
@@ -140,21 +127,18 @@ export class BfServer<T> {
             next: NextFunction
           ) => void | Promise<void | ExpressRes> | ExpressRes;
 
-          const wrapped: T[] = globalMware.map((m) => this.#wrapMiddleware(m));
-
           const { action, input, middleware } = r.handlers[
             method as Method
-            // eslint-disable-next-line @typescript-eslint/ban-types
           ] as IHandlerConfig<{}>;
+
+          const handlers: T[] = [...globalMware, ...middleware, action].map(
+            (h) => this.#wrapHandler(h)
+          );
 
           // add validator
           if (input) {
-            wrapped.push(this.#validator(input));
+            handlers.unshift(this.#validator(input));
           }
-
-          // wrap handlers in format express understands
-          middleware?.forEach((m) => wrapped.push(this.#wrapMiddleware(m)));
-          wrapped.push(this.#wrapHandler(action));
 
           // passport secured route middleware
           // if method enabled, if strategy included, if
@@ -164,11 +148,11 @@ export class BfServer<T> {
 
           if (shouldSecure()) {
             // -> insert as first middleware
-            wrapped.unshift(this.#protect());
+            handlers.unshift(this.#protect());
           }
 
           // mount resource on express app
-          this._app[method](r.route, wrapped);
+          this._app[method](r.route, handlers);
         });
       })
     );
@@ -269,20 +253,18 @@ export class BfServer<T> {
     //
   }
 
-  mountRoute() {
-    //
+  mountRoute(method: Method, route: string, handler: RequestHandler) {
+    const _route = this.#bfConfig.getRestConfig().urlPrefix + route;
+    this.#router.addRoute(route); // add route to manifest
+    this._app[method](_route, handler);
   }
 
   async start(port = this._cfg.port || DEFAULT_PORT) {
     this._cfg.port = port;
-    this._handle = this._app.listen(port, () => {
+    this._handle.listen(port, () => {
       // TODO: expose flags etc...
       logger.info(`server started on: ${this.#getHost()}`);
     });
-  }
-
-  stop(cb: (e?: Error) => void) {
-    this._handle.close(cb);
   }
 }
 

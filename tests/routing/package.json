@@ -1,0 +1,22 @@
+{
+  "name": "test:routing",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bf serve",
+    "start": "node bin/serve.mjs",
+    "run:tests": "vitest"
+  },
+  "dependencies": {
+    "@backframe/core": "workspace:*",
+    "@backframe/rest": "workspace:*"
+  },
+  "devDependencies": {
+    "@backframe/cli": "workspace:*",
+    "@types/node": "^18.7.17",
+    "@types/supertest": "^2.0.12",
+    "supertest": "^6.3.1",
+    "vitest": "^0.26.2"
+  }
+}

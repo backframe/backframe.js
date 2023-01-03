@@ -6,7 +6,7 @@ import {
   IRouteConfig,
   Method,
 } from "../lib/types.js";
-import { Item } from "../routing/router.js";
+import { RouteItem } from "../routing/router.js";
 import { ResourceModule, _getStaticHandler } from "./handlers.js";
 /* eslint-disable @typescript-eslint/ban-types */
 import { BfConfig } from "@backframe/core";
@@ -19,7 +19,7 @@ export const STD_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 export class Resource<T> {
   #model?: T;
   #route!: string;
-  #item: Item;
+  #item: RouteItem;
   #bfConfig!: BfConfig;
   // eslint-disable-next-line @typescript-eslint/ban-types
   #middleware?: Handler<{}>[];
@@ -28,7 +28,7 @@ export class Resource<T> {
   public?: Method[];
   enabled?: Method[];
 
-  constructor(item: Item, config: BfConfig) {
+  constructor(item: RouteItem, config: BfConfig) {
     this.#route = item.route;
     this.#bfConfig = config;
     this.#item = item;

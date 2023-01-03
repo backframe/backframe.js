@@ -1,9 +1,9 @@
 import { BfConfig } from "@backframe/core";
 import { logger } from "@backframe/utils";
-import { Item } from "./router.js";
+import { RouteItem } from "./router.js";
 
 export class Manifest {
-  #items: Item[];
+  #items: RouteItem[];
 
   constructor(private bfConfig: BfConfig) {
     this.#items = [];
@@ -17,7 +17,7 @@ export class Manifest {
     return this.#items.map(($) => $.route);
   }
 
-  add(i: Item) {
+  add(i: RouteItem) {
     if (this.#items.some(($) => $.route === i.route)) {
       logger.warn(`duplicate route: ${i.route} found`);
       logger.warn("one of the routes will be overriden");
