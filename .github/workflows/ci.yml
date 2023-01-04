@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 env:
   CI: true
@@ -35,6 +38,9 @@ jobs:
 
       - name: install dependencies
         run: pnpm install
+
+      - name: run tests
+        run: pnpm run:tests
 
       # - name: create and publish versions
       #   uses: changesets/action@v1
