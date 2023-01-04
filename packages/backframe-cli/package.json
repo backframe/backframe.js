@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@backframe/core": "workspace:*",
+    "@backframe/eslint-config": "workspace:*",
     "@backframe/rest": "workspace:*",
     "@types/cross-spawn": "^6.0.2",
     "@types/prompts": "^2.4.1",
