@@ -3,6 +3,7 @@ import { buildSync } from "esbuild";
 import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
 import { globbySync } from "globby";
+import { Server } from "http";
 import merge from "lodash.merge";
 import path from "path";
 import { PluginListener } from "../plugins/index.js";
@@ -17,7 +18,12 @@ export const BF_OUT_DIR = ".bf";
 
 export interface IBfServer<T> {
   _app: Express;
+  _handle: Server;
   _database?: T;
+  _sockets?: unknown;
+
+  __init: (cfg: BfConfig) => Promise<void>;
+  start: (port?: number) => Promise<void>;
 }
 
 export interface IAuthDef {
