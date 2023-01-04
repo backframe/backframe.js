@@ -1,7 +1,7 @@
 import loadConfig from "@backframe/core";
 import request from "supertest";
 import { describe, it } from "vitest";
-import server from "../.bf/server.js";
+import server from "../src/server.js";
 
 await server.__init(await loadConfig());
 const app = server._app;
@@ -46,5 +46,18 @@ describe("test routing functionality", () => {
 
   it("should receive 200 and hello as response", async () => {
     await request(app).get("/a/hello").expect(200).expect("hello");
+  });
+
+  describe("test catchAll routing", () => {
+    it("should receive `catchAll works` as response", async () => {
+      await request(app).get("/admin/").expect(200).expect("Catchall works");
+    });
+
+    it("should receive `catchAll works` as response", async () => {
+      await request(app)
+        .get("/admin/jiberish")
+        .expect(200)
+        .expect("Catchall works");
+    });
   });
 });
