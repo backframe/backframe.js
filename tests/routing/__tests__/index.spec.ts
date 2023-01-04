@@ -1,7 +1,7 @@
 import loadConfig from "@backframe/core";
 import request from "supertest";
 import { describe, it } from "vitest";
-import server from "../.bf/server.js";
+import server from "../src/server.js";
 
 await server.__init(await loadConfig());
 const app = server._app;
