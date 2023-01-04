@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import type { BfConfig } from "@backframe/core";
+
+import type { BfConfig, IBfServer } from "@backframe/core";
 import { logger } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, {
@@ -12,13 +13,13 @@ import express, {
 import helmet from "helmet";
 import http, { Server as HttpServer, ServerResponse } from "http";
 import merge from "lodash.merge";
+import type { Server as SocketServer } from "socket.io";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
   GenericException,
   InternalException,
   MethodNotAllowed,
   NotFoundExeption,
-  UnauthorizedException,
 } from "../lib/errors.js";
 import { Handler, IHandlerConfig, Method } from "../lib/types.js";
 import { Router } from "../routing/router.js";
@@ -36,10 +37,11 @@ interface IBfServerConfig<T> {
 
 const DEFAULT_PORT = 6969;
 
-export class BfServer<T> {
+export class BfServer<T> implements IBfServer<T> {
   _app: Express;
   _handle: HttpServer;
   _database?: T;
+  _sockets?: SocketServer;
 
   #router: Router;
   #bfConfig!: BfConfig;
@@ -63,8 +65,8 @@ export class BfServer<T> {
     this.#router.init();
     this.#applyMiddleware();
 
-    await this.#loadResources();
     cfg.__invokeServerModifiers();
+    await this.#loadResources();
 
     this.#setupErrHandlers(); // ensure called last
   }
@@ -118,6 +120,19 @@ export class BfServer<T> {
         const handlers = r.handlers ?? {};
         const globalMware = this.#middleware?.concat(r.middleware ?? []);
 
+        // check for realtime listeners
+        if (r.listeners) {
+          if (!this._sockets) {
+            logger.warn(
+              `listeners found in route: \`${r.route}\` but plugin \`@backframe/sockets\` not enabled`
+            );
+          } else {
+            const nsp = this._sockets.of(r.route);
+            r.listeners(nsp);
+          }
+        }
+
+        // check for rest methods handlers
         Object.keys(handlers).forEach((k) => {
           const method = k as Method;
           type T = (
@@ -141,17 +156,6 @@ export class BfServer<T> {
             handlers.unshift(this.#validator(input));
           }
 
-          // passport secured route middleware
-          // if method enabled, if strategy included, if
-          const shouldSecure = () => {
-            return !r.public?.includes(method) && this.#bfConfig.authentication;
-          };
-
-          if (shouldSecure()) {
-            // -> insert as first middleware
-            handlers.unshift(this.#protect());
-          }
-
           // mount resource on express app
           this._app[method](r.route, handlers);
         });
@@ -159,22 +163,11 @@ export class BfServer<T> {
     );
   }
 
-  #protect() {
-    return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
-      // @ts-expect-error it exists
-      if (!req.user) {
-        next(UnauthorizedException());
-      } else {
-        next();
-      }
-    };
-  }
-
   #validator(input: ZodType) {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
       if (!opts.success) {
-        // @ts-expect-error value exists
+        // @ts-expect-error (value exists)
         const errors = opts.error.flatten().fieldErrors;
         const field = Object.keys(errors)[0];
         next(
@@ -194,15 +187,6 @@ export class BfServer<T> {
     this._app.use(helmet());
     this._app.use(express.json({ limit: "20mb" }));
     this._app.use(express.urlencoded({ extended: true }));
-
-    const auth = this.#bfConfig.authentication;
-    if (auth) {
-      // -> passport.initialize()
-      auth.initializers.forEach((i) => this._app.use(i));
-
-      // -> passport strategies
-      auth.strategies();
-    }
 
     const useCors = this._cfg.enableCors;
     const log = this._cfg.logRequests;
