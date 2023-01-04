@@ -44,7 +44,6 @@ export class BfServer<T> {
   #router: Router;
   #bfConfig!: BfConfig;
   #resources!: Resource<unknown>[];
-  // eslint-disable-next-line @typescript-eslint/ban-types
   #middleware: Handler<{}>[];
 
   constructor(private _cfg: IBfServerConfig<T>) {
@@ -131,9 +130,11 @@ export class BfServer<T> {
             method as Method
           ] as IHandlerConfig<{}>;
 
-          const handlers: T[] = [...globalMware, ...middleware, action].map(
-            (h) => this.#wrapHandler(h)
-          );
+          const handlers: T[] = [
+            ...globalMware,
+            ...(middleware ?? []),
+            action,
+          ].map((h) => this.#wrapHandler(h));
 
           // add validator
           if (input) {
@@ -160,8 +161,7 @@ export class BfServer<T> {
 
   #protect() {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error it exists
       if (!req.user) {
         next(UnauthorizedException());
       } else {
@@ -174,8 +174,7 @@ export class BfServer<T> {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
       if (!opts.success) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error value exists
         const errors = opts.error.flatten().fieldErrors;
         const field = Object.keys(errors)[0];
         next(
