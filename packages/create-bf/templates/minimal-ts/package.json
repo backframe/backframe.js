@@ -7,11 +7,11 @@
     "start": "node bin/serve.mjs"
   },
   "dependencies": {
-    "@backframe/core": "^0.0.0",
-    "@backframe/rest": "^0.0.0"
+    "@backframe/core": "^0.0.0-alpha.3",
+    "@backframe/rest": "^0.0.0-alpha.3"
   },
   "devDependencies": {
-    "@backframe/cli": "^0.0.0",
+    "@backframe/cli": "^0.0.0-alpha.3",
     "@types/node": "^18.7.17"
   }
 }

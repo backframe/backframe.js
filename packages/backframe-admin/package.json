@@ -9,7 +9,6 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "dev": "cross-env NODE_ENV=development node scripts/dev.js",
-    "build": "tsc && pnpm build:client && pnpm build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
     "serve": "cross-env NODE_ENV=production node scripts/dev.js",
