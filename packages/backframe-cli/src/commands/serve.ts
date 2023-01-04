@@ -32,7 +32,7 @@ export default defineBfCommand({
           .on("exit", (code, signal) => {
             if (code !== 0 && signal !== "SIGTERM")
               // not caused by child.kill()
-              logger.debug(
+              logger.error(
                 "server crashed, waiting for changes before restarting..."
               );
           });
