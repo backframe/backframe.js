@@ -1,5 +1,6 @@
 import { gray } from "kleur/colors";
 import { PromptObject } from "prompts";
+import { pacman } from "../lib/pm";
 import { isManualTrack } from "./utils";
 
 export const outroPrompts = (): PromptObject[] => {
@@ -29,7 +30,7 @@ export const outroPrompts = (): PromptObject[] => {
     {
       type: "confirm",
       name: "installDeps",
-      message: `Would you like to run ${"npm"} install ?`,
+      message: `Would you like to run ${pacman.name} install ?`,
       initial: true,
     },
     {
