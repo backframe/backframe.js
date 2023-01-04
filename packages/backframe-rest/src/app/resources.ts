@@ -3,6 +3,7 @@
 
 import { BfConfig } from "@backframe/core";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
+import type { Namespace } from "socket.io";
 import { GenericException } from "../lib/errors.js";
 import {
   Handler,
@@ -31,6 +32,7 @@ export class Resource<T> {
   #middleware?: Handler<{}>[];
   #handlers!: IHandlers;
 
+  listeners?: (nsp: Namespace) => void;
   public?: Method[];
   enabled?: Method[];
 
@@ -164,9 +166,15 @@ export class Resource<T> {
       }
     });
 
+    // check for named `middleware` export
     if (module["middleware"]) {
       // TODO: validate middleware values
       this.#middleware = module["middleware"] as Handler<{}>[];
+    }
+
+    // check for listeners
+    if (module["listeners"]) {
+      this.listeners = module["listeners"] as (nsp: Namespace) => void;
     }
   }
 }
