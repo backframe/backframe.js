@@ -22,13 +22,11 @@ Here are a few things to note about backframe before getting started:
 To create a new backframe app, run
 
 ```bash
-npx create-bf
+npx @backframe/create-bf
 
 # or
-pnpx create-bf
+pnpx @backframe/create-bf
 
-# or
-yarn create bf
 ```
 
 The CLI will prompt you for certain values and for a simple getting started example, select whether you'd like to use JS or TS then make sure to select the _CREATE MINIMAL STARTER APP_ option.
