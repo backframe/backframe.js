@@ -47,4 +47,17 @@ describe("test routing functionality", () => {
   it("should receive 200 and hello as response", async () => {
     await request(app).get("/a/hello").expect(200).expect("hello");
   });
+
+  describe("test catchAll routing", () => {
+    it("should receive `catchAll works` as response", async () => {
+      await request(app).get("/admin/").expect(200).expect("Catchall works");
+    });
+
+    it("should receive `catchAll works` as response", async () => {
+      await request(app)
+        .get("/admin/jiberish")
+        .expect(200)
+        .expect("Catchall works");
+    });
+  });
 });
