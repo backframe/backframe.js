@@ -1,0 +1,13 @@
+{
+  "name": "@backframe/models",
+  "version": "0.0.0-alpha.3",
+  "private": true,
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Victor Ndaba",
+  "license": "ISC"
+}
