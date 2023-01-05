@@ -61,10 +61,5 @@ export async function loadConfig() {
     });
 
   // expand config
-  const bfConfig = new BfConfig(cfg);
-
-  // initialize - will load plugins, compile files etc
-  bfConfig.__initialize();
-
-  return bfConfig;
+  return new BfConfig(cfg);
 }
