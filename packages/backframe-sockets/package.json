@@ -1,0 +1,36 @@
+{
+  "name": "@backframe/sockets",
+  "version": "0.0.0-alpha.0",
+  "description": "Realtime websocket connections for backframe servers",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Victor Ndaba",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@backframe"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@backframe/utils": "workspace:*",
+    "socket.io": "^4.5.4",
+    "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "@backframe/core": "workspace:*",
+    "@backframe/eslint-config": "workspace:*",
+    "@types/ws": "^8.5.3"
+  },
+  "eslintConfig": {
+    "extends": "@backframe/eslint-config"
+  },
+  "eslintIgnore": [
+    "./dist/*"
+  ]
+}
