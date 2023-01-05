@@ -221,7 +221,7 @@ export type BfUserConfig = {
    */
   authentication?: _BfUserConfig["authentication"];
   /**
-   * The plugins that are enabled for the backframe application along with their configurations. Backframe plugins are simple functions that return an object of type `BfPluginConfig`. The `BfPluginConfig` object contains the `name` of the plugin, along with some other plugin metadata and the `hooks` that the plugin defines. The `hooks` are the functions that are executed at different stages of the lifecycle of your application. For example, the `onInit` hook is executed after the config files have been loaded. When invoked, each hook is passed the `BfConfig` object as its only argument. This allows you to access the configuration of your application from within the plugin.
+   * The plugins that are enabled for the backframe application along with their configurations. Backframe plugins are simple functions that return an object of type `BfPluginConfig`. The `BfPluginConfig` object contains the `name` of the plugin, along with some other plugin metadata and the `hooks` that the plugin defines. The `hooks` are the functions that are executed at different stages of the lifecycle of your application. For example, the `onConfigInit` hook is executed after the config files have been loaded. When invoked, each hook is passed the `BfConfig` object as its only argument. This allows you to access the configuration of your application from within the plugin.
    *
    * @link https://backframe.github.io/js/docs/config#plugins for more information on plugins
    * @default []
@@ -231,7 +231,7 @@ export type BfUserConfig = {
    * function myPlugin() {
    *    return {
    *     name: "my-plugin",
-   *     onInit: (cfg: BfConfig) => {
+   *     onConfigInit: (cfg: BfConfig) => {
    *      // do something
    *     }
    *    }
