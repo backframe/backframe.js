@@ -13,7 +13,7 @@ interface IResponseOptions {
   };
 }
 
-export class Context<T extends ZodType, U> {
+export class Context<U, T extends ZodType> {
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
@@ -32,7 +32,8 @@ export class Context<T extends ZodType, U> {
     return this.request.params;
   }
 
-  get query(): object {
+  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
+  get query(): any {
     return this.request.query;
   }
 
