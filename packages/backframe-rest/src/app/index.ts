@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import type { BfConfig, IBfServer } from "@backframe/core";
-import { logger } from "@backframe/utils";
+import { loadModule, logger } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, {
   NextFunction,
@@ -46,7 +46,7 @@ export class BfServer<T> implements IBfServer<T> {
   #router: Router;
   #bfConfig!: BfConfig;
   #resources!: Resource<unknown>[];
-  #middleware: Handler<{}>[];
+  #middleware: Handler<T, {}>[];
 
   constructor(private _cfg: IBfServerConfig<T>) {
     this._app = express();
@@ -60,14 +60,14 @@ export class BfServer<T> implements IBfServer<T> {
   async __init(cfg: BfConfig) {
     cfg.__setServer(this);
     this.#bfConfig = cfg;
+
     this.#router = new Router(cfg);
-
     this.#router.init();
+
     this.#applyMiddleware();
-
     cfg.__invokeServerModifiers();
-    await this.#loadResources();
 
+    await this.#loadResources();
     this.#setupErrHandlers(); // ensure called last
   }
 
@@ -75,9 +75,9 @@ export class BfServer<T> implements IBfServer<T> {
     return `http://localhost:${port}`;
   }
 
-  #wrapHandler<Z extends ZodRawShape>(handler: Handler<Z>) {
+  #wrapHandler<Z extends ZodRawShape>(handler: Handler<T, Z>) {
     return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = new Context<ZodObject<Z>, T>(
+      const ctx = new Context<T, ZodObject<Z>>(
         req,
         res,
         next,
@@ -105,7 +105,15 @@ export class BfServer<T> implements IBfServer<T> {
     };
   }
 
-  #loadResources() {
+  async #loadResources() {
+    // load root server listeners
+    const entry = this.#bfConfig.getEntryPoint();
+    const module = await loadModule(entry);
+
+    if (module.listeners && this._sockets) {
+      module.listeners(this._sockets); // pass io object
+    }
+
     const manifest = this.#router.manifest;
     manifest.items.forEach((i) => {
       const r = new Resource(i, this.#bfConfig);
@@ -124,7 +132,7 @@ export class BfServer<T> implements IBfServer<T> {
         if (r.listeners) {
           if (!this._sockets) {
             logger.warn(
-              `listeners found in route: \`${r.route}\` but plugin \`@backframe/sockets\` not enabled`
+              `listeners found in route: \`${r.route}\` but sockets plugin not enabled`
             );
           } else {
             const nsp = this._sockets.of(r.route);
@@ -232,8 +240,8 @@ export class BfServer<T> implements IBfServer<T> {
     );
   }
 
-  middleware() {
-    //
+  middleware(handler: Handler<T, {}>) {
+    this._app.use(this.#wrapHandler(handler));
   }
 
   mountRoute(method: Method, route: string, handler: RequestHandler) {

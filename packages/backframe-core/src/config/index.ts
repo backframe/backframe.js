@@ -118,8 +118,8 @@ export class BfConfig {
     return this.userCfg.gqlDir;
   }
 
-  getEntryPointName() {
-    return this.userCfg.entryPoint;
+  getEntryPoint() {
+    return resolveCwd(this.getRootDirName(), this.userCfg.entryPoint);
   }
 
   getRestConfig() {

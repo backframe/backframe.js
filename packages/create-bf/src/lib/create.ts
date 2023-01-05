@@ -76,6 +76,8 @@ async function createMinimalApp(cfg: IConfig) {
     tasks.add({
       title: "Installing dependencies",
       task: async () => {
+        // change to target dir
+        process.chdir(cfg.targetDir);
         await pacman.install();
       },
     });

@@ -10,14 +10,14 @@ export type Method = "get" | "post" | "put" | "patch" | "delete";
 
 export type HandlerResult = string | object | GenericException | ServerResponse;
 
-export type Handler<T extends ZodRawShape> = (
-  ctx: Context<ZodObject<T>, unknown>
+export type Handler<U, T extends ZodRawShape> = (
+  ctx: Context<U, ZodObject<T>>
 ) => HandlerResult | Promise<HandlerResult>;
 
 export interface IHandlerConfig<T extends ZodRawShape> {
   input?: ZodObject<T>;
-  action: Handler<T>;
-  middleware?: Handler<T>[];
+  action: Handler<unknown, T>;
+  middleware?: Handler<unknown, T>[];
 }
 
 export interface IHandlers {

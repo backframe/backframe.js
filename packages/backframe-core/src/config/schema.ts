@@ -6,7 +6,7 @@ export const BF_CONFIG_DEFAULTS = {
   gqlDir: "graphql",
   viewsDir: "views",
   routesDir: "routes",
-  staticDir: "static",
+  staticDirs: ["static"],
   entryPoint: "server.js",
   interfaces: {
     rest: {
@@ -31,7 +31,10 @@ export const BfUserConfigSchema = z.object({
   root: z.string().optional().default(BF_CONFIG_DEFAULTS.root),
   routesDir: z.string().optional().default(BF_CONFIG_DEFAULTS.routesDir),
   gqlDir: z.string().optional().default(BF_CONFIG_DEFAULTS.gqlDir),
-  staticDir: z.string().optional().default(BF_CONFIG_DEFAULTS.staticDir),
+  staticDirs: z
+    .array(z.string())
+    .optional()
+    .default(BF_CONFIG_DEFAULTS.staticDirs),
   viewsDir: z.string().optional().default(BF_CONFIG_DEFAULTS.viewsDir),
   entryPoint: z.string().optional().default(BF_CONFIG_DEFAULTS.entryPoint),
   interfaces: z

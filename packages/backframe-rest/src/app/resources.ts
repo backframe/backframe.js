@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { BfConfig } from "@backframe/core";
+import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import type { Namespace } from "socket.io";
-import { GenericException } from "../lib/errors.js";
 import {
   Handler,
   IHandlerConfig,
@@ -14,11 +14,7 @@ import {
   Method,
 } from "../lib/types.js";
 import { RouteItem } from "../routing/router.js";
-import {
-  createHandler,
-  ResourceModule,
-  _getStaticHandler,
-} from "./handlers.js";
+import { DefaultHandlers, ResourceModule } from "./handlers.js";
 
 export const DEFAULT_ENABLED: Method[] = ["get", "post", "put", "delete"];
 export const DEFAULT_PUBLIC: Method[] = ["get"];
@@ -27,9 +23,9 @@ export const STD_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 export class Resource<T> {
   #model?: T;
   #route!: string;
-  #item: RouteItem;
+  #routeItem: RouteItem;
   #bfConfig!: BfConfig;
-  #middleware?: Handler<{}>[];
+  #middleware?: Handler<unknown, {}>[];
   #handlers!: IHandlers;
 
   listeners?: (nsp: Namespace) => void;
@@ -39,8 +35,12 @@ export class Resource<T> {
   constructor(item: RouteItem, config: BfConfig) {
     this.#route = item.route;
     this.#bfConfig = config;
-    this.#item = item;
+    this.#routeItem = item;
     this.#handlers = {};
+  }
+
+  get routeItem() {
+    return this.#routeItem;
   }
 
   get route() {
@@ -61,7 +61,7 @@ export class Resource<T> {
 
   async initialize() {
     try {
-      const mod = await loadModule(resolveCwd(this.#item.filePath));
+      const mod = await loadModule(resolveCwd(this.#routeItem.filePath));
       const config: IRouteConfig<T> = Object.assign(
         {
           enabledMethods: DEFAULT_ENABLED,
@@ -78,63 +78,29 @@ export class Resource<T> {
       logger.error(
         `an error occurred while trying to load resources at route: ${
           this.#route
-        } from file: ${this.#item.filePath}`
+        } from file: ${this.#routeItem.filePath}`
       );
       console.error(error);
       process.exit(1);
     }
   }
 
-  #getHandler(method: Method) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = this.#bfConfig.database as any;
-    const model = this.#model ?? this.route;
+  #getHandler(method: Method): IHandlerConfig<{}> {
+    const db = this.#bfConfig.database as DB;
+    const model = (this.#model ?? this.route) as string;
+    const defaultH = new DefaultHandlers(this, this.#bfConfig);
 
     // check for a model
-    if (db?.[model]) {
+    if (db?.[model] || db?.[this.#routeItem.dirname]) {
       // create custom handler
-      switch (method) {
-        case "get": {
-          return createHandler({
-            async action(ctx) {
-              let data;
-
-              if (Object.keys(ctx.params ?? {}).length) {
-                // single item
-              } else {
-                // collection
-                data = await db[model].findMany();
-              }
-
-              return ctx.json(data);
-            },
-          });
-        }
-        case "post": {
-          return createHandler({
-            async action(ctx) {
-              try {
-                const item = await db[model].create({ data: ctx.input });
-                return ctx.json(item);
-              } catch (error) {
-                return ctx.json(
-                  new GenericException(400, error.message, ""),
-                  400
-                );
-              }
-            },
-          });
-        }
-        default: {
-          return _getStaticHandler(method, this.route);
-        }
-      }
+      type key = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+      return defaultH[method.toUpperCase() as key]();
     } else {
-      return _getStaticHandler(method, this.route);
+      return defaultH.STATIC(method, this.route);
     }
   }
 
-  // TODO: Validate file module
+  // This function loads the file mapped to a resource and loads the request handlers along with the middleware and listeners etc...
   #loadHandlers(module: IModuleConfig<unknown>) {
     if (
       !module.default ||
@@ -169,7 +135,7 @@ export class Resource<T> {
     // check for named `middleware` export
     if (module["middleware"]) {
       // TODO: validate middleware values
-      this.#middleware = module["middleware"] as Handler<{}>[];
+      this.#middleware = module["middleware"] as Handler<unknown, {}>[];
     }
 
     // check for listeners
