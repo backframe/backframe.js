@@ -1,11 +1,21 @@
-import { Session, User } from "./models.js";
+import {
+  AuthAccount,
+  AuthSession,
+  AuthUser,
+  AuthVerificationRequest,
+} from "./models.js";
 
 // Object mimicking expected database shape
 export interface DB {
-  user: DbEntry<User>;
-  session: DbEntry<Session>;
+  authUser: DbEntry<AuthUser>;
+  authSession: DbEntry<AuthSession>;
+  authAccount: DbEntry<AuthAccount>;
+  authVerificationRequest: DbEntry<AuthVerificationRequest>;
   [key: string]: DbEntry<unknown>;
 }
+
+export * from "./models.js";
+export * from "./prisma.js";
 
 export interface DbEntry<T> {
   create: <S extends BooleanKeys<T>>(args: {
