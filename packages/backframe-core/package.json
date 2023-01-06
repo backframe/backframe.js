@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@backframe/eslint-config": "workspace:*",
+    "@backframe/models": "workspace:*",
     "@types/lodash.merge": "^4.6.7"
   },
   "dependencies": {
