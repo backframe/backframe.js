@@ -28,9 +28,6 @@ export class SchemaConfig<C> {
   }
 }
 
-export { g } from "./definitions/index.js";
-export * from "./definitions/types.js";
-
 export function gql() {
   //
 }

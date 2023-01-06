@@ -9,10 +9,11 @@ export default function (options?: Partial<ServerOptions>): BfPluginConfig {
   return {
     name: pkg.name,
     description: pkg.description || "",
-    modifyServer(cfg) {
-      const server = cfg.server;
-      const io = new SocketServer(server._handle, options);
-      server._sockets = io;
+    onServerInit(cfg) {
+      const server = cfg.$server;
+      const io = new SocketServer(server.$handle, options);
+      server.$sockets = io;
+      cfg.$invokeListeners("onSocketsInit");
     },
   };
 }

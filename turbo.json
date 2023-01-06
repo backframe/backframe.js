@@ -2,12 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "build": {
-      "outputs": ["dist/**", "build/**"],
+      "outputs": ["dist/**"],
       "dependsOn": ["^build"],
-      "cache": true,
-      "inputs": ["src/**/*.ts"]
+      "cache": true
     },
-    "test": {
+    "run:tests": {
       "dependsOn": ["build"],
       "cache": true,
       "inputs": ["src/**/*.ts", "test/**/*.ts", "__tests__/**/*.ts"]

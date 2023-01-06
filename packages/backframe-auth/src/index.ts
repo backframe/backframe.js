@@ -3,7 +3,6 @@ import type { BfPluginConfig } from "@backframe/core";
 import { hashSync } from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createRequire } from "module";
-import passport from "passport";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,11 +13,9 @@ export default function (): BfPluginConfig {
   return {
     name: pkg.name,
     description: pkg.description || "Backframe auth plugin",
-    modifyServer(cfg) {
-      const app = cfg.server?._app;
-      const route = (r: string) => {
-        return cfg.getRestConfig().urlPrefix + r;
-      };
+    onServerInit(cfg) {
+      const app = cfg.$server.$app;
+      const route = (r: string) => cfg.withRestPrefix(r);
 
       app?.post(route("auth/local"), async (rq, rs) => {
         // TODO: Get access to database and create new user if not already exists
@@ -34,7 +31,7 @@ export default function (): BfPluginConfig {
 
         // check if user exists
         // rome-ignore lint/suspicious/noExplicitAny: <explanation>
-        const db = cfg.database as any;
+        const db = cfg.$database as any;
         let user = await db.user.findUnique({ where: { email: body.email } });
         if (user) {
           return rs.status(400).json({
@@ -64,15 +61,6 @@ export default function (): BfPluginConfig {
           ),
         });
       });
-    },
-    async modifyConfig(cfg) {
-      // TODO: Sync with userCfg and enabled strategies... etc
-      cfg.authentication = {
-        initializers: [passport.initialize()],
-        middleware: [passport.authenticate("jwt", { session: false })],
-        strategies: () =>
-          import("./strategies/jwt.js").then((m) => m.default(cfg)),
-      };
     },
   };
 }

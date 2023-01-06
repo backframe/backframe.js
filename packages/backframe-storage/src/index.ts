@@ -5,10 +5,10 @@ import { DEFAULT_CONFIG, IStorageConfig } from "./config.js";
 
 export default function (cfg: IStorageConfig = DEFAULT_CONFIG): BfPluginConfig {
   return {
-    modifyServer(bfCfg) {
+    onServerInit(bfCfg) {
       const storage = createStorageObject(cfg, bfCfg);
       const upload = multer({ storage });
-      const app = bfCfg.server._app;
+      const app = bfCfg.$server.$app;
 
       cfg.routes.forEach((r) => {
         const { fileKey, route } = r;
