@@ -1,12 +1,26 @@
 import winston, { createLogger, format, transports } from "winston";
 const { printf, colorize, combine, timestamp } = format;
 
+export const Logger =
+  process.env.NODE_ENV === "production" ? getProdLogger() : getDevLogger();
+
+function _log(
+  msg: string,
+  level: "info" | "http" | "error" | "warn" | "debug"
+) {
+  if (process.env.BF_SILENT_LOG !== "true") Logger[level](msg);
+}
+
+export const info = (msg: string) => _log(msg, "info");
+export const debug = (msg: string) => _log(msg, "debug");
+export const warn = (msg: string) => _log(msg, "warn");
+export const http = (msg: string) => _log(msg, "http");
+export const error = (msg: string) => _log(msg, "error");
+export const log = (level: string, msg: string) => Logger.log(level, msg);
+
 const fmt = printf(({ level, message, timestamp }) => {
   return `[${timestamp}] ${level} - ${message}`;
 });
-
-export const logger =
-  process.env.NODE_ENV === "production" ? getProdLogger() : getDevLogger();
 
 function getDevLogger() {
   const fmt = printf(({ level, message, timestamp }) => {
