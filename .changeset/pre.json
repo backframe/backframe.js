@@ -1,0 +1,18 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@backframe/auth": "0.0.0-alpha.3",
+    "@backframe/cli": "0.0.0-alpha.3",
+    "@backframe/core": "0.0.0-alpha.3",
+    "@backframe/gql": "0.0.0-alpha.3",
+    "@backframe/models": "0.0.0-alpha.3",
+    "@backframe/rest": "0.0.0-alpha.3",
+    "@backframe/sockets": "0.0.0-alpha.3",
+    "@backframe/storage": "0.0.0-alpha.3",
+    "@backframe/utils": "0.0.0-alpha.3",
+    "@backframe/create-bf": "0.0.0-alpha.4",
+    "@backframe/eslint-config": "0.0.0-alpha.3"
+  },
+  "changesets": []
+}
