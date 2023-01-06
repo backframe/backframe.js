@@ -188,7 +188,9 @@ export class BfConfig {
    * config.getDirName("root"); // "src"
    * config.getDirName("staticDirs"); // ["public", "assets"]
    */
-  getDirName<K extends keyof BfUserConfig & DirKey>(key: K) {
+  getDirName<K extends keyof BfUserConfig & DirKey>(key: K): BfUserConfig[K] {
+    if (key === "root" && this.#updatedRootDir)
+      return this.#updatedRootDir as BfUserConfig[K];
     return this.userCfg[key];
   }
 
@@ -205,14 +207,14 @@ export class BfConfig {
    * config.getDirPath("root"); // "/path/to/project/src"
    * config.getDirPath("staticDirs"); // ["/path/to/project/src/public", "/path/to/project/src/assets"]
    */
-  getDirPath<K extends keyof BfUserConfig & DirKey>(key: K) {
+  getDirPath<K extends keyof BfUserConfig & DirKey>(key: K): BfUserConfig[K] {
     const root = this.getDirName("root");
+    const dirName = this.getDirName(key);
 
-    if (key === "staticDirs") {
-      return (this.userCfg[key] as string[]).map((d) => resolveCwd(root, d));
+    if (Array.isArray(dirName)) {
+      return dirName.map((d) => path.join(root, d)) as BfUserConfig[K];
     }
-
-    return resolveCwd(root, this.userCfg[key] as string);
+    return path.join(root, dirName).replace(/\/\//g, "/") as BfUserConfig[K];
   }
 
   /**
@@ -225,9 +227,48 @@ export class BfConfig {
    * config.normalizePath("src/index.ts"); // "/path/to/project/.bf/src/index.js"
    * config.normalizePath("src/index.js"); // "/path/to/project/src/index.js"
    */
-  normalizePath(path: string) {
+  getAbsDirPath<K extends keyof BfUserConfig & DirKey>(
+    key: K
+  ): BfUserConfig[K] {
     const root = this.#updatedRootDir ?? this.getDirName("root");
-    return resolveCwd(root, path);
+    const dirName = this.getDirName(key);
+
+    if (Array.isArray(dirName)) {
+      return dirName.map((d) => resolveCwd(root, d)) as BfUserConfig[K];
+    }
+    return resolveCwd(root, dirName) as BfUserConfig[K];
+  }
+
+  /**
+   * @jsdoc
+   * This method returns the user defined config for a specific interface. It takes a key of the user
+   * config that corresponds to an interface @type{InterfaceKey} and returns the config for that
+   * interface.
+   * @param key - A key of the user config that corresponds to an interface @type{InterfaceKey}
+   * @returns @type{BfUserConfig["interfaces"][K]}
+   * @example
+   * const config = new BfConfig({ interfaces: {rest: {}} });
+   * config.getInterfaceConfig("rest"); // {}
+   * config.getInterfaceConfig("graphql"); // undefined
+   */
+  getInterfaceConfig<K extends keyof BfUserConfig["interfaces"]>(
+    key: K
+  ): BfUserConfig["interfaces"][K] {
+    return this.userCfg.interfaces[key];
+  }
+
+  /**
+   * @jsdoc
+   * This method received a route and returns the route prefixed with the url prefix for the rest interface. It's a convenience method for accessing the url prefix for the rest interface without having to chain values on the `userCfg` property.
+   * @param route - The route to prefix
+   * @returns string
+   * @example
+   * const config = new BfConfig({ interfaces: {rest: {urlPrefix: "/api"}} });
+   * config.withRoutePrefix("/users"); // "/api/users"
+   * config.withRoutePrefix("/api/users"); // "/api/api/users"
+   */
+  withRestPrefix(route: string) {
+    return this.getInterfaceConfig("rest").urlPrefix + route;
   }
 }
 
@@ -281,7 +322,7 @@ const defaultBuilder = (cfg: BfConfig) => {
       configFile: false,
     });
 
-    const dest = f.replace(`./${root}`, `./${BF_OUT_DIR}`);
+    const dest = f.replace(`./${root}`, `./${BF_OUT_DIR}`).replace(/ts$/, "js");
     if (!fs.existsSync(path.dirname(dest))) {
       fs.mkdirSync(path.dirname(dest));
     }
