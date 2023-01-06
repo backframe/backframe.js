@@ -2,7 +2,12 @@ import { BfConfig } from "@backframe/core";
 import { loadModule, logger } from "@backframe/utils";
 import { BfServer } from "../app/index.js";
 
-export async function startServer(config: BfConfig, port?: number) {
+const argv = process.argv.slice(2);
+
+export async function startServer(
+  config: BfConfig,
+  port = +argv[0] ?? Number(process.env.PORT)
+) {
   const entry = config.getEntryPoint();
 
   const file = await loadModule(entry);
