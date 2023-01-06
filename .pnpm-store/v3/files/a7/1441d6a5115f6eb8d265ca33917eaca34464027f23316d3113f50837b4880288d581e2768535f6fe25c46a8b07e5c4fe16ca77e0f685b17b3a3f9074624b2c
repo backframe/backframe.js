@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/isCi.ts"],
+  "sourcesContent": ["import { isCi as isCiLib } from 'is-ci'\n\nexport const isCi = (): boolean => {\n  return !process.stdout.isTTY || isCiLib || Boolean(process.env.GITHUB_ACTIONS)\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,mBAAgC;AAEzB,MAAM,OAAO,MAAe;AACjC,SAAO,CAAC,QAAQ,OAAO,SAAS,qBAAW,QAAQ,QAAQ,IAAI;AAAA;",
+  "names": []
+}

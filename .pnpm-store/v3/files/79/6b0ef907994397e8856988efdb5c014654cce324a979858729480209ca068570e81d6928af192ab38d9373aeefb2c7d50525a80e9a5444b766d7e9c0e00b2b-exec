@@ -1,0 +1,25 @@
+{
+    "name": "@types/chalk-animation",
+    "version": "1.6.1",
+    "description": "TypeScript definitions for chalk-animation",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/chalk-animation",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "BendingBender",
+            "url": "https://github.com/BendingBender",
+            "githubUsername": "BendingBender"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/chalk-animation"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "f205afdc17205312ad89ad45564e3a16577bcaf44eb13e4b69dca749ba290cde",
+    "typeScriptVersion": "3.6"
+}

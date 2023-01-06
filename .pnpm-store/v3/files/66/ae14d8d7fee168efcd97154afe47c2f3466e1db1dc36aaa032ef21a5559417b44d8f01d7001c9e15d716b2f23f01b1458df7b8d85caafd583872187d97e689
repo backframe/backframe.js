@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/hasYarn.ts"],
+  "sourcesContent": ["import execa from 'execa'\n\n/**\n * Checks if yarn is available\n * we can't check with `npm ls -g yarn --depth=0` as yarn can be installed locally\n *\n * @param {string} packageDir\n * @return {boolean}\n */\nexport async function hasYarn(packageDir: string): Promise<boolean> {\n  try {\n    await execa.command('yarn --version', {\n      shell: true,\n      cwd: packageDir,\n    })\n    return true\n  } catch (e) {\n    // if we are here - yarn is not installed\n    return false\n  }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,mBAAkB;AASlB,uBAA8B,YAAsC;AAClE,MAAI;AACF,UAAM,qBAAM,QAAQ,kBAAkB;AAAA,MACpC,OAAO;AAAA,MACP,KAAK;AAAA;AAEP,WAAO;AAAA,WACA,GAAP;AAEA,WAAO;AAAA;AAAA;",
+  "names": []
+}

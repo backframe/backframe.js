@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/index.ts"],
+  "sourcesContent": ["export { GeneratorProcess, GeneratorError } from './GeneratorProcess'\nexport { generatorHandler } from './generatorHandler'\nexport * from './types'\nexport * from './dmmf'\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,8BAAiD;AACjD,8BAAiC;AACjC,oBAAc;AACd,oBAAc;",
+  "names": []
+}

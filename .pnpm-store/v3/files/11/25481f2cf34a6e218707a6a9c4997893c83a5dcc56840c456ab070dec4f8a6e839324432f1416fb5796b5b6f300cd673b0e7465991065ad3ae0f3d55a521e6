@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/common/types/Transaction.ts"],
+  "sourcesContent": ["/**\n * maxWait ?= 2000\n * timeout ?= 5000\n */\nexport type Options = {\n  maxWait?: number\n  timeout?: number\n}\n\nexport type Info = {\n  id: string\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/mongoFeatureFlagMissingMessage.ts"],
+  "sourcesContent": ["import chalk from 'chalk'\nimport { highlightDatamodel } from '../highlight/highlight'\nimport { link } from '../link'\n\nexport const mongoFeatureFlagMissingMessage = `\\nIn order to use the ${chalk.bold(\n  'mongodb',\n)} provider,\nyou need to set the ${chalk.green('mongodb')} feature flag.\nYou can define the feature flag like this:\n\n${chalk.bold(\n  highlightDatamodel(`generator client {\n    provider = \"prisma-client-js\"\n    previewFeatures = [\"mongodb\"]\n  }`),\n)}\n\nMore information in our documentation:\n${link('https://pris.ly/d/prisma-schema')}\n`\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,mBAAkB;AAClB,uBAAmC;AACnC,kBAAqB;AAEd,MAAM,iCAAiC;AAAA,sBAAyB,qBAAM,KAC3E;AAAA,sBAEoB,qBAAM,MAAM;AAAA;AAAA;AAAA,EAGhC,qBAAM,KACN,yCAAmB;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,EAOnB,sBAAK;AAAA;",
+  "names": []
+}

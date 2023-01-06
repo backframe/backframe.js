@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/common/errors/utils/normalizeLogs.ts"],
+  "sourcesContent": ["/**\n * Removes the leading timestamps (from docker) and trailing ms (from debug)\n * @param logs logs to normalize\n */\nexport function normalizeLogs(logs: string): string {\n  return logs\n    .split('\\n')\n    .map((l) => {\n      return l\n        .replace(\n          /^\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z)\\s*/,\n          '',\n        )\n        .replace(/\\+\\d+\\s*ms$/, '')\n    })\n    .join('\\n')\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAIO,uBAAuB,MAAsB;AAClD,SAAO,KACJ,MAAM,MACN,IAAI,CAAC,MAAM;AACV,WAAO,EACJ,QACC,gFACA,IAED,QAAQ,eAAe;AAAA,KAE3B,KAAK;AAAA;",
+  "names": []
+}

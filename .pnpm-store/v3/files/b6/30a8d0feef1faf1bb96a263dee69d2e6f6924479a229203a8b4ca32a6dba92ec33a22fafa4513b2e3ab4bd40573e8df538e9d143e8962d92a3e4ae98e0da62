@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/cli/utils.ts"],
+  "sourcesContent": ["import dedent from 'strip-indent'\nimport Arg from 'arg'\n\n/**\n * format\n */\nexport function format(input = ''): string {\n  return dedent(input).trimRight() + '\\n'\n}\n\n/**\n * Wrap arg to return an error instead of throwing\n */\nexport function arg<T extends Arg.Spec>(\n  argv: string[],\n  spec: T,\n  stopAtPositional = true,\n  permissive = false,\n): Arg.Result<T> | Error {\n  try {\n    return Arg(spec, { argv, stopAtPositional, permissive })\n  } catch (err) {\n    return err\n  }\n}\n\n/**\n * Check if result is an error\n */\nexport function isError(result: any): result is Error {\n  return result instanceof Error\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,0BAAmB;AACnB,iBAAgB;AAKT,gBAAgB,QAAQ,IAAY;AACzC,SAAO,iCAAO,OAAO,cAAc;AAAA;AAM9B,aACL,MACA,MACA,mBAAmB,MACnB,aAAa,OACU;AACvB,MAAI;AACF,WAAO,wBAAI,MAAM,EAAE,MAAM,kBAAkB;AAAA,WACpC,KAAP;AACA,WAAO;AAAA;AAAA;AAOJ,iBAAiB,QAA8B;AACpD,SAAO,kBAAkB;AAAA;",
+  "names": []
+}

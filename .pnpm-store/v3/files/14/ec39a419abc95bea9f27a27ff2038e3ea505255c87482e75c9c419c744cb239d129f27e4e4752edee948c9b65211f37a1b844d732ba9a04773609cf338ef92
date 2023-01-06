@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/tools/omit.ts"],
+  "sourcesContent": ["/**\n * Omit key-value pairs from object.\n * @param obj Object to omit key-value pairs from\n * @param keys Keys to omit\n */\nexport function omit<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {\n  return Object.keys(obj)\n    .filter((key) => !keys.includes(key as any))\n    .reduce<Omit<T, K>>((result, key) => {\n      result[key] = obj[key]\n      return result\n    }, {} as any)\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAKO,cAAoC,KAAQ,MAAuB;AACxE,SAAO,OAAO,KAAK,KAChB,OAAO,CAAC,QAAQ,CAAC,KAAK,SAAS,MAC/B,OAAmB,CAAC,QAAQ,QAAQ;AACnC,WAAO,OAAO,IAAI;AAClB,WAAO;AAAA,KACN;AAAA;",
+  "names": []
+}

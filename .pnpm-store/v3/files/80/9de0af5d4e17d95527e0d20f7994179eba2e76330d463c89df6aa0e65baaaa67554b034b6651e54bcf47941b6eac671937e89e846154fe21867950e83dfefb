@@ -1,0 +1,76 @@
+{
+  "name": "@prisma/fetch-engine",
+  "version": "3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "author": "Tim Suchanek <suchanek@prisma.io>",
+  "homepage": "https://www.prisma.io",
+  "repository": "git@github.com:prisma/prisma.git",
+  "maintainers": [
+    "Tim Suchanek <suchanek@prisma.io>",
+    "Joël Galeran <galeran@prisma.io>",
+    "William Luke <luke@prisma.io>"
+  ],
+  "bugs": "https://github.com/prisma/prisma/issues",
+  "devDependencies": {
+    "@prisma/engines-version": "3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11",
+    "@types/find-cache-dir": "3.2.1",
+    "@types/jest": "27.5.2",
+    "@types/node": "16.11.41",
+    "@types/node-fetch": "2.6.2",
+    "@types/progress": "2.0.5",
+    "@typescript-eslint/eslint-plugin": "5.29.0",
+    "@typescript-eslint/parser": "5.29.0",
+    "del": "6.1.1",
+    "eslint": "8.18.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-eslint-comments": "3.2.0",
+    "eslint-plugin-jest": "25.7.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "jest": "27.5.1",
+    "lint-staged": "11.2.6",
+    "prettier": "2.7.1",
+    "strip-ansi": "6.0.1",
+    "ts-jest": "27.1.5",
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "@prisma/debug": "3.15.2",
+    "@prisma/get-platform": "3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11",
+    "chalk": "4.1.2",
+    "execa": "5.1.1",
+    "find-cache-dir": "3.3.2",
+    "hasha": "5.2.2",
+    "http-proxy-agent": "5.0.0",
+    "https-proxy-agent": "5.0.1",
+    "make-dir": "3.1.0",
+    "node-fetch": "2.6.7",
+    "p-filter": "2.1.0",
+    "p-map": "4.0.0",
+    "p-retry": "4.6.2",
+    "progress": "2.0.3",
+    "rimraf": "3.0.2",
+    "temp-dir": "2.0.0",
+    "tempy": "1.0.1"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "lint-staged": {
+    "*.ts": [
+      "eslint",
+      "prettier --write"
+    ]
+  },
+  "scripts": {
+    "build": "tsc -d",
+    "format": "prettier --write .",
+    "lint": "eslint --cache --fix --ext .ts .",
+    "lint-ci": "eslint --ext .ts .",
+    "test": "jest",
+    "precommit": "lint-staged"
+  },
+  "readme": "# @prisma/fetch-engine\n\nResponsible for downloading and caching the latest Rust binary\n\n⚠️ **Warning**: This package is intended for Prisma's internal use.\nIts release cycle does not follow SemVer, which means we might release breaking changes (change APIs, remove functionality) without any prior warning.\n\nIf you are using this package, it would be helpful if you could help us gain an understanding where, how and why you are using it. Your feedback will be valuable to us to define a better API. Please share this information at https://github.com/prisma/prisma/discussions/13877 - Thanks!\n"
+}

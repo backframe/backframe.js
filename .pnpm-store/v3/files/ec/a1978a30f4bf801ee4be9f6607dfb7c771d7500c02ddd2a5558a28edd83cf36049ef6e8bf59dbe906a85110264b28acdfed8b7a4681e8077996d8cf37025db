@@ -1,0 +1,14 @@
+{
+    "name": "@types/express-graphql",
+    "version": "0.9.0",
+    "typings": null,
+    "description": "Stub TypeScript definitions entry for express-graphql, which provides its own types definitions",
+    "main": "",
+    "scripts": {},
+    "author": "",
+    "repository": "https://github.com/graphql/express-graphql",
+    "license": "MIT",
+    "dependencies": {
+        "express-graphql": "*"
+    }
+}

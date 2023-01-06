@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/engine-commands/index.ts"],
+  "sourcesContent": ["export { formatSchema } from './formatSchema'\nexport { ConfigMetaFormat, getConfig } from './getConfig'\nexport { getDMMF, GetDMMFOptions } from './getDmmf'\nexport { getVersion } from './getVersion'\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,0BAA6B;AAC7B,uBAA4C;AAC5C,qBAAwC;AACxC,wBAA2B;",
+  "names": []
+}

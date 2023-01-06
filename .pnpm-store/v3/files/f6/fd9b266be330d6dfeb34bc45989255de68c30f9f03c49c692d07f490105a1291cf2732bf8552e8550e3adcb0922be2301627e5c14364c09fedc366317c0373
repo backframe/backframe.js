@@ -1,0 +1,4 @@
+.*rc
+.editorconfig
+webpack.*
+*.spec.js

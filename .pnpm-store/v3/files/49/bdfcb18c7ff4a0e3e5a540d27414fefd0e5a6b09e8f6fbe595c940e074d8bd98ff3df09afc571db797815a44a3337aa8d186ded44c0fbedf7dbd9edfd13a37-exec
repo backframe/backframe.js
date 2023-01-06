@@ -1,0 +1,28 @@
+{
+    "name": "@types/passport-twitter",
+    "version": "1.0.37",
+    "description": "TypeScript definitions for passport-twitter",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/passport-twitter",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "James Roland Cabresos",
+            "url": "https://github.com/staticfunction",
+            "githubUsername": "staticfunction"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/passport-twitter"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/express": "*",
+        "@types/passport": "*"
+    },
+    "typesPublisherContentHash": "8937e1b08b7b6b1a9950f76568e0cc04328997b7c4f49a4713da8731d8ad1251",
+    "typeScriptVersion": "3.6"
+}

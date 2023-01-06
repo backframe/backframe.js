@@ -1,0 +1,12 @@
+export { d as downloadTemplate, r as registryProvider, s as startShell } from './shared/giget.5e7ec864.mjs';
+import 'node:fs/promises';
+import 'node:os';
+import 'node:fs';
+import 'tar';
+import 'pathe';
+import 'defu';
+import 'node:stream';
+import 'node:child_process';
+import 'node:util';
+import 'node-fetch-native';
+import 'https-proxy-agent';

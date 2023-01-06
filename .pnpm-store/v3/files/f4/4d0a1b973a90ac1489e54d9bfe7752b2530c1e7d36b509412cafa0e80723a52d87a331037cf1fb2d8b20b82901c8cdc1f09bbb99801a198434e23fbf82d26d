@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/maskSchema.ts"],
+  "sourcesContent": ["export function maskSchema(schema: string): string {\n  const regex = /url\\s*=\\s*.+/\n  return schema\n    .split('\\n')\n    .map((line) => {\n      const match = regex.exec(line)\n      if (match) {\n        return `${line.slice(0, match.index)}url = \"***\"`\n      }\n      return line\n    })\n    .join('\\n')\n}\n\nexport function mapScalarValues(obj: any, mapper: (value: any) => any): {} {\n  const result = {}\n  for (const key in obj) {\n    if (typeof obj[key] === 'object') {\n      result[key] = mapScalarValues(obj[key], mapper)\n    } else {\n      result[key] = mapper(obj[key])\n    }\n  }\n\n  return result\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAA;AAAO,oBAAoB,QAAwB;AACjD,QAAM,QAAQ;AACd,SAAO,OACJ,MAAM,MACN,IAAI,CAAC,SAAS;AACb,UAAM,QAAQ,MAAM,KAAK;AACzB,QAAI,OAAO;AACT,aAAO,GAAG,KAAK,MAAM,GAAG,MAAM;AAAA;AAEhC,WAAO;AAAA,KAER,KAAK;AAAA;AAGH,yBAAyB,KAAU,QAAiC;AACzE,QAAM,SAAS;AACf,aAAW,OAAO,KAAK;AACrB,QAAI,OAAO,IAAI,SAAS,UAAU;AAChC,aAAO,OAAO,gBAAgB,IAAI,MAAM;AAAA,WACnC;AACL,aAAO,OAAO,OAAO,IAAI;AAAA;AAAA;AAI7B,SAAO;AAAA;",
+  "names": []
+}

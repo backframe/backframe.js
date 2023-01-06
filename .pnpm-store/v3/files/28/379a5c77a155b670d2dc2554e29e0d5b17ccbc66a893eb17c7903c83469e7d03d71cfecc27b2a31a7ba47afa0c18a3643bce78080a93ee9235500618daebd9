@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/common/errors/types/ErrorWithLinkInput.ts"],
+  "sourcesContent": ["import { ConnectorType } from '@prisma/generator-helper'\n\nexport interface ErrorWithLinkInput {\n  version: string\n  engineVersion?: string\n  database?: ConnectorType\n  query?: string\n  platform?: string\n  title: string\n  description?: string\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

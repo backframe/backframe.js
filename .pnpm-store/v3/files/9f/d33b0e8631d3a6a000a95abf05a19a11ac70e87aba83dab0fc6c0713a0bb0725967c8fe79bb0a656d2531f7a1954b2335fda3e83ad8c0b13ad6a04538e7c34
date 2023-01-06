@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/highlight/highlight.ts"],
+  "sourcesContent": ["import { SyntaxDefinition } from './types'\nimport { Prism, Token } from './prism'\nimport { dml } from './languages/dml'\nimport { sql } from './languages/sql'\n\nexport function highlightDatamodel(str: string): any {\n  return highlight(str, dml)\n}\nexport function highlightSql(str: string): any {\n  return highlight(str, sql)\n}\n\nexport function highlightTS(str: string): any {\n  return highlight(str, Prism.languages.javascript)\n}\n\nfunction highlight(str: string, grammar: SyntaxDefinition): any {\n  const tokens = Prism.tokenize(str, grammar)\n  return tokens.map((t) => Token.stringify(t)).join('')\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AACA,mBAA6B;AAC7B,iBAAoB;AACpB,iBAAoB;AAEb,4BAA4B,KAAkB;AACnD,SAAO,UAAU,KAAK;AAAA;AAEjB,sBAAsB,KAAkB;AAC7C,SAAO,UAAU,KAAK;AAAA;AAGjB,qBAAqB,KAAkB;AAC5C,SAAO,UAAU,KAAK,mBAAM,UAAU;AAAA;AAGxC,mBAAmB,KAAa,SAAgC;AAC9D,QAAM,SAAS,mBAAM,SAAS,KAAK;AACnC,SAAO,OAAO,IAAI,CAAC,MAAM,mBAAM,UAAU,IAAI,KAAK;AAAA;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/cli/Help.ts"],
+  "sourcesContent": ["import chalk from 'chalk'\n\n/**\n * Unknown command\n */\nexport function unknownCommand(helpTemplate: string, cmd: string): HelpError {\n  return new HelpError(\n    `\\n${chalk.bold.red(`!`)} Unknown command \"${cmd}\"\\n${helpTemplate}`,\n  )\n}\n\n/**\n * Custom help error used to display help\n * errors without printing a stack trace\n */\nexport class HelpError extends Error {\n  constructor(msg: string) {\n    super(msg)\n    // setPrototypeOf is needed for custom errors to work\n    Object.setPrototypeOf(this, HelpError.prototype)\n  }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA,mBAAkB;AAKX,wBAAwB,cAAsB,KAAwB;AAC3E,SAAO,IAAI,UACT;AAAA,EAAK,qBAAM,KAAK,IAAI,yBAAyB;AAAA,EAAS;AAAA;AAQnD,wBAAwB,MAAM;AAAA,EACnC,YAAY,KAAa;AACvB,UAAM;AAEN,WAAO,eAAe,MAAM,UAAU;AAAA;AAAA;",
+  "names": []
+}

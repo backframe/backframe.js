@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/highlight/theme.ts"],
+  "sourcesContent": ["import { Theme } from './types'\nimport chalk from 'chalk'\n\n// https://www.wnycstudios.org/story/211119-colors\nexport const gamboge = chalk.rgb(228, 155, 15)\n\nexport const darkBrightBlue = chalk.rgb(107, 139, 140)\nexport const blue = chalk.cyan\nexport const brightBlue = chalk.rgb(127, 155, 175)\nexport const identity = (str?: string): string => str || ''\n\nexport const theme: Theme = {\n  keyword: blue,\n  entity: blue,\n  value: brightBlue,\n  punctuation: darkBrightBlue,\n  directive: blue,\n  function: blue,\n  variable: brightBlue,\n  string: brightBlue,\n  boolean: gamboge,\n  comment: chalk.dim,\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AACA,mBAAkB;AAGX,MAAM,UAAU,qBAAM,IAAI,KAAK,KAAK;AAEpC,MAAM,iBAAiB,qBAAM,IAAI,KAAK,KAAK;AAC3C,MAAM,OAAO,qBAAM;AACnB,MAAM,aAAa,qBAAM,IAAI,KAAK,KAAK;AACvC,MAAM,WAAW,CAAC,QAAyB,OAAO;AAElD,MAAM,QAAe;AAAA,EAC1B,SAAS;AAAA,EACT,QAAQ;AAAA,EACR,OAAO;AAAA,EACP,aAAa;AAAA,EACb,WAAW;AAAA,EACX,UAAU;AAAA,EACV,UAAU;AAAA,EACV,QAAQ;AAAA,EACR,SAAS;AAAA,EACT,SAAS,qBAAM;AAAA;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/util.ts"],
+  "sourcesContent": ["import stripAnsi from 'strip-ansi'\n\nexport function removeISODate(str: string): string {\n  return str.replace(\n    /\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z)/gim,\n    '',\n  )\n}\n\nexport function sanitizeTestLogs(str: string): string {\n  return stripAnsi(str)\n    .split('\\n')\n    .map((l) => removeISODate(l.replace(/\\+\\d+ms$/, '')).trim())\n    .join('\\n')\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA,wBAAsB;AAEf,uBAAuB,KAAqB;AACjD,SAAO,IAAI,QACT,+EACA;AAAA;AAIG,0BAA0B,KAAqB;AACpD,SAAO,+BAAU,KACd,MAAM,MACN,IAAI,CAAC,MAAM,cAAc,EAAE,QAAQ,YAAY,KAAK,QACpD,KAAK;AAAA;",
+  "names": []
+}

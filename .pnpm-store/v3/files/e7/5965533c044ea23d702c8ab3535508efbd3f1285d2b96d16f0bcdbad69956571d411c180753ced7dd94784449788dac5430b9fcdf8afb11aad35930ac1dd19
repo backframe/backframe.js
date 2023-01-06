@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/highlight/languages/dml.ts"],
+  "sourcesContent": ["import { SyntaxDefinition } from '../types'\n\nexport const dml: SyntaxDefinition = {\n  string: [/\\\"(.*)\\\"/g, /\\'(.*)\\'/g],\n  directive: { pattern: /(@.*)/g },\n  entity: [\n    /model\\s+\\w+/g,\n    /enum\\s+\\w+/g,\n    /datasource\\s+\\w+/g,\n    /source\\s+\\w+/g,\n    /generator\\s+\\w+/g,\n  ],\n  comment: /#.*/g,\n  value: [/\\b\\s+(\\w+)/g],\n  punctuation: /(\\:|}|{|\"|=)/g,\n  boolean: /(true|false)/g,\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAEO,MAAM,MAAwB;AAAA,EACnC,QAAQ,CAAC,aAAa;AAAA,EACtB,WAAW,EAAE,SAAS;AAAA,EACtB,QAAQ;AAAA,IACN;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA;AAAA,EAEF,SAAS;AAAA,EACT,OAAO,CAAC;AAAA,EACR,aAAa;AAAA,EACb,SAAS;AAAA;",
+  "names": []
+}

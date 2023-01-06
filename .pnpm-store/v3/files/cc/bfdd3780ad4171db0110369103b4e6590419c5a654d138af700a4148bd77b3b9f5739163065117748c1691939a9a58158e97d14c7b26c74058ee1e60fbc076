@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/keyBy.ts"],
+  "sourcesContent": ["export interface Dictionary<T> {\n  [key: string]: T\n}\n\n/**\n * Reduce over the keys of the iterable.\n * @param collection Any array-like data structure.\n * @param iteratee Callback to be called on every element.\n */\nexport const keyBy: <T>(\n  collection: T[],\n  iteratee: (value: T) => string,\n) => Dictionary<T> = (collection, iteratee) => {\n  return collection.reduce<any>((acc, curr) => {\n    acc[iteratee(curr)] = curr\n    return acc\n  }, {})\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AASO,MAAM,QAGQ,CAAC,YAAY,aAAa;AAC7C,SAAO,WAAW,OAAY,CAAC,KAAK,SAAS;AAC3C,QAAI,SAAS,SAAS;AACtB,WAAO;AAAA,KACN;AAAA;",
+  "names": []
+}

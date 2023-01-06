@@ -1,0 +1,26 @@
+{
+    "name": "@types/hbs",
+    "version": "4.0.1",
+    "description": "TypeScript definitions for hbs",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "David Muller",
+            "url": "https://github.com/davidm77",
+            "githubUsername": "davidm77"
+        }
+    ],
+    "main": "",
+    "types": "index",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/hbs"
+    },
+    "scripts": {},
+    "dependencies": {
+        "handlebars": "^4.1.0"
+    },
+    "typesPublisherContentHash": "eac713fecf2e83575c879fe87b0d7ad6f5b1c12ab9b07276dfcde74746414b3b",
+    "typeScriptVersion": "2.3"
+}

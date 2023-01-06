@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/extractPreviewFeatures.ts"],
+  "sourcesContent": ["import { ConfigMetaFormat } from '../engine-commands'\nimport { parseEnvValue } from './parseEnvValue'\n\nexport function extractPreviewFeatures(config: ConfigMetaFormat): string[] {\n  return (\n    config.generators.find(\n      (g) => parseEnvValue(g.provider) === 'prisma-client-js',\n    )?.previewFeatures || []\n  )\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AACA,2BAA8B;AAEvB,gCAAgC,QAAoC;AAH3E;AAIE,SACE,cAAO,WAAW,KAChB,CAAC,MAAM,wCAAc,EAAE,cAAc,wBADvC,mBAEG,oBAAmB;AAAA;",
+  "names": []
+}

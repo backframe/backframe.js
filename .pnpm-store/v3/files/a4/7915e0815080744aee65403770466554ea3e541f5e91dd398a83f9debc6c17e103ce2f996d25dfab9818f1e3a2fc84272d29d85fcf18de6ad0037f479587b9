@@ -1,0 +1,59 @@
+{
+  "name": "checkpoint-client",
+  "description": "javascript checkpoint client",
+  "version": "1.1.21",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "!dist/examples"
+  ],
+  "scripts": {
+    "tsc": "tsc",
+    "watch": "rollup -c -w",
+    "build": "tsc && prettier --write src/**/* && rollup -c",
+    "test": "tsc && prettier src/**/* -c && rollup -c && jest --testTimeout 10000",
+    "test.watch": "mocha 'dist/**/*_test.js' -w --timeout 10s",
+    "prepublish": "tsc && prettier src/**/* -c && rollup -c && jest --testTimeout 10000"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "ci-info": "3.3.0",
+    "env-paths": "2.2.1",
+    "fast-write-atomic": "0.2.1",
+    "make-dir": "3.1.0",
+    "ms": "2.1.3",
+    "node-fetch": "2.6.7",
+    "uuid": "8.3.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "21.0.1",
+    "@rollup/plugin-json": "4.1.0",
+    "@rollup/plugin-node-resolve": "9.0.0",
+    "@rollup/plugin-sucrase": "4.0.2",
+    "@types/concat-stream": "2.0.0",
+    "@types/is-ci": "3.0.0",
+    "@types/jest": "27.4.0",
+    "@types/ms": "0.7.31",
+    "@types/node": "14.18.10",
+    "@types/node-fetch": "2.5.12",
+    "@types/uuid": "8.3.4",
+    "boxen": "4.2.0",
+    "concat-stream": "2.0.0",
+    "globby": "11.1.0",
+    "is-ci": "3.0.1",
+    "jest": "27.4.7",
+    "prettier": "2.5.1",
+    "rollup": "2.67.0",
+    "tempfile": "3.0.0",
+    "testaway": "2.0.1",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.5"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": false,
+    "trailingComma": "all",
+    "singleQuote": true
+  }
+}

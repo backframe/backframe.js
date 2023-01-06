@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/common/errors/PrismaClientRustError.ts"],
+  "sourcesContent": ["import { getBacktraceFromLog, getBacktraceFromRustError } from './utils/log'\nimport { PrismaClientRustErrorArgs } from './types/PrismaClientRustErrorArgs'\n\n/**\n * A generic Prisma Client Rust error.\n * This error is being exposed via the `prisma.$on('error')` interface\n */\nexport class PrismaClientRustError extends Error {\n  clientVersion: string\n\n  constructor({ clientVersion, log, error }: PrismaClientRustErrorArgs) {\n    if (log) {\n      const backtrace = getBacktraceFromLog(log)\n      super(backtrace ?? 'Unkown error')\n    } else if (error) {\n      const backtrace = getBacktraceFromRustError(error)\n      super(backtrace)\n    } else {\n      // this should never happen\n      super(`Unknown error`)\n    }\n\n    this.clientVersion = clientVersion\n  }\n  get [Symbol.toStringTag]() {\n    return 'PrismaClientRustPanicError'\n  }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,iBAA+D;AAOxD,oCAAoC,MAAM;AAAA,EAG/C,YAAY,EAAE,eAAe,KAAK,SAAoC;AACpE,QAAI,KAAK;AACP,YAAM,YAAY,oCAAoB;AACtC,YAAM,gCAAa;AAAA,eACV,OAAO;AAChB,YAAM,YAAY,0CAA0B;AAC5C,YAAM;AAAA,WACD;AAEL,YAAM;AAAA;AAGR,SAAK,gBAAgB;AAAA;AAAA,OAElB,OAAO,eAAe;AACzB,WAAO;AAAA;AAAA;",
+  "names": []
+}

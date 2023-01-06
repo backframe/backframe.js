@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/utils/__tests__/maskSchema.test.ts"],
+  "sourcesContent": ["import { maskSchema } from '../maskSchema'\n\ntest('maskSchema', () => {\n  const schema = `datasource db {\n    url = \"mysql:secret-db\"\n  }`\n  expect(maskSchema(schema)).toMatchInlineSnapshot(`\n        \"datasource db {\n            url = \\\\\"***\\\\\"\n          }\"\n    `)\n\n  const schema2 = `datasource db {\n    provider = \"mysql\"\n    url = env(\"SOME_ENV\")\n  }`\n  expect(maskSchema(schema2)).toMatchInlineSnapshot(`\n    \"datasource db {\n        provider = \\\\\"mysql\\\\\"\n        url = \\\\\"***\\\\\"\n      }\"\n  `)\n})\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA,wBAA2B;AAE3B,KAAK,cAAc,MAAM;AACvB,QAAM,SAAS;AAAA;AAAA;AAGf,SAAO,kCAAW,SAAS,sBAAsB;AAAA;AAAA;AAAA;AAAA;AAMjD,QAAM,UAAU;AAAA;AAAA;AAAA;AAIhB,SAAO,kCAAW,UAAU,sBAAsB;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;",
+  "names": []
+}

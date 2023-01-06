@@ -1,0 +1,89 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.dmmfEnumTransformer = exports.dmmfModelTransformer = void 0;
+const camelcase = require("camelcase");
+const pluralize = require("pluralize");
+const immer_1 = require("immer");
+function singularizeModelName(modelName) {
+    return camelcase(pluralize(modelName, 1), { pascalCase: true });
+}
+function transformModel(model) {
+    const { name, uniqueFields, idFields } = model;
+    const fixModelName = immer_1.produce(model, draftModel => {
+        if (name !== singularizeModelName(name)) {
+            draftModel.name = singularizeModelName(name);
+            draftModel.dbName = name;
+        }
+    });
+    const fixFieldsName = immer_1.produce(fixModelName, draftModel => {
+        const fields = draftModel.fields;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        draftModel.fields = fields.map(field => immer_1.produce(field, draftField => {
+            const { name, kind, type, relationFromFields, relationToFields, isList } = draftField;
+            // Transform field name
+            draftField.name = isList ? camelcase(pluralize.plural(name)) : camelcase(pluralize.singular(name));
+            if (draftField.name !== name) {
+                draftField.columnName = name;
+            }
+            // Posts posts[]
+            if (kind === 'object' && type !== singularizeModelName(type)) {
+                draftField.type = singularizeModelName(type);
+            }
+            // Enum
+            if (kind === 'enum' && type !== singularizeModelName(type)) {
+                draftField.type = singularizeModelName(type);
+                if (draftField.default)
+                    draftField.default = camelcase(draftField.default);
+            }
+            // Object kind, with @relation attributes
+            if (kind === 'object' && relationFromFields && relationFromFields.length > 0 && relationToFields) {
+                draftField.relationFromFields = [camelcase(relationFromFields[0])];
+                draftField.relationToFields = [camelcase(relationToFields[0])];
+            }
+            if (name === 'updated_at') {
+                draftField.isUpdatedAt = true;
+            }
+        })); // Force type conversion
+    });
+    const fixUniqueName = immer_1.produce(fixFieldsName, draftModel => {
+        if (uniqueFields.length > 0) {
+            draftModel.uniqueFields = uniqueFields.map(eachUniqueField => eachUniqueField.map(each => camelcase(each)));
+        }
+    });
+    const fixIdFieldsName = immer_1.produce(fixUniqueName, draftModel => {
+        if (idFields.length > 0) {
+            draftModel.idFields = idFields.map(eachIdField => camelcase(eachIdField));
+        }
+    });
+    return fixIdFieldsName;
+}
+function transformEnum(enumm) {
+    const { name } = enumm;
+    const fixModelName = immer_1.produce(enumm, draftModel => {
+        if (name !== singularizeModelName(name)) {
+            draftModel.name = singularizeModelName(name);
+            draftModel.dbName = name;
+        }
+    });
+    const fixFieldsName = immer_1.produce(fixModelName, draftModel => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        draftModel.values = draftModel.values.map(field => immer_1.produce(field, draftField => {
+            const { name, dbName } = draftField;
+            // Transform field name
+            draftField.name = camelcase(pluralize.singular(name));
+            if (draftField.name !== name) {
+                draftField.dbName = dbName || name;
+            }
+        }));
+    });
+    return fixFieldsName;
+}
+function dmmfModelTransformer(models) {
+    return models.map(model => transformModel(model));
+}
+exports.dmmfModelTransformer = dmmfModelTransformer;
+function dmmfEnumTransformer(enums) {
+    return enums.map(each => transformEnum(each));
+}
+exports.dmmfEnumTransformer = dmmfEnumTransformer;
+//# sourceMappingURL=transformer.js.map

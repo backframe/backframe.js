@@ -1,0 +1,32 @@
+import { DMMF } from '@prisma/generator-helper';
+import type { EngineConfig, EngineEventType, GetConfigResult } from '../common/Engine';
+import { Engine } from '../common/Engine';
+import { Metrics, MetricsOptionsJson, MetricsOptionsPrometheus } from '../common/types/Metrics';
+export declare class DataProxyEngine extends Engine {
+    private inlineSchema;
+    private inlineSchemaHash;
+    private inlineDatasources;
+    private config;
+    private logEmitter;
+    private env;
+    private clientVersion;
+    private remoteClientVersion;
+    private headers;
+    private host;
+    constructor(config: EngineConfig);
+    version(): string;
+    start(): Promise<void>;
+    stop(): Promise<void>;
+    on(event: EngineEventType, listener: (args?: any) => any): void;
+    private url;
+    getConfig(): Promise<GetConfigResult>;
+    getDmmf(): Promise<DMMF.Document>;
+    private uploadSchema;
+    request<T>(query: string, headers: Record<string, string>, attempt?: number): any;
+    requestBatch<T>(queries: string[], headers: Record<string, string>, isTransaction?: boolean, attempt?: number): Promise<any>;
+    private requestInternal;
+    transaction(): Promise<any>;
+    private extractHostAndApiKey;
+    metrics(options: MetricsOptionsJson): Promise<Metrics>;
+    metrics(options: MetricsOptionsPrometheus): Promise<string>;
+}

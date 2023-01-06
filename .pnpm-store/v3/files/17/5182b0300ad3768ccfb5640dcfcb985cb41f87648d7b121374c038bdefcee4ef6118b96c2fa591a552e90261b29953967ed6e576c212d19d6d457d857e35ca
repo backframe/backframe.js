@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/index.ts"],
+  "sourcesContent": ["export { PrismaClientInitializationError } from './common/errors/PrismaClientInitializationError'\nexport { PrismaClientKnownRequestError } from './common/errors/PrismaClientKnownRequestError'\nexport { PrismaClientRustPanicError } from './common/errors/PrismaClientRustPanicError'\nexport { PrismaClientUnknownRequestError } from './common/errors/PrismaClientUnknownRequestError'\n\nexport { Engine } from './common/Engine'\nexport { EngineConfig } from './common/Engine'\nexport { EngineEventType } from './common/Engine'\nexport { DatasourceOverwrite } from './common/Engine'\nexport { LibraryEngine } from './library/LibraryEngine'\nexport { BinaryEngine } from './binary/BinaryEngine'\nexport * as NodeAPILibraryTypes from './library/types/Library'\n\nexport {\n  printGeneratorConfig,\n  getOriginalBinaryTargetsValue,\n} from './common/utils/printGeneratorConfig'\nexport { getInternalDatamodelJson } from './common/utils/getInternalDatamodelJson'\nexport { fixBinaryTargets } from './common/utils/util'\nexport { plusX } from './common/utils/util'\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,6CAAgD;AAChD,2CAA8C;AAC9C,wCAA2C;AAC3C,6CAAgD;AAEhD,oBAAuB;AACvB,qBAA6B;AAC7B,qBAAgC;AAChC,qBAAoC;AACpC,2BAA8B;AAC9B,0BAA6B;AAC7B,0BAAqC;AAErC,kCAGO;AACP,sCAAyC;AACzC,kBAAiC;AACjC,mBAAsB;",
+  "names": []
+}

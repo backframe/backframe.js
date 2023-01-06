@@ -1,0 +1,6 @@
+{
+  "name": "Axis",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Axis.js"
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/resolve.ts"],
+  "sourcesContent": ["import { default as _resolve } from 'resolve'\nimport path from 'path'\n\nasync function resolve(id: string, options: _resolve.AsyncOpts) {\n  const _options = { preserveSymlinks: false, ...options }\n\n  return new Promise((res) => {\n    _resolve(id, _options, (e, v) => {\n      if (e) res(undefined)\n\n      res(v)\n    })\n  }) as Promise<string | undefined>\n}\n\nasync function resolvePkg(id: string, options: _resolve.AsyncOpts) {\n  const resolvedPath = await resolve(`${id}/package.json`, options)\n\n  return resolvedPath && path.dirname(resolvedPath)\n}\n\nexport { resolve, resolvePkg }\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA,qBAAoC;AACpC,kBAAiB;AAEjB,uBAAuB,IAAY,SAA6B;AAC9D,QAAM,WAAW,EAAE,kBAAkB,UAAU;AAE/C,SAAO,IAAI,QAAQ,CAAC,QAAQ;AAC1B,gCAAS,IAAI,UAAU,CAAC,GAAG,MAAM;AAC/B,UAAI;AAAG,YAAI;AAEX,UAAI;AAAA;AAAA;AAAA;AAKV,0BAA0B,IAAY,SAA6B;AACjE,QAAM,eAAe,MAAM,QAAQ,GAAG,mBAAmB;AAEzD,SAAO,gBAAgB,oBAAK,QAAQ;AAAA;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/mapPreviewFeatures.ts"],
+  "sourcesContent": ["const featureFlagMap = {\n  transactionApi: 'transaction',\n  aggregateApi: 'aggregations',\n}\n\nexport function mapPreviewFeatures(features?: string[]): string[] {\n  if (Array.isArray(features) && features.length > 0) {\n    return features.map((f) => featureFlagMap[f] ?? f)\n  }\n\n  return []\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAA,MAAM,iBAAiB;AAAA,EACrB,gBAAgB;AAAA,EAChB,cAAc;AAAA;AAGT,4BAA4B,UAA+B;AAChE,MAAI,MAAM,QAAQ,aAAa,SAAS,SAAS,GAAG;AAClD,WAAO,SAAS,IAAI,CAAC,MAAG;AAP5B;AAO+B,kCAAe,OAAf,YAAqB;AAAA;AAAA;AAGlD,SAAO;AAAA;",
+  "names": []
+}

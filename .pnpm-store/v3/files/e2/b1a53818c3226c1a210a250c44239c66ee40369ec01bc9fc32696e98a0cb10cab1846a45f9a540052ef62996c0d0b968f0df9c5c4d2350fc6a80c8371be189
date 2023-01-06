@@ -1,0 +1,56 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fixPrismaFile = void 0;
+const fs = __importStar(require("fs"));
+const sdk_1 = require("@prisma/sdk");
+const _1 = require(".");
+/**
+ *
+ * @param schemaPath Path to the Prisma schema file
+ * @param deny A comma seperated
+ */
+async function fixPrismaFile(schemaPath, denyList = []) {
+    const schema = fs.readFileSync(schemaPath, 'utf-8');
+    const dmmf = await sdk_1.getDMMF({ datamodel: schema });
+    const config = await sdk_1.getConfig({ datamodel: schema });
+    const models = dmmf.datamodel.models;
+    const datasources = config.datasources;
+    const generators = config.generators;
+    const filteredModels = models.filter(each => !denyList.includes(each.name));
+    const filteredEnums = dmmf.datamodel.enums.filter(each => !denyList.includes(each.name));
+    const transformedModels = _1.dmmfModelTransformer(filteredModels);
+    const transformedEnums = _1.dmmfEnumTransformer(filteredEnums);
+    let outputSchema = [
+        await _1.datasourcesDeserializer(datasources),
+        await _1.generatorsDeserializer(generators),
+        await _1.dmmfModelsdeserializer(transformedModels),
+        await _1.dmmfEnumsDeserializer(transformedEnums)
+    ].filter(e => e).join('\n\n\n');
+    return outputSchema;
+}
+exports.fixPrismaFile = fixPrismaFile;
+__exportStar(require("./deserializer"), exports);
+__exportStar(require("./transformer"), exports);
+//# sourceMappingURL=index.js.map

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/library/types/Library.ts"],
+  "sourcesContent": ["import {\n  GetConfigOptions,\n  ConfigMetaFormat,\n  QueryEngineConfig,\n} from '../../common/types/QueryEngine'\n\nexport type ConnectArgs = {\n  enableRawQueries: boolean\n}\n\nexport type QueryEngineInstance = {\n  connect(connectArgs: ConnectArgs): Promise<void>\n  disconnect(): Promise<void>\n  /**\n   * @param requestStr JSON.stringified `QueryEngineRequest | QueryEngineBatchRequest`\n   * @param headersStr JSON.stringified `QueryEngineRequestHeaders`\n   */\n  query(\n    requestStr: string,\n    headersStr: string,\n    transactionId?: string,\n  ): Promise<string>\n  sdlSchema(): Promise<string>\n  startTransaction(options: string, trace: string): Promise<string>\n  commitTransaction(id: string, trace: string): Promise<string>\n  rollbackTransaction(id: string, trace: string): Promise<string>\n}\n\nexport interface QueryEngineConstructor {\n  new (\n    config: QueryEngineConfig,\n    logger: (err: string, log: string) => void,\n  ): QueryEngineInstance\n}\n\n// Main\nexport type Library = {\n  QueryEngine: QueryEngineConstructor\n  version: () => {\n    commit: string\n    version: string\n  }\n  getConfig: (options: GetConfigOptions) => Promise<ConfigMetaFormat>\n  /**\n   * This returns a string representation of `DMMF.Document`\n   */\n  dmmf: (datamodel: string) => Promise<string>\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

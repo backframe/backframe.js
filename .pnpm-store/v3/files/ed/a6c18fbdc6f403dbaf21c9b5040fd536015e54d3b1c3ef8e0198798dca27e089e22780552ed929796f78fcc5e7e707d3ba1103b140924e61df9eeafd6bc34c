@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/getCommandWithExecutor.ts"],
+  "sourcesContent": ["import { isCurrentBinInstalledGlobally } from './isCurrentBinInstalledGlobally'\n\nexport function getCommandWithExecutor(command: string): string {\n  // if current prisma bin is from a global dir\n  if (isCurrentBinInstalledGlobally()) {\n    // do nothing!\n    return command\n  } else {\n    // Example yarn 'yarn/1.22.4 npm/? node/v12.14.1 darwin x64'\n    const yarnUsed = process.env.npm_config_user_agent?.includes('yarn')\n    // When running in npx, npm puts this package into a /_npx/ folder. Tested on Win, Mac, Linux\n    const npxUsed = __dirname.includes('_npx')\n    if (npxUsed) {\n      return `npx ${command}`\n    } else if (yarnUsed) {\n      return `yarn ${command}`\n    } else {\n      return command\n    }\n  }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,2CAA8C;AAEvC,gCAAgC,SAAyB;AAFhE;AAIE,MAAI,2EAAiC;AAEnC,WAAO;AAAA,SACF;AAEL,UAAM,WAAW,cAAQ,IAAI,0BAAZ,mBAAmC,SAAS;AAE7D,UAAM,UAAU,UAAU,SAAS;AACnC,QAAI,SAAS;AACX,aAAO,OAAO;AAAA,eACL,UAAU;AACnB,aAAO,QAAQ;AAAA,WACV;AACL,aAAO;AAAA;AAAA;AAAA;",
+  "names": []
+}

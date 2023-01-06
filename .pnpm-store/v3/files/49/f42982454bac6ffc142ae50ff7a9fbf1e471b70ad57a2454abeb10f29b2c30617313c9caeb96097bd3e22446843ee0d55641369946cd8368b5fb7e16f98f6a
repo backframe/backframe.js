@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`check simple should throw data type is different than expected at runtime 1`] = `
+"[
+  {
+    \\"code\\": \\"invalid_type\\",
+    \\"expected\\": \\"array\\",
+    \\"received\\": \\"string\\",
+    \\"path\\": [
+      \\"schema_providers\\"
+    ],
+    \\"message\\": \\"Expected array, received string\\"
+  }
+]"
+`;

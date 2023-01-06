@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/getAllVersions.ts"],
+  "sourcesContent": ["// import fetch from 'node-fetch'\n// import fs from 'fs'\n// import path from 'path'\nexport { engineVersions } from './versions'\n\n// async function getAllVersions() {\n//   const url = `https://registry.npmjs.org/@prisma/cli`\n//   const pkg = await fetch(url).then((r) => r.json())\n\n//   if (pkg.versions) {\n//     const obj = Object.create(null)\n//     for (const version in pkg.versions) {\n//       if (!version.startsWith('2.0.0-alpha') && version.startsWith('2.')) {\n//         const prismaVersion = pkg.versions[version]?.prisma?.version\n//         if (prismaVersion) {\n//           obj[version] = prismaVersion\n//         }\n//       }\n//     }\n//     return obj\n//   }\n\n//   return null\n// }\n\n// async function saveVersions() {\n//   const versions = await getAllVersions()\n//   const str = JSON.stringify(versions)\n//   fs.writeFileSync(path.join(__dirname, 'versions.json'), str, 'utf-8')\n// }\n\n// saveVersions()\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAGA,sBAA+B;",
+  "names": []
+}

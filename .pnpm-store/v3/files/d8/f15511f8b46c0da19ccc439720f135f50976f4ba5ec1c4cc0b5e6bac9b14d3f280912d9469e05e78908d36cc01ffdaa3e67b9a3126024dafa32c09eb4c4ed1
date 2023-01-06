@@ -1,0 +1,50 @@
+{
+  "name": "catch-unknown",
+  "version": "1.0.0",
+  "description": "Utility functions for writing type-safe catch blocks",
+  "keywords": [
+    "base62",
+    "id",
+    "random",
+    "uuid"
+  ],
+  "homepage": "https://github.com/trevorr/catch-unknown#readme",
+  "bugs": {
+    "url": "https://github.com/trevorr/catch-unknown/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trevorr/catch-unknown.git"
+  },
+  "license": "ISC",
+  "author": "Trevor Robinson",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:ci": "eslint 'src/**/*.ts' --format junit --output-file test-results/eslint/eslint.xml",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test && npm run lint",
+    "prettier": "prettier --write 'src/**/*.ts'",
+    "test": "jest"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": true,
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1",
+    "@typescript-eslint/eslint-plugin": "^5.14.0",
+    "@typescript-eslint/parser": "^5.14.0",
+    "eslint": "^8.11.0",
+    "jest": "^27.5.1",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.5.5"
+  }
+}

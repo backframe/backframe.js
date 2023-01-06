@@ -1,0 +1,8 @@
+/**
+ *
+ * @param schemaPath Path to the Prisma schema file
+ * @param deny A comma seperated
+ */
+export declare function fixPrismaFile(schemaPath: string, denyList?: readonly string[]): Promise<string>;
+export * from './deserializer';
+export * from './transformer';

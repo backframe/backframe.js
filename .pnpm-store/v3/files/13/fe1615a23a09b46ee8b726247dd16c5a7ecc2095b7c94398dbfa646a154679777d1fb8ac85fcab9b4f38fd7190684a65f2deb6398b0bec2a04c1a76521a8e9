@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/flatMap.ts"],
+  "sourcesContent": ["function flatten(array) {\n  return Array.prototype.concat.apply([], array)\n}\n\nexport function flatMap<T, U>(\n  array: T[],\n  callbackFn: (value: T, index: number, array: T[]) => U[],\n  thisArg?: any,\n): U[] {\n  return flatten(array.map(callbackFn, thisArg))\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAA,iBAAiB,OAAO;AACtB,SAAO,MAAM,UAAU,OAAO,MAAM,IAAI;AAAA;AAGnC,iBACL,OACA,YACA,SACK;AACL,SAAO,QAAQ,MAAM,IAAI,YAAY;AAAA;",
+  "names": []
+}

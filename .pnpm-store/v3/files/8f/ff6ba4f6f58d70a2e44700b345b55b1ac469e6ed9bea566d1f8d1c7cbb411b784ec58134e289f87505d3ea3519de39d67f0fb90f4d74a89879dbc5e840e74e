@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/link.ts"],
+  "sourcesContent": ["import terminalLink from 'terminal-link'\nimport chalk from 'chalk'\n\nexport function link(url): string {\n  return terminalLink(url, url, {\n    fallback: (url) => chalk.underline(url),\n  })\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,2BAAyB;AACzB,mBAAkB;AAEX,cAAc,KAAa;AAChC,SAAO,kCAAa,KAAK,KAAK;AAAA,IAC5B,UAAU,CAAC,SAAQ,qBAAM,UAAU;AAAA;AAAA;",
+  "names": []
+}

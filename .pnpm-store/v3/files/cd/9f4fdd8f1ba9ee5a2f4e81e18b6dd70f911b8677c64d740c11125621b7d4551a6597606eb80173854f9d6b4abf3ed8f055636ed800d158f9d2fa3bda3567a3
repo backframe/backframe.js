@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/printConfigWarnings.ts"],
+  "sourcesContent": ["import chalk from 'chalk'\n\nexport function printConfigWarnings(warnings: string[]) {\n  if (warnings && warnings.length > 0) {\n    const message = warnings\n      .map((warning) => `${chalk.yellow('warn')} ${warning}`)\n      .join('\\n')\n    console.warn(message)\n  }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,mBAAkB;AAEX,6BAA6B,UAAoB;AACtD,MAAI,YAAY,SAAS,SAAS,GAAG;AACnC,UAAM,UAAU,SACb,IAAI,CAAC,YAAY,GAAG,qBAAM,OAAO,WAAW,WAC5C,KAAK;AACR,YAAQ,KAAK;AAAA;AAAA;",
+  "names": []
+}

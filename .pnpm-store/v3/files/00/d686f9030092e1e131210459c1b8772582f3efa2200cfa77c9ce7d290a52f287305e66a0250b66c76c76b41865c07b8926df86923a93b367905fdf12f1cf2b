@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/common/errors/utils/maskQuery.ts"],
+  "sourcesContent": ["export function maskQuery(query?: string): string {\n  if (!query) {\n    return ''\n  }\n  return (\n    query\n      // replace all strings with X\n      .replace(/\".*\"/g, '\"X\"')\n      // replace all numbers with 5\n      .replace(/[\\s:\\[]([+-]?([0-9]*[.])?[0-9]+)/g, (substr) => {\n        return `${substr[0]}5`\n      })\n  )\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAO,mBAAmB,OAAwB;AAChD,MAAI,CAAC,OAAO;AACV,WAAO;AAAA;AAET,SACE,MAEG,QAAQ,SAAS,OAEjB,QAAQ,qCAAqC,CAAC,WAAW;AACxD,WAAO,GAAG,OAAO;AAAA;AAAA;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/isCurrentBinInstalledGlobally.ts"],
+  "sourcesContent": ["import fs from 'fs'\nimport globalDirectories from 'global-dirs'\n\n// returns if current prisma bin is installed globally\nexport function isCurrentBinInstalledGlobally(): 'npm' | 'yarn' | false {\n  try {\n    const realPrismaPath = fs.realpathSync(process.argv[1])\n    const usingGlobalYarn =\n      realPrismaPath.indexOf(globalDirectories.yarn.packages) === 0\n    const usingGlobalNpm =\n      realPrismaPath.indexOf(\n        fs.realpathSync(globalDirectories.npm.packages),\n      ) === 0\n\n    if (usingGlobalNpm) {\n      return 'npm'\n    }\n    if (usingGlobalYarn) {\n      return 'yarn'\n    } else {\n      false\n    }\n  } catch (e) {\n    //\n  }\n  return false\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,gBAAe;AACf,yBAA8B;AAGvB,yCAAiE;AACtE,MAAI;AACF,UAAM,iBAAiB,kBAAG,aAAa,QAAQ,KAAK;AACpD,UAAM,kBACJ,eAAe,QAAQ,2BAAkB,KAAK,cAAc;AAC9D,UAAM,iBACJ,eAAe,QACb,kBAAG,aAAa,2BAAkB,IAAI,eAClC;AAER,QAAI,gBAAgB;AAClB,aAAO;AAAA;AAET,QAAI,iBAAiB;AACnB,aAAO;AAAA,WACF;AACL;AAAA;AAAA,WAEK,GAAP;AAAA;AAGF,SAAO;AAAA;",
+  "names": []
+}

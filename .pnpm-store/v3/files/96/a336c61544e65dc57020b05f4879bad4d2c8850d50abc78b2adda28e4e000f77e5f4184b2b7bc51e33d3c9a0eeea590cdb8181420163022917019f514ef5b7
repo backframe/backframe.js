@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/unique.ts"],
+  "sourcesContent": ["/**\n * Returns unique elements of array\n * @param arr Array\n */\n\nexport function unique<T>(arr: T[]): T[] {\n  const { length } = arr\n  const result: T[] = []\n  const seen = new Set() // just a cache\n\n  loop: for (let i = 0; i < length; i++) {\n    const value = arr[i]\n    if (seen.has(value)) {\n      continue loop\n    }\n    seen.add(value)\n    result.push(value)\n  }\n\n  return result\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAKO,gBAAmB,KAAe;AACvC,QAAM,EAAE,WAAW;AACnB,QAAM,SAAc;AACpB,QAAM,OAAO,IAAI;AAEjB;AAAM,aAAS,IAAI,GAAG,IAAI,QAAQ,KAAK;AACrC,YAAM,QAAQ,IAAI;AAClB,UAAI,KAAK,IAAI,QAAQ;AACnB;AAAA;AAEF,WAAK,IAAI;AACT,aAAO,KAAK;AAAA;AAGd,SAAO;AAAA;",
+  "names": []
+}

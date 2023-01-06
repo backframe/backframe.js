@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/load.ts"],
+  "sourcesContent": ["/**\n * This is a wrapper around `require`\n * This is to avoid eval and hide require away from bundlers\n */\nexport function load<T>(id: string): T {\n  try {\n    return require(id) as T\n  } catch (e) {\n    throw new Error(`Unable to require(\\`${id}\\`)\\n ${e.message}`)\n  }\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAIO,cAAiB,IAAe;AACrC,MAAI;AACF,WAAO,QAAQ;AAAA,WACR,GAAP;AACA,UAAM,IAAI,MAAM,uBAAuB;AAAA,GAAW,EAAE;AAAA;AAAA;",
+  "names": []
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@formkit/auto-animate",
+  "version": "1.0.0-beta.5",
+  "description": "Add motion to your apps with a single line of code.",
+  "keywords": [
+    "animation",
+    "transition",
+    "react",
+    "vue",
+    "angular",
+    "svelte"
+  ],
+  "type": "module",
+  "main": "index.mjs",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "repository": "https://github.com/formkit/auto-animate.git",
+  "author": "Justin Schroeder <justin@formkit.com>",
+  "license": "MIT",
+  "exports": {
+    "./vue": {
+      "import": "./vue/index.mjs",
+      "types": "./vue/index.d.ts",
+      "default": "./vue/index.mjs"
+    },
+    "./react": {
+      "import": "./react/index.mjs",
+      "types": "./react/index.d.ts",
+      "default": "./react/index.mjs"
+    },
+    "./angular": {
+      "import": "./angular/index.mjs",
+      "types": "./angular/index.d.ts",
+      "default": "./angular/index.mjs"
+    },
+    ".": {
+      "import": "./index.mjs",
+      "default": "./index.mjs"
+    }
+  },
+  "dependencies": {}
+}

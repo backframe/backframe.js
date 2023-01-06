@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/common/errors/PrismaClientKnownRequestError.ts"],
+  "sourcesContent": ["export class PrismaClientKnownRequestError extends Error {\n  code: string\n  meta?: object\n  clientVersion: string\n\n  constructor(\n    message: string,\n    code: string,\n    clientVersion: string,\n    meta?: any,\n  ) {\n    super(message)\n\n    this.code = code\n    this.clientVersion = clientVersion\n    this.meta = meta\n  }\n  get [Symbol.toStringTag]() {\n    return 'PrismaClientKnownRequestError'\n  }\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAO,4CAA4C,MAAM;AAAA,EAKvD,YACE,SACA,MACA,eACA,MACA;AACA,UAAM;AAEN,SAAK,OAAO;AACZ,SAAK,gBAAgB;AACrB,SAAK,OAAO;AAAA;AAAA,OAET,OAAO,eAAe;AACzB,WAAO;AAAA;AAAA;",
+  "names": []
+}

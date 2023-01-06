@@ -1,0 +1,45 @@
+{
+  "name": "@prisma/debug",
+  "version": "4.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "author": "Tim Suchanek <suchanek@prisma.io>",
+  "homepage": "https://www.prisma.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prisma/prisma.git",
+    "directory": "packages/debug"
+  },
+  "maintainers": [
+    "Joël Galeran <galeran@prisma.io>",
+    "Pierre-Antoine Mills <mills@prisma.io>",
+    "Alexey Orlenko <orlenko@prisma.io>"
+  ],
+  "bugs": "https://github.com/prisma/prisma/issues",
+  "devDependencies": {
+    "@types/jest": "28.1.3",
+    "@types/node": "12.20.55",
+    "esbuild": "0.14.47",
+    "jest": "28.1.1",
+    "jest-junit": "13.2.0",
+    "ts-jest": "28.0.5",
+    "typescript": "4.7.4"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "dependencies": {
+    "@types/debug": "4.1.7",
+    "debug": "4.3.4",
+    "strip-ansi": "6.0.1"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "dev": "DEV=true node -r esbuild-register helpers/build.ts",
+    "build": "node -r esbuild-register helpers/build.ts",
+    "test": "jest"
+  },
+  "readme": "# @prisma/debug\n\nA cached [`debug`](https://github.com/visionmedia/debug/).\n\n---\n\n⚠️ **Warning**: This package is intended for Prisma's internal use.\nIts release cycle does not follow SemVer, which means we might release breaking changes (change APIs, remove functionality) without any prior warning.\n\nIf you are using this package, it would be helpful if you could help us gain an understanding where, how and why you are using it. Your feedback will be valuable to us to define a better API. Please share this information at https://github.com/prisma/prisma/discussions/13877 - Thanks!\n\n## Usage\n\n```ts\nimport Debug, { getLogs } from '@prisma/debug'\n\nconst debug = Debug('my-namespace')\n\ntry {\n  debug('hello')\n  debug(process.env)\n  throw new Error('oops')\n} catch (e) {\n  console.error(e)\n  console.error(`We just crashed. But no worries, here are the debug logs:`)\n  // get 10 last lines of debug logs\n  console.error(getLogs(10))\n}\n```\n"
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/common/errors/PrismaClientInitializationError.ts"],
+  "sourcesContent": ["export class PrismaClientInitializationError extends Error {\n  clientVersion: string\n  errorCode?: string\n\n  constructor(message: string, clientVersion: string, errorCode?: string) {\n    super(message)\n    this.clientVersion = clientVersion\n    this.errorCode = errorCode\n    Error.captureStackTrace(PrismaClientInitializationError)\n  }\n  get [Symbol.toStringTag]() {\n    return 'PrismaClientInitializationError'\n  }\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAO,8CAA8C,MAAM;AAAA,EAIzD,YAAY,SAAiB,eAAuB,WAAoB;AACtE,UAAM;AACN,SAAK,gBAAgB;AACrB,SAAK,YAAY;AACjB,UAAM,kBAAkB;AAAA;AAAA,OAErB,OAAO,eAAe;AACzB,WAAO;AAAA;AAAA;",
+  "names": []
+}

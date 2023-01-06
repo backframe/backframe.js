@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/cli/types.ts"],
+  "sourcesContent": ["/**\n * Command interface\n */\nexport interface Command {\n  parse(argv: string[]): Promise<string | Error>\n}\n\n/**\n * Commands\n */\nexport type Commands = { [command: string]: Command }\n\nexport type Dictionary<T> = {\n  [key: string]: T\n}\n\nexport type GeneratorConfig = {\n  output: string | null\n  name: string\n  provider: string\n  config: Dictionary<string>\n  binaryTargets: string[]\n  pinnedBinaryTargets?: string | null\n}\n\nexport type GeneratorOptions = {\n  generator: GeneratorConfig\n  otherGenerators: GeneratorConfig[]\n  cwd: string\n  dmmf: any\n  datasources: any\n  datamodel: string\n}\n\nexport type GeneratorFunction = (options: GeneratorOptions) => Promise<string>\n\nexport type GeneratorDefinition = {\n  prettyName?: string // used to print in prisma dev command\n  generate: GeneratorFunction\n  defaultOutput: string\n}\n\nexport type GeneratorDefinitionWithPackage = {\n  definition: GeneratorDefinition\n  packagePath: string\n}\n\nexport type CompiledGeneratorDefinition = {\n  prettyName?: string // used to print in prisma dev command\n  output?: string | null\n  generate: () => Promise<string>\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

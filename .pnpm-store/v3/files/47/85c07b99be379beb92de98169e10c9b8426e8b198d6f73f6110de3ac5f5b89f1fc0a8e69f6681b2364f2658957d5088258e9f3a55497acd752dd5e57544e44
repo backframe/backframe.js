@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/common/errors/PrismaClientUnknownRequestError.ts"],
+  "sourcesContent": ["export class PrismaClientUnknownRequestError extends Error {\n  clientVersion: string\n\n  constructor(message: string, clientVersion: string) {\n    super(message)\n\n    this.clientVersion = clientVersion\n  }\n  get [Symbol.toStringTag]() {\n    return 'PrismaClientUnknownRequestError'\n  }\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAO,8CAA8C,MAAM;AAAA,EAGzD,YAAY,SAAiB,eAAuB;AAClD,UAAM;AAEN,SAAK,gBAAgB;AAAA;AAAA,OAElB,OAAO,eAAe;AACzB,WAAO;AAAA;AAAA;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/types.ts"],
+  "sourcesContent": ["import { ConnectorType } from '@prisma/generator-helper'\n\nexport interface DatabaseCredentials {\n  type: ConnectorType\n  host?: string\n  port?: number\n  user?: string\n  password?: string\n  database?: string\n  alreadyData?: boolean\n  schema?: string\n  newSchema?: string\n  ssl?: boolean\n  uri?: string\n  executeRaw?: boolean\n  socket?: string\n  extraFields?: { [key: string]: string }\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

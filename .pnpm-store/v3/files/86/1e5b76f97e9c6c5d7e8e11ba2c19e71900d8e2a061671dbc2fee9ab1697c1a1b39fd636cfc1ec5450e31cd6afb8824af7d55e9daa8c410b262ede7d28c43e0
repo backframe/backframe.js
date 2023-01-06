@@ -1,0 +1,54 @@
+{
+  "name": "@prisma/get-platform",
+  "version": "3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "author": "Tim Suchanek <suchanek@prisma.io>",
+  "homepage": "https://www.prisma.io",
+  "repository": "git@github.com:prisma/prisma.git",
+  "maintainers": [
+    "Tim Suchanek <suchanek@prisma.io>",
+    "Joël Galeran <galeran@prisma.io>",
+    "William Luke <luke@prisma.io>"
+  ],
+  "bugs": "https://github.com/prisma/prisma/issues",
+  "devDependencies": {
+    "@types/jest": "27.5.2",
+    "@types/node": "16.11.41",
+    "@typescript-eslint/eslint-plugin": "5.29.0",
+    "@typescript-eslint/parser": "5.29.0",
+    "eslint": "8.18.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-eslint-comments": "3.2.0",
+    "eslint-plugin-jest": "25.7.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "jest": "27.5.1",
+    "lint-staged": "11.2.6",
+    "prettier": "2.7.1",
+    "ts-jest": "27.1.5",
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "@prisma/debug": "3.15.2"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "lint-staged": {
+    "*.ts": [
+      "eslint",
+      "prettier --write"
+    ]
+  },
+  "scripts": {
+    "build": "tsc -d",
+    "format": "prettier --write .",
+    "lint": "eslint --cache --fix --ext .ts .",
+    "lint-ci": "eslint --ext .ts .",
+    "test": "jest",
+    "precommit": "lint-staged"
+  },
+  "readme": "# @prisma/get-platform\n\nPlatform detection used for Prisma 2 binaries.\n\n⚠️ **Warning**: This package is intended for Prisma's internal use.\nIts release cycle does not follow SemVer, which means we might release breaking changes (change APIs, remove functionality) without any prior warning.\n\nIf you are using this package, it would be helpful if you could help us gain an understanding where, how and why you are using it. Your feedback will be valuable to us to define a better API. Please share this information at https://github.com/prisma/prisma/discussions/13877 - Thanks!\n\n## Usage\n\n```ts\nimport { getPlatform } from '@prisma/get-platform'\n\nconst platform = await getPlatform()\n```\n"
+}

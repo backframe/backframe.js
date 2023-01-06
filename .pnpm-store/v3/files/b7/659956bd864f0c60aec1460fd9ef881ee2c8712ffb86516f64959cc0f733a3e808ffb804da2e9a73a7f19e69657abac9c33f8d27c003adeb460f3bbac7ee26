@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/missingDatasource.ts"],
+  "sourcesContent": ["import chalk from 'chalk'\nimport { highlightDatamodel } from '../highlight/highlight'\nimport { link } from '../link'\n\nexport const missingDatasource = `\\nYou don't have any ${chalk.bold(\n  'datasource',\n)} defined in your ${chalk.bold('schema.prisma')}.\nYou can define a datasource like this:\n\n${chalk.bold(\n  highlightDatamodel(`datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DB_URL\")\n}`),\n)}\n\nMore information in our documentation:\n${link('https://pris.ly/d/prisma-schema')}\n`\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA,mBAAkB;AAClB,uBAAmC;AACnC,kBAAqB;AAEd,MAAM,oBAAoB;AAAA,qBAAwB,qBAAM,KAC7D,iCACmB,qBAAM,KAAK;AAAA;AAAA;AAAA,EAG9B,qBAAM,KACN,yCAAmB;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,EAOnB,sBAAK;AAAA;",
+  "names": []
+}

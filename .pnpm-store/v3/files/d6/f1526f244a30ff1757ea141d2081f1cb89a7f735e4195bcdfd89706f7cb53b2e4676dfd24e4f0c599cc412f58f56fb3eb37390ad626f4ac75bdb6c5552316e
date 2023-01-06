@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/common/errors/types/PrismaClientRustErrorArgs.ts"],
+  "sourcesContent": ["import { RustLog, RustError } from '../utils/log'\n\nexport type PrismaClientRustErrorArgs = {\n  clientVersion: string\n  log?: RustLog\n  error?: RustError\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

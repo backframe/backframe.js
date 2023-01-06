@@ -1,0 +1,45 @@
+import { DataSource, DMMF, GeneratorConfig } from '@prisma/generator-helper/dist';
+export interface Field {
+    kind: DMMF.FieldKind;
+    name: string;
+    isRequired: boolean;
+    isList: boolean;
+    isUnique: boolean;
+    isId: boolean;
+    type: string;
+    dbNames: string[] | null;
+    isGenerated: boolean;
+    hasDefaultValue: boolean;
+    relationFromFields?: any[];
+    relationToFields?: any[];
+    relationOnDelete?: string;
+    relationName?: string;
+    default: boolean | any;
+    isUpdatedAt: boolean;
+    isReadOnly: string;
+    columnName?: string;
+}
+export interface Attribute {
+    isUnique: boolean;
+    isId: boolean;
+    dbNames: string[] | null;
+    relationFromFields?: any[];
+    relationToFields?: any[];
+    relationOnDelete?: string;
+    relationName?: string;
+    isReadOnly: string;
+    default?: boolean | any;
+    isGenerated: boolean;
+    isUpdatedAt: boolean;
+    columnName?: string;
+}
+export interface Model extends DMMF.Model {
+    uniqueFields: string[][];
+}
+/**
+ * Deserialize DMMF.Model[] into prisma schema file
+ */
+export declare function dmmfModelsdeserializer(models: Model[]): Promise<string>;
+export declare function datasourcesDeserializer(datasources: DataSource[]): Promise<string>;
+export declare function generatorsDeserializer(generators: GeneratorConfig[]): Promise<string>;
+export declare function dmmfEnumsDeserializer(enums: DMMF.DatamodelEnum[]): Promise<string>;

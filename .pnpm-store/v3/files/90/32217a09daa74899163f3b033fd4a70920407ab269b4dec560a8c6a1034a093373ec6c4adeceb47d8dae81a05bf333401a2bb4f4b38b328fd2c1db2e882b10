@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/pick.ts"],
+  "sourcesContent": ["export function pick<T extends object, U extends keyof T>(\n  obj: T,\n  keys: U[],\n): Pick<T, U> {\n  return Object.entries(obj).reduce<Pick<T, U>>((acc, [key, value]) => {\n    if (keys.includes(key as U)) {\n      acc[key] = value\n    }\n    return acc\n  }, {} as Pick<T, U>)\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAO,cACL,KACA,MACY;AACZ,SAAO,OAAO,QAAQ,KAAK,OAAmB,CAAC,KAAK,CAAC,KAAK,WAAW;AACnE,QAAI,KAAK,SAAS,MAAW;AAC3B,UAAI,OAAO;AAAA;AAEb,WAAO;AAAA,KACN;AAAA;",
+  "names": []
+}

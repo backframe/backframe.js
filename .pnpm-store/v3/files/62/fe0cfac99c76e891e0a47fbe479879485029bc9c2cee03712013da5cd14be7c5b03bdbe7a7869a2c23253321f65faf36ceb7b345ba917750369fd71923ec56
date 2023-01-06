@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/cli/hashes.ts"],
+  "sourcesContent": ["import { getSchemaPath } from './getSchema'\nimport { arg } from './utils'\nimport crypto from 'crypto'\n\n/**\n * Get a unique identifier for the project by hashing\n * the directory with `schema.prisma`\n */\nexport async function getProjectHash(): Promise<string> {\n  const args = arg(process.argv.slice(3), { '--schema': String })\n\n  let projectPath = await getSchemaPath(args['--schema'])\n  projectPath = projectPath || process.cwd() // Default to cwd if the schema couldn't be found\n\n  return crypto\n    .createHash('sha256')\n    .update(projectPath)\n    .digest('hex')\n    .substring(0, 8)\n}\n\n/**\n * Get a unique identifier for the CLI installation path\n * which can be either global or local (in project's node_modules)\n */\nexport function getCLIPathHash(): string {\n  const cliPath = process.argv[1]\n  return crypto\n    .createHash('sha256')\n    .update(cliPath)\n    .digest('hex')\n    .substring(0, 8)\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA,uBAA8B;AAC9B,mBAAoB;AACpB,oBAAmB;AAMnB,gCAAwD;AACtD,QAAM,OAAO,sBAAI,QAAQ,KAAK,MAAM,IAAI,EAAE,YAAY;AAEtD,MAAI,cAAc,MAAM,oCAAc,KAAK;AAC3C,gBAAc,eAAe,QAAQ;AAErC,SAAO,sBACJ,WAAW,UACX,OAAO,aACP,OAAO,OACP,UAAU,GAAG;AAAA;AAOX,0BAAkC;AACvC,QAAM,UAAU,QAAQ,KAAK;AAC7B,SAAO,sBACJ,WAAW,UACX,OAAO,SACP,OAAO,OACP,UAAU,GAAG;AAAA;",
+  "names": []
+}

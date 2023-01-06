@@ -1,0 +1,16 @@
+# Installation
+> `npm install --save @types/which-pm-runs`
+
+# Summary
+This package contains type definitions for which-pm-runs (https://github.com/zkochan/packages/tree/master/which-pm-runs).
+
+# Details
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/which-pm-runs
+
+Additional Details
+ * Last updated: Thu, 01 Aug 2019 00:24:36 GMT
+ * Dependencies: none
+ * Global values: none
+
+# Credits
+These definitions were written by Chuah Chee Shian <https://github.com/shian15810>.

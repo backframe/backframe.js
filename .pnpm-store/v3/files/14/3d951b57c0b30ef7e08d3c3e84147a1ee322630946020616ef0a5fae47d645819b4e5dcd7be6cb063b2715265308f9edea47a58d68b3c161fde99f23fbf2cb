@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/panic.ts"],
+  "sourcesContent": ["export class RustPanic extends Error {\n  public request: any\n  public rustStack: string\n  public area: ErrorArea\n  public schemaPath?: string\n  public schema?: string\n  public introspectionUrl?: string\n  constructor(\n    message: string,\n    rustStack: string,\n    request: any,\n    area: ErrorArea,\n    schemaPath?: string,\n    schema?: string,\n    introspectionUrl?: string,\n  ) {\n    super(message)\n    this.rustStack = rustStack\n    this.request = request\n    this.area = area\n    this.schemaPath = schemaPath\n    this.schema = schema\n    this.introspectionUrl = introspectionUrl\n  }\n}\n\nexport enum ErrorArea {\n  LIFT_CLI = 'LIFT_CLI',\n  PHOTON_STUDIO = 'PHOTON_STUDIO',\n  INTROSPECTION_CLI = 'INTROSPECTION_CLI',\n}\n"],
+  "mappings": ";;;;;;;AAAA;AAAA;AAAA;AAAA;AAAO,wBAAwB,MAAM;AAAA,EAOnC,YACE,SACA,WACA,SACA,MACA,YACA,QACA,kBACA;AACA,UAAM;AACN,SAAK,YAAY;AACjB,SAAK,UAAU;AACf,SAAK,OAAO;AACZ,SAAK,aAAa;AAClB,SAAK,SAAS;AACd,SAAK,mBAAmB;AAAA;AAAA;AAIrB,IAAK;AAAL,UAAK,YAAL;AACL,2BAAW;AACX,gCAAgB;AAChB,oCAAoB;AAAA,GAHV;",
+  "names": []
+}

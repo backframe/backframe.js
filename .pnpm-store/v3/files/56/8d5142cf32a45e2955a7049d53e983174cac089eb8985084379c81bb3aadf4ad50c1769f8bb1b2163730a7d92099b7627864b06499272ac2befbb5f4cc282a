@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/highlight/types.ts"],
+  "sourcesContent": ["export type SyntaxCondition =\n  | RegExp\n  | {\n      pattern: RegExp\n      greedy?: boolean\n      lookbehind?: boolean\n    }\n\nexport type SyntaxDefinition = {\n  comment?: SyntaxCondition | Array<SyntaxCondition>\n  variable?: SyntaxCondition | Array<SyntaxCondition>\n  string?: SyntaxCondition | Array<SyntaxCondition>\n  function?: SyntaxCondition | Array<SyntaxCondition>\n  keyword?: SyntaxCondition | Array<SyntaxCondition>\n  boolean?: SyntaxCondition | Array<SyntaxCondition>\n  number?: SyntaxCondition | Array<SyntaxCondition>\n  operator?: SyntaxCondition | Array<SyntaxCondition>\n  punctuation?: SyntaxCondition | Array<SyntaxCondition>\n  directive?: SyntaxCondition | Array<SyntaxCondition>\n  entity?: SyntaxCondition | Array<SyntaxCondition>\n  value?: SyntaxCondition | Array<SyntaxCondition>\n  field?: SyntaxCondition | Array<SyntaxCondition>\n}\n\nexport type Theme = {\n  comment: (str: string) => string\n  variable?: (str: string) => string\n  string?: (str: string) => string\n  function?: (str: string) => string\n  keyword?: (str: string) => string\n  boolean?: (str: string) => string\n  number?: (str: string) => string\n  operator?: (str: string) => string\n  punctuation?: (str: string) => string\n  directive?: (str: string) => string\n  entity?: (str: string) => string\n  value?: (str: string) => string\n  field?: (str: string) => string\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}

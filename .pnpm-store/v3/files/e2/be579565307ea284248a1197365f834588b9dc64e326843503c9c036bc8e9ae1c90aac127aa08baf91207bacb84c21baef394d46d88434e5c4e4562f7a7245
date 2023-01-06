@@ -1,0 +1,45 @@
+{
+  "name": "yum",
+  "version": "0.1.1",
+  "description": "A collection of delicious React components.",
+  "main": "lib/yum.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sudokrew/yum.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sudokrew/yum/issues"
+  },
+  "scripts": {
+    "build": "npm run webpack && npm run compile",
+    "clean": "rimraf dist && rimraf lib",
+    "compile": "babel src --out-dir lib --copy-files",
+    "prebuild": "npm run clean",
+    "prepublish": "npm run build",
+    "webpack": "webpack --config webpack.dist.browser.js"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.7.5",
+    "babel-core": "^6.7.2",
+    "babel-eslint": "^5.0.0",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-plugin-transform-object-rest-spread": "^6.6.5",
+    "babel-preset-airbnb": "^1.1.1",
+    "eslint": "^2.4.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "eslint-plugin-babel": "^3.1.0",
+    "eslint-plugin-react": "^4.2.3",
+    "express": "^4.13.4",
+    "express-urlrewrite": "^1.2.0",
+    "react-dom": "^15.0.1",
+    "rimraf": "^2.5.2",
+    "webpack": "^1.12.14",
+    "webpack-dev-middleware": "^1.5.1"
+  },
+  "dependencies": {
+    "d3": "^3.5.16",
+    "react": "^15.0.1"
+  }
+}

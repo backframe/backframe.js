@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/common/errors/types/RequestError.ts"],
+  "sourcesContent": ["export interface RequestError {\n  error: string\n  user_facing_error: {\n    is_panic: boolean\n    message: string\n    meta?: object\n    error_code?: string\n  }\n}\n"],
+  "mappings": ";;AAAA;",
+  "names": []
+}
