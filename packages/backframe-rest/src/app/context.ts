@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { BfConfig } from "@backframe/core";
 import type { NextFunction } from "express";
 import type { z, ZodType } from "zod";
 import { ExpressReq, ExpressRes } from "../lib/types";
@@ -18,7 +17,6 @@ export class Context<U, T extends ZodType> {
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private _bfConfig?: BfConfig,
     private database?: U
   ) {}
 

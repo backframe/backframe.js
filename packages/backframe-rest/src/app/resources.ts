@@ -87,7 +87,7 @@ export class Resource<T> {
   }
 
   #getHandler(method: Method): IHandlerConfig<{}> {
-    const db = this.#bfConfig.database as DB;
+    const db = this.#bfConfig.$database as DB;
     const model = (this.#model ?? this.route) as string;
     const defaultH = new DefaultHandlers(this, this.#bfConfig);
 

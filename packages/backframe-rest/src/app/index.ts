@@ -6,11 +6,10 @@ import cors, { CorsOptions } from "cors";
 import express, { NextFunction, RequestHandler, type Express } from "express";
 import fs from "fs";
 import helmet from "helmet";
-import http, { Server as HttpServer, ServerResponse } from "http";
+import http, { Server as HttpServer } from "http";
 import merge from "lodash.merge";
-import path from "path";
 import type { Server as SocketServer } from "socket.io";
-import { ZodObject, ZodRawShape, ZodType } from "zod";
+import { ZodObject, ZodType } from "zod";
 import {
   GenericException,
   InternalException,
@@ -26,6 +25,7 @@ import {
 } from "../lib/types.js";
 import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
+import { wrapHandler } from "./handlers.js";
 import { Resource } from "./resources.js";
 
 interface IBfServerConfig<T> {
@@ -39,85 +39,79 @@ interface IBfServerConfig<T> {
 
 const DEFAULT_PORT = 6969;
 
-export const isText = (v: unknown) => {
-  return (
-    typeof v === "bigint" ||
-    typeof v === "boolean" ||
-    typeof v === "number" ||
-    typeof v === "string"
-  );
-};
-
 export class BfServer<T> implements IBfServer<T> {
-  _app: Express;
-  _handle: HttpServer;
-  _database?: T;
-  _sockets?: SocketServer;
+  $app: Express;
+  $handle: HttpServer;
+  $database?: T;
+  $sockets?: SocketServer;
 
   #router: Router;
   #bfConfig!: BfConfig;
   #resources!: Resource<unknown>[];
   #middleware: Handler<T, {}>[];
 
-  constructor(private _cfg: IBfServerConfig<T>) {
-    this._app = express();
-    this._database = _cfg.database;
-    this._handle = http.createServer(this._app);
+  constructor(public $cfg: IBfServerConfig<T>) {
+    this.$app = express();
+    this.$database = $cfg.database;
+    this.$handle = http.createServer(this.$app);
 
     this.#middleware = [];
     this.#resources = [];
   }
 
-  async __init(cfg: BfConfig) {
-    cfg.__setServer(this);
-    this.#bfConfig = cfg;
+  // Initializes the server and returns a promise that resolves when the server is ready
+  async $init(cfg: BfConfig) {
+    cfg.$setServer(this);
+    cfg.$invokeListeners("onServerInit");
 
+    this.#bfConfig = cfg;
     this.#router = new Router(cfg);
     this.#router.init();
-
     this.#applyMiddleware();
-    cfg.__invokeServerModifiers();
 
     await this.#loadResources();
     this.#setupErrHandlers(); // ensure called last
   }
 
-  #getHost(port = this._cfg.port || DEFAULT_PORT) {
+  #validatePort(port: number) {
+    // range
+    if (port < 0 || port > 65535) {
+      logger.error(`Invalid port: ${port}`);
+      process.exit(10);
+    }
+    // check if port is in use
+    try {
+      fs.accessSync(`http://localhost:${port}`);
+      logger.error(`Port ${port} is in use`);
+      process.exit(11);
+    } catch (e) {
+      // port is free
+    }
+  }
+
+  // Starts the server on provided port or default port
+  async $start(port = this.$cfg.port || DEFAULT_PORT) {
+    this.#validatePort(port);
+    this.$cfg.port = port;
+    this.$handle.listen(port, () => {
+      logger.info(`server started on: ${this.$getHost()}`);
+      this.#bfConfig.$invokeListeners("onServerStart");
+    });
+  }
+
+  // TODO: expose flags etc...
+  $getHost(port = this.$cfg.port || DEFAULT_PORT) {
     return `http://localhost:${port}`;
   }
 
-  #wrapHandler<Z extends ZodRawShape>(handler: Handler<T, Z>) {
-    return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx =
-        (req.sharedCtx as Context<T, ZodObject<Z>>) ??
-        new Context<T, ZodObject<Z>>(
-          req,
-          res,
-          next,
-          this.#bfConfig,
-          this._database
-        );
-      // plant ctx in req object for reuse
-      req.sharedCtx = ctx;
-      const value = await handler(ctx);
-
-      if (value instanceof GenericException)
-        return next(value); // forward error
-      else if (value instanceof ServerResponse) return; // response already sent
-      else if (isText(value) || typeof value === "object") {
-        // return plain values
-        return res.status(200).send(value);
-      }
-    };
-  }
-
+  // where the magic happens
   async #loadResources() {
     // load root server listeners
-    const entry = this.#bfConfig.getEntryPoint();
+    const entry = this.#bfConfig.getAbsDirPath("entryPoint");
     const module = await loadModule(entry);
 
-    if (module.listeners && this._sockets) {
-      module.listeners(this._sockets); // pass io object
+    if (module.listeners && this.$sockets) {
+      module.listeners(this.$sockets); // pass io object
     }
 
     const manifest = this.#router.manifest;
@@ -136,12 +130,12 @@ export class BfServer<T> implements IBfServer<T> {
 
         // check for realtime listeners
         if (r.listeners) {
-          if (!this._sockets) {
+          if (!this.$sockets) {
             logger.warn(
               `listeners found in route: \`${r.route}\` but sockets plugin not enabled`
             );
           } else {
-            const nsp = this._sockets.of(r.route);
+            const nsp = this.$sockets.of(r.route);
             r.listeners(nsp);
           }
         }
@@ -170,14 +164,7 @@ export class BfServer<T> implements IBfServer<T> {
                 const value = await action(ctx);
                 afterAll?.(ctx); // dont await
 
-                if (value instanceof GenericException)
-                  return ctx.next(value); // forward error
-                else if (value instanceof ServerResponse)
-                  return; // response already sent
-                else if (isText(value) || typeof value === "object") {
-                  // return plain values
-                  return ctx.json(value as object);
-                }
+                return value;
               } catch (error) {
                 // eslint-disable-next-line no-console
                 console.log(error);
@@ -186,7 +173,7 @@ export class BfServer<T> implements IBfServer<T> {
             },
           ]
             .filter((h) => typeof h !== "undefined")
-            .map((h) => this.#wrapHandler(h));
+            .map((h) => wrapHandler(h, this.$database));
 
           // add validator (should be `unshifted` last... First line of defense)
           if (input) {
@@ -194,7 +181,7 @@ export class BfServer<T> implements IBfServer<T> {
           }
 
           // mount resource on express app
-          this._app[method](r.route, handlers);
+          this.$app[method](r.route, handlers);
         });
       })
     );
@@ -222,17 +209,19 @@ export class BfServer<T> implements IBfServer<T> {
   }
 
   #applyMiddleware() {
-    this._app.use(helmet());
-    this._app.use(express.json({ limit: "20mb" }));
-    this._app.use(express.urlencoded({ extended: true }));
+    const bfCfg = this.#bfConfig;
 
-    const useCors = this._cfg.enableCors;
-    const log = this._cfg.logRequests;
-    const logAdmin = this._cfg.logAdminRequests;
+    this.$app.use(helmet());
+    this.$app.use(express.json({ limit: "20mb" }));
+    this.$app.use(express.urlencoded({ extended: true }));
 
-    useCors && this._app.use(cors(this._cfg.corsOptions));
+    const useCors = this.$cfg.enableCors;
+    const log = this.$cfg.logRequests;
+    const logAdmin = this.$cfg.logAdminRequests;
+
+    useCors && this.$app.use(cors(this.$cfg.corsOptions));
     if (log) {
-      this._app.use((req, res, next) => {
+      this.$app.use((req, res, next) => {
         const start = Date.now();
         next();
         if (req.originalUrl.startsWith("/_/") && !logAdmin) return;
@@ -244,31 +233,28 @@ export class BfServer<T> implements IBfServer<T> {
       });
     }
 
-    const fullDir = (dir: string) =>
-      path.join(this.#bfConfig.getRootDirName(), dir);
-
     // additional "middleware" i.e staticDir handlers
-    const staticDirs = this.#bfConfig.userCfg.staticDirs;
+    const staticDirs = bfCfg.getDirPath("staticDirs");
     staticDirs.forEach((dir) => {
-      const p = resolveCwd(fullDir(dir));
+      const p = resolveCwd(dir);
       if (fs.existsSync(p)) {
         logger.info(`serving stating assets from dir: ${dir}`);
-        this._app.use(express.static(p));
+        this.$app.use(express.static(p));
       }
     });
 
     // configure default templating setup
-    const { viewsDir } = this.#bfConfig.userCfg;
-    if (fs.existsSync(resolveCwd(fullDir(viewsDir)))) {
+    const viewsDir = bfCfg.getDirPath("viewsDir");
+    if (fs.existsSync(resolveCwd(viewsDir))) {
       logger.info(`loading views from dir: ${viewsDir}`);
-      this._app.set("view engine", "hbs");
-      this._app.set("views", fullDir(viewsDir));
+      this.$app.set("view engine", "hbs");
+      this.$app.set("views", viewsDir);
     }
   }
 
   #setupErrHandlers() {
     // at this point, no route has been found
-    this._app.use("*", (req, _res, _next) => {
+    this.$app.use("*", (req, _res, _next) => {
       if (this.#resources.some((r) => r.route === req.originalUrl))
         throw MethodNotAllowed(
           "Method Not Allowed",
@@ -277,7 +263,7 @@ export class BfServer<T> implements IBfServer<T> {
       throw NotFoundExeption();
     });
 
-    this._app.use(
+    this.$app.use(
       (
         err: GenericException,
         _req: ExpressReq,
@@ -291,27 +277,54 @@ export class BfServer<T> implements IBfServer<T> {
     );
   }
 
-  middleware(handler: Handler<T, {}>) {
-    this._app.use(this.#wrapHandler(handler));
+  /**
+   * This method is used to define global middleware. Handlers defined here will be executed on every request to the server.
+   * @param handler - The handler to be executed on every request
+   * @example
+   * ```ts
+   * server.use((ctx) => {
+   *  // do something
+   * })
+   * ```
+   * @example
+   * ```ts
+   * server.use(async (ctx) => {
+   *  // do something
+   * })
+   * ```
+   */
+  use(handler: Handler<T, {}>) {
+    this.$app.use(wrapHandler(handler));
   }
 
-  static(prefix: string, path: string) {
-    const _route = this.#bfConfig.getRestConfig().urlPrefix + prefix;
-    this._app.use(_route, express.static(path));
+  /**
+   * Use this method to define a static directory. This is a wrapper around the `express.static` method. Static dirs can also be defined in the `staticDirs` property of the `bf.config.js` file. Use this method if you want to define a static dir with a custom prefix.
+   * @param p - The prefix to be used for the static dir
+   * @param path - The path to the static dir
+   * @example
+   * ```ts
+   * server.static("/static", "./public")
+   * ```
+   */
+  static(p: string, path: string) {
+    this.$app.use(this.#bfConfig.withRestPrefix(p), express.static(path));
   }
 
+  /**
+   * Backframe uses fs-based routing but you can also used this method to define custom routes. This method is  provided for convenience when creating custom routes in backframe plugins. Handlers defined here will be added to the router manifest and prefixed with the `restPrefix` defined in the `bf.config.js` file.
+   * @param method - The HTTP method to be used for the route
+   * @param route - The route to be defined
+   * @param handler - The handler to be executed when the route is called
+   * @example
+   * ```ts
+   * server.mountRoute("get", "/hello", (ctx) => {
+   *    ctx.res.send("hello world")
+   * })
+   * ```
+   */
   mountRoute(method: Method, route: string, handler: RequestHandler) {
-    const _route = this.#bfConfig.getRestConfig().urlPrefix + route;
     this.#router.addRoute(route); // add route to manifest
-    this._app[method](_route, handler);
-  }
-
-  async start(port = this._cfg.port || DEFAULT_PORT) {
-    this._cfg.port = port;
-    this._handle.listen(port, () => {
-      // TODO: expose flags etc...
-      logger.info(`server started on: ${this.#getHost()}`);
-    });
+    this.$app[method](this.#bfConfig.withRestPrefix(route), handler);
   }
 }
 
@@ -322,10 +335,38 @@ const DEFAULT_CFG = {
   logAdminRequests: false,
 };
 
+/**
+ * Creates a new server instance with the default configuration
+ * @returns `BfServer`
+ * @example
+ * ```ts
+ * import { defaultServer } from "@backframe/rest"
+ * const server = defaultServer()
+ *
+ * export default server
+ * ```
+ */
 export function defaultServer() {
   return new BfServer(DEFAULT_CFG);
 }
 
+/**
+ * Creates a new server instance with the provided configuration
+ * @param cfg - The configuration to be used for the server
+ * @returns `BfServer`
+ * @example
+ * ```ts
+ * import { createServer } from "@backframe/rest"
+ * const server = createServer({
+ *    port: 6969,
+ *    enableCors: true,
+ *    logRequests: true,
+ *    logAdminRequests: false,
+ * })
+ *
+ * export default server
+ * ```
+ */
 export function createServer<T>(cfg: IBfServerConfig<T>) {
   return new BfServer(merge(DEFAULT_CFG, cfg));
 }

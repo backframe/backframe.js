@@ -48,14 +48,14 @@ export class Router {
   manifest: Manifest;
 
   constructor(private bfConfig: BfConfig) {
-    this.#prefix = bfConfig.getRestConfig().urlPrefix ?? "/";
+    this.#prefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
     this.manifest = new Manifest(bfConfig);
   }
 
   init() {
     const cfg = this.bfConfig;
-    const root = cfg.getRootDirName();
-    const src = cfg.getRoutesDirName();
+    const root = cfg.getDirName("root");
+    const src = cfg.getDirName("routesDir");
     const ptrn = `./${root}/${src}/**/*.js`;
 
     this.#rootDir = root;
