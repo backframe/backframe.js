@@ -9,13 +9,15 @@ export interface RouteItem {
   filePath: string;
   basename: string;
   dirname: string;
+  isExtended?: boolean;
+  pluginName?: string;
 }
 
 const stdRoute = /^([^$()[\]]+).js$/;
 const indexRoute = /^index.js$/;
 const indexShadow = /^\([^)]+\).js$/;
 const dynRoute = /^\$(\w+).js$/;
-const multiPart = /^((?:(?:\w+|\$\w+).){2,})js$/; // FIXME
+const multiPart = /^((?:(?:\w+|\$\w+).){2,})js$/;
 const catchAll = /^\$.js$/;
 
 const SPEC = [
@@ -47,26 +49,26 @@ export class Router {
   matches: string[];
   manifest: Manifest;
 
-  constructor(private bfConfig: BfConfig) {
+  constructor(private bfConfig: BfConfig, private origin?: string) {
     this.#prefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
     this.manifest = new Manifest(bfConfig);
   }
 
-  init() {
+  init(root?: string, routesDir?: string) {
     const cfg = this.bfConfig;
-    const root = cfg.getDirName("root");
-    const src = cfg.getDirName("routesDir");
-    const ptrn = `./${root}/${src}/**/*.js`;
+    const cwd = root ?? cfg.getDirName("root");
+    const src = routesDir ?? cfg.getDirName("routesDir");
+    const ptrn = `./${src}/**/*.js`;
 
-    this.#rootDir = root;
+    this.#rootDir = cwd;
     this.#sourceDir = src;
 
-    const matches = globbySync(ptrn);
+    const matches = globbySync(ptrn, { cwd });
     if (!matches.length) {
       logger.warn(`no routes detected in the ${src} directory`);
     }
     this.matches = matches;
-    matches.map((m) => this.#processRoute(m));
+    matches.map((m) => this.#processRoute(m.replace("./", `./${cwd}/`)));
   }
 
   #processRoute(r: string) {
@@ -101,6 +103,7 @@ export class Router {
       basename: base,
       filePath: r,
       dirname: path.dirname(r),
+      pluginName: this.origin ?? undefined,
     };
 
     this.manifest.add(item);
@@ -142,13 +145,23 @@ export class Router {
     });
   }
 
+  // Manually add route to the manifest with reading from file-system
   addRoute(route: string, origin?: string) {
-    // convert to dummy item
+    // set to null to skip reading file
     this.manifest.add({
       basename: origin || route,
-      dirname: route,
-      filePath: route,
+      dirname: null,
+      filePath: null,
       route,
+    });
+  }
+
+  // Merge one router into another to enable extending one from another
+  mergeRouter(router: Router) {
+    const { items } = router.manifest;
+    items.forEach((itm) => {
+      itm.isExtended = true;
+      this.manifest.add(itm);
     });
   }
 }
