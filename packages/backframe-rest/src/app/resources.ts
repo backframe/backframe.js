@@ -1,10 +1,8 @@
-/* eslint-disable indent */
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { BfConfig } from "@backframe/core";
 import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
-import type { Namespace } from "socket.io";
 import {
   Handler,
   IHandlerConfig,
@@ -12,9 +10,10 @@ import {
   IModuleConfig,
   IRouteConfig,
   Method,
+  NspListener,
 } from "../lib/types.js";
 import { RouteItem } from "../routing/router.js";
-import { DefaultHandlers, ResourceModule } from "./handlers.js";
+import { DefaultHandlers, ResourceConfig } from "./handlers.js";
 
 export const DEFAULT_ENABLED: Method[] = ["get", "post", "put", "delete"];
 export const DEFAULT_PUBLIC: Method[] = ["get"];
@@ -28,8 +27,10 @@ export class Resource<T> {
   #middleware?: Handler<unknown, {}>[];
   #handlers!: IHandlers;
 
-  listeners?: (nsp: Namespace) => void;
-  public?: Method[];
+  listeners?: NspListener;
+  afterAll?: Handler<unknown, {}>;
+  beforeAll?: Handler<unknown, {}>;
+  secured?: Method[];
   enabled?: Method[];
 
   constructor(item: RouteItem, config: BfConfig) {
@@ -70,7 +71,7 @@ export class Resource<T> {
         mod.config ?? {}
       );
       this.#model = config.model;
-      this.public = config.securedMethods;
+      this.secured = config.securedMethods;
       this.enabled = config.enabledMethods;
 
       this.#loadHandlers(mod);
@@ -86,7 +87,7 @@ export class Resource<T> {
   }
 
   #getHandler(method: Method): IHandlerConfig<{}> {
-    const db = this.#bfConfig.database as DB;
+    const db = this.#bfConfig.$database as DB;
     const model = (this.#model ?? this.route) as string;
     const defaultH = new DefaultHandlers(this, this.#bfConfig);
 
@@ -104,26 +105,35 @@ export class Resource<T> {
   #loadHandlers(module: IModuleConfig<unknown>) {
     if (
       !module.default ||
-      (module.default && module.default instanceof ResourceModule)
+      (module.default && module.default instanceof ResourceConfig)
     ) {
-      const h = module.default ?? new ResourceModule();
+      const h = module.default ?? new ResourceConfig(); // use existing or instantiate
+
       // find enabled methods
       const methods = module?.config?.enabledMethods || DEFAULT_ENABLED;
+      const { handlers, middleware, ...otherNamed } = h.__config();
 
       methods.forEach((m) => {
-        if (!h.__handlers[m]) {
-          h.__handlers[m] = this.#getHandler(m);
+        // if no handler, use default one
+        if (!handlers[m]) {
+          handlers[m] = this.#getHandler(m);
         }
       });
 
-      Object.keys(h.__handlers).forEach((k) => {
-        this.#handlers[k as Method] = h.__handlers[k as Method];
+      Object.keys(handlers).forEach((k) => {
+        this.#handlers[k as Method] = handlers[k as Method];
       });
 
-      this.#middleware = h.__middleware;
+      this.#middleware = middleware;
+      // these keys have a one-to-one mapping from Resource->Module
+      const named = ["listeners", "beforeAll", "afterAll"];
+      named.forEach(
+        // @ts-expect-error (forfit safety for dynamic code)
+        (nmd) => (this[nmd] = otherNamed[nmd] ?? undefined)
+      );
     }
 
-    // check for named exports
+    // check for named methods exports
     STD_METHODS.forEach((m) => {
       if (module[m]) {
         this.#handlers[m.toLowerCase() as Method] = module[
@@ -132,15 +142,19 @@ export class Resource<T> {
       }
     });
 
-    // check for named `middleware` export
-    if (module["middleware"]) {
-      // TODO: validate middleware values
-      this.#middleware = module["middleware"] as Handler<unknown, {}>[];
+    // check for other named exports
+    if (!this.middleware) {
+      this.#middleware = module.middleware;
     }
 
-    // check for listeners
-    if (module["listeners"]) {
-      this.listeners = module["listeners"] as (nsp: Namespace) => void;
-    }
+    // these keys have a one-to-one mapping from Resource->Module
+    const named = ["listeners", "beforeAll", "afterAll"];
+    named.forEach((nmd) => {
+      // @ts-expect-error (forfit safety for dynamic code)
+      if (!this[nmd] && module[nmd]) {
+        // @ts-expect-error (forfit safety for dynamic code)
+        this[nmd] = module[nmd];
+      }
+    });
   }
 }

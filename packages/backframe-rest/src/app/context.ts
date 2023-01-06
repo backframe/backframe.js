@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { BfConfig } from "@backframe/core";
-import type {
-  NextFunction,
-  Request as ExpressReq,
-  Response as ExpressRes,
-} from "express";
+
+import type { NextFunction } from "express";
 import type { z, ZodType } from "zod";
+import { ExpressReq, ExpressRes } from "../lib/types";
 
 interface IResponseOptions {
   headers?: {
@@ -14,11 +11,12 @@ interface IResponseOptions {
 }
 
 export class Context<U, T extends ZodType> {
+  [key: string]: unknown; // extended by user
+
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private _bfConfig?: BfConfig,
     private database?: U
   ) {}
 
@@ -49,6 +47,14 @@ export class Context<U, T extends ZodType> {
 
   redirect(url: string) {
     this.response.redirect(url);
+  }
+
+  render(
+    template: string,
+    data: object,
+    cb?: (err: Error, html: string) => void
+  ) {
+    this.response.render(template, data, cb);
   }
 
   string(value: string, status = 200, options?: IResponseOptions) {

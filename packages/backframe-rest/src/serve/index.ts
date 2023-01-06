@@ -2,8 +2,13 @@ import { BfConfig } from "@backframe/core";
 import { loadModule, logger } from "@backframe/utils";
 import { BfServer } from "../app/index.js";
 
-export async function startServer(config: BfConfig, port?: number) {
-  const entry = config.getEntryPoint();
+const argv = process.argv.slice(2);
+
+export async function startServer(
+  config: BfConfig,
+  port = +argv[0] ?? process.env.PORT ? +process.env.PORT : undefined
+) {
+  const entry = config.getAbsDirPath("entryPoint");
 
   const file = await loadModule(entry);
   if (!file.default) {
@@ -12,7 +17,7 @@ export async function startServer(config: BfConfig, port?: number) {
   }
 
   const server: BfServer<unknown> = file.default;
-  await server.__init(config);
+  await server.$init(config);
 
-  server.start(port);
+  server.$start(port ?? undefined);
 }

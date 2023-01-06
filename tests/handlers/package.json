@@ -1,0 +1,17 @@
+{
+  "name": "test:handlers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bf serve",
+    "start": "node bin/serve.mjs",
+    "run:tests": "vitest --run"
+  },
+  "dependencies": {
+    "@backframe/core": "workspace:*",
+    "@backframe/rest": "workspace:*"
+  },
+  "devDependencies": {
+    "@backframe/cli": "workspace:*"
+  }
+}

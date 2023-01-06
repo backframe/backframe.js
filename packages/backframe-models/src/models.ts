@@ -1,32 +1,48 @@
-export interface AuthUser {
-  id?: string;
-  role?: string;
-  email: string;
-  name?: string;
-  provider?: string;
-  providerID?: string;
-  passwordHash?: string;
-}
-
-// model used to store authenticated users
-export type User = {
+export type AuthAccount = {
   id: string;
-  role: string;
-  email: string;
-  name?: string;
-  provider?: string;
-  providerID?: string;
-  passwordHash?: string;
+  userID: string;
+  provider: string;
+  providerID: string;
+  providerAccountID: number;
+  refreshToken?: string;
+  accessToken?: string;
+  accessTokenExpires?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  user: AuthUser;
 };
 
-// model used to store user sessions
-export type Session = {
+export type AuthSession = {
   id: string;
   userID: string;
   expires: Date;
   sessionToken: string;
   accessToken: string;
-  accessTokenExpires: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  user: AuthUser;
+};
+
+export type AuthUser = {
+  id?: string;
+  role?: string;
+  email: string;
+  emailVerified: Date;
+  name?: string;
+  imageURL?: string;
+  accounts: AuthAccount[];
+  sessions: AuthSession[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type AuthVerificationRequest = {
+  id: string;
+  identifier: string;
+  token: string;
+  expires: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 // model used for storing logs

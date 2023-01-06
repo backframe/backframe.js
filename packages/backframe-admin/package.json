@@ -1,6 +1,6 @@
 {
   "name": "@backframe/admin",
-  "version": "0.0.0",
+  "private": true,
   "description": "The backframe admin ui dashboard plugin",
   "main": "scripts/index.js",
   "homepage": "/static",

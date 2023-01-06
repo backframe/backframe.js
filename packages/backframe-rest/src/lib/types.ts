@@ -1,15 +1,27 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
+import type { Request, Response } from "express";
 import { ServerResponse } from "http";
+import { Namespace } from "socket.io";
 import { ZodObject, ZodRawShape } from "zod";
 import { Context } from "../app/context.js";
-import { ResourceModule } from "../app/handlers.js";
+import { ResourceConfig } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
 
 export type Method = "get" | "post" | "put" | "patch" | "delete";
+export type MethodUpper = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-export type HandlerResult = string | object | GenericException | ServerResponse;
+export type ExpressReq<S = Request> = S & { [key: string]: unknown };
+export type ExpressRes<S = Response> = S & { [key: string]: unknown };
 
+export type HandlerResult =
+  | string
+  | object
+  | GenericException
+  | ServerResponse
+  | void;
+
+export type Hook = H;
 export type Handler<U, T extends ZodRawShape> = (
   ctx: Context<U, ZodObject<T>>
 ) => HandlerResult | Promise<HandlerResult>;
@@ -28,10 +40,22 @@ export interface IHandlers {
   patch?: IHandlerConfig<{}>;
 }
 
-// expected shape of a file(module)
+export type H = Handler<unknown, {}>;
+export type NspListener = (nsp: Namespace) => void;
+
+// expected shape of a file(module) all possible exports from route module
 export interface IModuleConfig<T> {
+  GET?: H;
+  POST?: H;
+  PUT?: H;
+  PATCH?: H;
+  DELETE?: H;
+  listeners?: NspListener;
+  afterAll?: H;
+  beforeAll?: H;
+  middleware?: H[];
   config: IRouteConfig<T>;
-  default: ResourceModule;
+  default: ResourceConfig;
   [key: string]: unknown;
 }
 

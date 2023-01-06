@@ -1,9 +1,12 @@
 import { logger } from "@backframe/utils";
-import { BfConfig, PluginKey } from "../config/index.js";
+import {
+  BfConfig,
+  Listener,
+  LISTENERS_LIST,
+  PluginKey,
+  PLUGINS_LIST,
+} from "../config/index.js";
 import { BfPluginConfig } from "./index.js";
-
-// don't add modifyServer here, multiple values are allowed for it
-export const PluginTypes = ["emailProvider", "storageProvider", "compiler"];
 
 export class PluginManifest {
   #plugins: BfPluginConfig[];
@@ -13,30 +16,28 @@ export class PluginManifest {
   }
 
   register(p: BfPluginConfig) {
-    this.inspect(p);
+    this.#inspect(p);
     this.#plugins.push(p);
-    const { modifyServer, modifyConfig, ...others } = p;
+    const { ...keys } = p;
 
-    // add server modifiers
-    this.cfg.__addServerModifier(modifyServer ?? null);
-
-    // add config modifiers
-    this.cfg.__addConfigModifier(modifyConfig ?? null);
-
-    // other keys
-    Object.keys(others).forEach((k) => {
-      if (PluginTypes.includes(k)) {
+    // can either be a `plugin` or a `listener`
+    Object.keys(keys).forEach((key) => {
+      if (LISTENERS_LIST.includes(key as Listener)) {
         // tis a listener
-        const listener = others[k as PluginKey];
-        this.cfg[k as PluginKey] = listener;
+        const listener = keys[key as Listener];
+        this.cfg.$addListener(key as Listener, listener);
+      } else {
+        // tis a plugin
+        const plugin = keys[key as PluginKey];
+        this.cfg.$addPlugin(key as PluginKey, plugin);
       }
     });
   }
 
-  inspect(p: BfPluginConfig) {
+  #inspect(p: BfPluginConfig) {
     // iterate through keys
     Object.keys(p).forEach((key) => {
-      if (PluginTypes.includes(key)) {
+      if (PLUGINS_LIST.includes(key as PluginKey)) {
         // check conflict
         const conflict = this.#plugins.find(($) => $[key as PluginKey]);
         if (conflict) {

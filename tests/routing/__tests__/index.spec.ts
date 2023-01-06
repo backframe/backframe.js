@@ -3,8 +3,8 @@ import request from "supertest";
 import { describe, it } from "vitest";
 import server from "../src/server.js";
 
-await server.__init(await loadConfig());
-const app = server._app;
+await server.$init(await loadConfig());
+const app = server.$app;
 
 describe("test routing functionality", () => {
   it("should respond with 200", async () => {
