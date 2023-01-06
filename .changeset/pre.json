@@ -14,5 +14,7 @@
     "@backframe/create-bf": "0.0.0-alpha.4",
     "@backframe/eslint-config": "0.0.0-alpha.3"
   },
-  "changesets": []
+  "changesets": [
+    "mighty-moose-admire"
+  ]
 }

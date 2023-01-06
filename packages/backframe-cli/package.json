@@ -1,6 +1,6 @@
 {
   "name": "@backframe/cli",
-  "version": "0.0.0-alpha.3",
+  "version": "0.0.0-alpha.5",
   "description": "Backframe command line interface",
   "type": "module",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "@babel/traverse": "^7.20.12",
     "@babel/types": "^7.20.7",
     "@backframe/create-bf": "workspace:*",
-    "@backframe/models": "workspace:0.0.0-alpha.3",
+    "@backframe/models": "workspace:0.0.0-alpha.5",
     "@backframe/utils": "workspace:*",
     "@swc/cli": "^0.1.59",
     "@swc/core": "^1.3.24",
