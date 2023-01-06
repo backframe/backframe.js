@@ -10,7 +10,13 @@ import { defineBfCommand } from "./index.js";
 export default defineBfCommand({
   command: "serve",
   description: "Serve local backframe project in dev mode",
-  builder: (_) => _,
+  builder: (_) => {
+    _.option("port", {
+      alias: "p",
+      number: true,
+      description: "The port to start the dev server on",
+    });
+  },
   handler: async (_args) => {
     try {
       ensureBfProject();
@@ -23,7 +29,7 @@ export default defineBfCommand({
       }
 
       const start = () =>
-        spawn("node", [resolveCwd("bin/serve.mjs")], {
+        spawn("node", [resolveCwd("bin/serve.mjs"), _args["port"] as string], {
           stdio: "inherit",
         })
           .on("spawn", () => {
@@ -57,6 +63,7 @@ export default defineBfCommand({
 
       child = start();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(error);
       logger.error("an error occurred while trying to start the server");
       logger.error(
