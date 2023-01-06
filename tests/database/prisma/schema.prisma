@@ -22,3 +22,50 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
 }
+
+model AuthAccount {
+  id                 String   @id @default(cuid())
+  userID             String
+  provider           String
+  providerID         String   @unique
+  providerAccountID  String
+  refreshToken       String
+  accessToken        String
+  accessTokenExpires String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               AuthUser @relation(references: [id], fields: [userID])
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  userID       String
+  expires      DateTime
+  sessionToken String
+  accessToken  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         AuthUser @relation(references: [id], fields: [userID])
+}
+
+model AuthUser {
+  id            String        @id @default(cuid())
+  role          String        @default("user")
+  email         String        @unique
+  emailVerified DateTime
+  name          String
+  imageURL      String
+  accounts      AuthAccount[]
+  sessions      AuthSession[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model AuthVerificationRequest {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String
+  expires    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

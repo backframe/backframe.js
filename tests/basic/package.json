@@ -1,0 +1,20 @@
+{
+  "name": "test:basic",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bf serve",
+    "start": "node bin/serve.mjs"
+  },
+  "dependencies": {
+    "@backframe/auth": "workspace:*",
+    "@backframe/core": "workspace:*",
+    "@backframe/rest": "workspace:*",
+    "@backframe/sockets": "workspace:0.0.0-alpha.0",
+    "database": "workspace:1.0.0"
+  },
+  "devDependencies": {
+    "@backframe/cli": "workspace:*",
+    "@types/node": "^18.7.17"
+  }
+}
