@@ -59,5 +59,10 @@
     "*.{js,ts}": [
       "eslint --fix"
     ]
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@changesets/assemble-release-plan@5.2.3": "patches/@changesets__assemble-release-plan@5.2.3.patch"
+    }
   }
 }
