@@ -10,8 +10,8 @@
     "@backframe/auth": "workspace:*",
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
-    "@backframe/sockets": "workspace:0.0.0-alpha.0",
-    "database": "workspace:1.0.0"
+    "@backframe/sockets": "workspace:*",
+    "database": "workspace:*"
   },
   "devDependencies": {
     "@backframe/cli": "workspace:*",
