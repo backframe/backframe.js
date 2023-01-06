@@ -13,7 +13,11 @@ import {
   NspListener,
 } from "../lib/types.js";
 import { RouteItem } from "../routing/router.js";
-import { DefaultHandlers, ResourceConfig } from "./handlers.js";
+import {
+  DefaultHandlers,
+  ResourceConfig,
+  _getStaticHandler,
+} from "./handlers.js";
 
 export const DEFAULT_ENABLED: Method[] = ["get", "post", "put", "delete"];
 export const DEFAULT_PUBLIC: Method[] = ["get"];
@@ -62,7 +66,10 @@ export class Resource<T> {
 
   async initialize() {
     try {
-      const mod = await loadModule(resolveCwd(this.#routeItem.filePath));
+      const filePath = this.routeItem.isExtended
+        ? this.routeItem.filePath
+        : resolveCwd(this.#routeItem.filePath);
+      const mod = await loadModule(filePath);
       const config: IRouteConfig<T> = Object.assign(
         {
           enabledMethods: DEFAULT_ENABLED,
@@ -88,16 +95,16 @@ export class Resource<T> {
 
   #getHandler(method: Method): IHandlerConfig<{}> {
     const db = this.#bfConfig.$database as DB;
-    const model = (this.#model ?? this.route) as string;
-    const defaultH = new DefaultHandlers(this, this.#bfConfig);
+    const model = (this.#model ?? this.route.replace(/\//g, "")) as string;
 
     // check for a model
-    if (db?.[model] || db?.[this.#routeItem.dirname]) {
+    if (db?.[model]) {
+      const defaultH = new DefaultHandlers(this, this.#bfConfig);
       // create custom handler
       type key = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
       return defaultH[method.toUpperCase() as key]();
     } else {
-      return defaultH.STATIC(method, this.route);
+      return _getStaticHandler(method, this.route);
     }
   }
 
