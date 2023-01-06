@@ -1,37 +1,76 @@
 /* eslint-disable @typescript-eslint/ban-types  */
 
 import { BfConfig } from "@backframe/core";
-import { DB, DbEntry } from "@backframe/models";
+import type { DB, DbEntry } from "@backframe/models";
 import { ZodRawShape } from "zod";
 import { GenericException } from "../lib/errors.js";
-import { Handler, IHandlerConfig, IHandlers, Method } from "../lib/types.js";
+import {
+  H,
+  Handler,
+  IHandlerConfig,
+  IHandlers,
+  Method,
+  MethodUpper,
+  NspListener,
+} from "../lib/types.js";
 import { Resource } from "./resources.js";
 
-export function defineHandlers() {
-  return new ResourceModule();
+export function defineResource() {
+  return new ResourceConfig();
 }
 
 export function createHandler<T extends ZodRawShape>(h: IHandlerConfig<T>) {
   return h;
 }
 
-export class ResourceModule {
-  __middleware?: Handler<unknown, {}>[];
-  __handlers?: IHandlers;
+export class ResourceConfig {
+  #afterAll?: H;
+  #beforeAll?: H;
+  #handlers?: IHandlers;
+  #listeners?: NspListener;
+  #middleware?: Handler<unknown, {}>[];
 
   constructor() {
-    this.__handlers = {};
-    this.__middleware = [];
+    this.#handlers = {};
+    this.#middleware = [];
   }
 
-  handle<T extends ZodRawShape>(method: Method, config: IHandlerConfig<T>) {
-    this.__handlers[method] = config;
+  __config() {
+    return {
+      handlers: this.#handlers,
+      afterAll: this.#afterAll,
+      beforeAll: this.#beforeAll,
+      listeners: this.#listeners,
+      middleware: this.#middleware,
+    };
+  }
+
+  handle<T extends ZodRawShape>(
+    method: MethodUpper,
+    config: IHandlerConfig<T>
+  ) {
+    this.#handlers[method.toLowerCase() as Method] = config;
     return this;
   }
 
   middleware(m: Handler<unknown, {}>) {
     // resource level middleware
-    this.__middleware?.push(m);
+    this.#middleware?.push(m);
+    return this;
+  }
+
+  listeners(lstnr: NspListener) {
+    this.#listeners = lstnr;
+    return this;
+  }
+
+  beforeAll(handler: H) {
+    this.#beforeAll = handler;
+    return this;
+  }
+
+  afterAll(handler: H) {
+    this.#afterAll = handler;
     return this;
   }
 }
