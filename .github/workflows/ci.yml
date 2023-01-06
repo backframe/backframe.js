@@ -46,6 +46,7 @@ jobs:
         run: pnpm run:tests
 
       - name: create and publish versions
+        if: github.event_name == 'push'
         uses: changesets/action@v1
         with:
           commit: "chore: update versions"
