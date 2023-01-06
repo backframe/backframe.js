@@ -10,10 +10,14 @@ on:
 env:
   CI: true
   PNPM_CACHE_FOLDER: .pnpm-store
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
 jobs:
   version:
     timeout-minutes: 15
     runs-on: ubuntu-latest
+
     steps:
       - name: checkout code repository
         uses: actions/checkout@v3
