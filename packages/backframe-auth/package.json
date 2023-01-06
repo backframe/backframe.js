@@ -1,6 +1,7 @@
 {
   "name": "@backframe/auth",
-  "version": "0.0.0-alpha.0",
+  "version": "0.0.0-alpha.3",
+  "private": true,
   "author": "Victor Ndaba <vndabam@gmail.com>",
   "main": "dist/index.js",
   "type": "module",
@@ -8,9 +9,13 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@panva/hkdf": "^1.0.2",
     "bcrypt": "^5.1.0",
+    "cookie": "^0.5.0",
     "express-session": "^1.17.3",
+    "jose": "^4.11.2",
     "jsonwebtoken": "^9.0.0",
+    "oauth": "^0.10.0",
     "openid-client": "^5.3.1",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
@@ -24,7 +29,9 @@
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
     "@types/bcrypt": "^5.0.0",
+    "@types/cookie": "^0.5.1",
     "@types/jsonwebtoken": "^8.5.9",
+    "@types/oauth": "^0.9.1",
     "@types/passport": "^1.0.11",
     "@types/passport-github2": "^1.2.5",
     "@types/passport-google-oauth20": "^2.0.11",
@@ -33,7 +40,7 @@
     "@types/passport-twitter": "^1.0.37"
   },
   "peerDependencies": {
-    "@backframe/core": "^0.0.0",
-    "@backframe/rest": "^0.0.0"
+    "@backframe/core": "workspace:*",
+    "@backframe/rest": "workspace:*"
   }
 }
