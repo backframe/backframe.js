@@ -1,18 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import type { BfConfig, IBfServer } from "@backframe/core";
-import { loadModule, logger } from "@backframe/utils";
+import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
-import express, {
-  NextFunction,
-  Request as ExpressReq,
-  RequestHandler,
-  Response as ExpressRes,
-  type Express,
-} from "express";
+import express, { NextFunction, RequestHandler, type Express } from "express";
+import fs from "fs";
 import helmet from "helmet";
 import http, { Server as HttpServer, ServerResponse } from "http";
 import merge from "lodash.merge";
+import path from "path";
 import type { Server as SocketServer } from "socket.io";
 import { ZodObject, ZodRawShape, ZodType } from "zod";
 import {
@@ -21,7 +17,13 @@ import {
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
-import { Handler, IHandlerConfig, Method } from "../lib/types.js";
+import {
+  ExpressReq,
+  ExpressRes,
+  Handler,
+  IHandlerConfig,
+  Method,
+} from "../lib/types.js";
 import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
 import { Resource } from "./resources.js";
@@ -36,6 +38,15 @@ interface IBfServerConfig<T> {
 }
 
 const DEFAULT_PORT = 6969;
+
+export const isText = (v: unknown) => {
+  return (
+    typeof v === "bigint" ||
+    typeof v === "boolean" ||
+    typeof v === "number" ||
+    typeof v === "string"
+  );
+};
 
 export class BfServer<T> implements IBfServer<T> {
   _app: Express;
@@ -77,23 +88,18 @@ export class BfServer<T> implements IBfServer<T> {
 
   #wrapHandler<Z extends ZodRawShape>(handler: Handler<T, Z>) {
     return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
-      const ctx = new Context<T, ZodObject<Z>>(
-        req,
-        res,
-        next,
-        this.#bfConfig,
-        this._database
-      );
-      const value = await handler(ctx);
-
-      const isText = (v: unknown) => {
-        return (
-          typeof v === "bigint" ||
-          typeof v === "boolean" ||
-          typeof v === "number" ||
-          typeof v === "string"
+      const ctx =
+        (req.sharedCtx as Context<T, ZodObject<Z>>) ??
+        new Context<T, ZodObject<Z>>(
+          req,
+          res,
+          next,
+          this.#bfConfig,
+          this._database
         );
-      };
+      // plant ctx in req object for reuse
+      req.sharedCtx = ctx;
+      const value = await handler(ctx);
 
       if (value instanceof GenericException)
         return next(value); // forward error
@@ -153,13 +159,36 @@ export class BfServer<T> implements IBfServer<T> {
             method as Method
           ] as IHandlerConfig<{}>;
 
+          // check for before and after handler hooks
+          const { beforeAll, afterAll } = r;
           const handlers: T[] = [
+            beforeAll,
             ...globalMware,
             ...(middleware ?? []),
-            action,
-          ].map((h) => this.#wrapHandler(h));
+            async function <T, U extends ZodObject<{}>>(ctx: Context<T, U>) {
+              try {
+                const value = await action(ctx);
+                afterAll?.(ctx); // dont await
 
-          // add validator
+                if (value instanceof GenericException)
+                  return ctx.next(value); // forward error
+                else if (value instanceof ServerResponse)
+                  return; // response already sent
+                else if (isText(value) || typeof value === "object") {
+                  // return plain values
+                  return ctx.json(value as object);
+                }
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+                ctx.json({ msg: "An internal error occurred" });
+              }
+            },
+          ]
+            .filter((h) => typeof h !== "undefined")
+            .map((h) => this.#wrapHandler(h));
+
+          // add validator (should be `unshifted` last... First line of defense)
           if (input) {
             handlers.unshift(this.#validator(input));
           }
@@ -172,6 +201,7 @@ export class BfServer<T> implements IBfServer<T> {
   }
 
   #validator(input: ZodType) {
+    // TODO: input sanitization
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
       if (!opts.success) {
@@ -213,6 +243,27 @@ export class BfServer<T> implements IBfServer<T> {
         );
       });
     }
+
+    const fullDir = (dir: string) =>
+      path.join(this.#bfConfig.getRootDirName(), dir);
+
+    // additional "middleware" i.e staticDir handlers
+    const staticDirs = this.#bfConfig.userCfg.staticDirs;
+    staticDirs.forEach((dir) => {
+      const p = resolveCwd(fullDir(dir));
+      if (fs.existsSync(p)) {
+        logger.info(`serving stating assets from dir: ${dir}`);
+        this._app.use(express.static(p));
+      }
+    });
+
+    // configure default templating setup
+    const { viewsDir } = this.#bfConfig.userCfg;
+    if (fs.existsSync(resolveCwd(fullDir(viewsDir)))) {
+      logger.info(`loading views from dir: ${viewsDir}`);
+      this._app.set("view engine", "hbs");
+      this._app.set("views", fullDir(viewsDir));
+    }
   }
 
   #setupErrHandlers() {
@@ -242,6 +293,11 @@ export class BfServer<T> implements IBfServer<T> {
 
   middleware(handler: Handler<T, {}>) {
     this._app.use(this.#wrapHandler(handler));
+  }
+
+  static(prefix: string, path: string) {
+    const _route = this.#bfConfig.getRestConfig().urlPrefix + prefix;
+    this._app.use(_route, express.static(path));
   }
 
   mountRoute(method: Method, route: string, handler: RequestHandler) {
