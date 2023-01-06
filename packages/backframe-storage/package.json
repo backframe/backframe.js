@@ -1,6 +1,6 @@
 {
   "name": "@backframe/storage",
-  "version": "0.0.0-alpha.3",
+  "version": "0.0.0-alpha.5",
   "description": "",
   "main": "dist/index.js",
   "type": "module",
