@@ -1,4 +1,5 @@
 import { BfConfig } from "@backframe/core";
+import { DB } from "@backframe/models";
 import { loadModule, logger } from "@backframe/utils";
 import { BfServer } from "../app/index.js";
 
@@ -16,7 +17,7 @@ export async function startServer(
     process.exit(1);
   }
 
-  const server: BfServer<unknown> = file.default;
+  const server: BfServer<DB> = file.default;
   await server.$init(config);
 
   server.$start(port ?? undefined);
