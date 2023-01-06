@@ -18,9 +18,16 @@ export class Manifest {
   }
 
   add(i: RouteItem) {
-    if (this.#items.some(($) => $.route === i.route)) {
-      logger.warn(`duplicate route: ${i.route} found`);
-      logger.warn("one of the routes will be overriden");
+    const match = this.#items.find(($) => $.route === i.route);
+    if (match) {
+      logger.warn(`ignoring duplicate route: \`${i.route}\` found`);
+
+      if (match.isExtended) {
+        logger.warn(
+          `route is already defined by plugin: \`${match.pluginName}\``
+        );
+      }
+      return;
     }
     this.#items.push(i);
   }
