@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import type { BfConfig, IBfServer } from "@backframe/core";
+import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, { NextFunction, RequestHandler, type Express } from "express";
@@ -37,9 +38,7 @@ interface IBfServerConfig<T> {
   database?: T;
 }
 
-const DEFAULT_PORT = 6969;
-
-export class BfServer<T> implements IBfServer<T> {
+export class BfServer<T extends DB> implements IBfServer<T> {
   $app: Express;
   $handle: HttpServer;
   $database?: T;
@@ -62,10 +61,10 @@ export class BfServer<T> implements IBfServer<T> {
   // Initializes the server and returns a promise that resolves when the server is ready
   async $init(cfg: BfConfig) {
     cfg.$setServer(this);
-    cfg.$invokeListeners("onServerInit");
-
     this.#bfConfig = cfg;
+
     this.#router = new Router(cfg);
+    cfg.$invokeListeners("onServerInit"); // listeners may declare routes
     this.#router.init();
     this.#applyMiddleware();
 
@@ -73,26 +72,43 @@ export class BfServer<T> implements IBfServer<T> {
     this.#setupErrHandlers(); // ensure called last
   }
 
-  #validatePort(port: number) {
+  #isPortFree(port: number) {
+    return new Promise<boolean>((resolve) => {
+      const server = http
+        .createServer()
+        .listen(port, () => {
+          server.close();
+          resolve(true);
+        })
+        .on("error", () => {
+          resolve(false);
+        });
+    });
+  }
+
+  async #validatePort(port: number, iter = 1): Promise<number> {
+    let p = port;
     // range
-    if (port < 0 || port > 65535) {
-      logger.error(`Invalid port: ${port}`);
+    if (!(65536 > port && port > 0)) {
+      logger.error(`received invalid port: ${port}`);
       process.exit(10);
     }
     // check if port is in use
-    try {
-      fs.accessSync(`http://localhost:${port}`);
-      logger.error(`Port ${port} is in use`);
-      process.exit(11);
-    } catch (e) {
-      // port is free
+    const valid = await this.#isPortFree(port);
+    if (!valid) {
+      p = port + 5 * iter;
+      logger.warn(`port: ${port} is in use, trying: ${p}`);
+      return this.#validatePort(p, iter + 1);
     }
+
+    return p;
   }
 
   // Starts the server on provided port or default port
-  async $start(port = this.$cfg.port || DEFAULT_PORT) {
-    this.#validatePort(port);
+  async $start(port = this.$cfg.port) {
+    port = await this.#validatePort(port);
     this.$cfg.port = port;
+
     this.$handle.listen(port, () => {
       logger.info(`server started on: ${this.$getHost()}`);
       this.#bfConfig.$invokeListeners("onServerStart");
@@ -100,7 +116,7 @@ export class BfServer<T> implements IBfServer<T> {
   }
 
   // TODO: expose flags etc...
-  $getHost(port = this.$cfg.port || DEFAULT_PORT) {
+  $getHost(port = this.$cfg.port) {
     return `http://localhost:${port}`;
   }
 
@@ -116,9 +132,12 @@ export class BfServer<T> implements IBfServer<T> {
 
     const manifest = this.#router.manifest;
     manifest.items.forEach((i) => {
-      const r = new Resource(i, this.#bfConfig);
-      if (!this.#resources.some((_) => _.route === r.route))
-        this.#resources.push(r);
+      // not a dummy route
+      if (i.filePath !== null) {
+        const r = new Resource(i, this.#bfConfig);
+        if (!this.#resources.some((_) => _.route === r.route))
+          this.#resources.push(r);
+      }
     });
 
     // init all resources
@@ -315,6 +334,7 @@ export class BfServer<T> implements IBfServer<T> {
    * @param method - The HTTP method to be used for the route
    * @param route - The route to be defined
    * @param handler - The handler to be executed when the route is called
+   * @param origin (optional) - Conventionally, this would be the name of the plugin mounting the route
    * @example
    * ```ts
    * server.mountRoute("get", "/hello", (ctx) => {
@@ -322,9 +342,25 @@ export class BfServer<T> implements IBfServer<T> {
    * })
    * ```
    */
-  mountRoute(method: Method, route: string, handler: RequestHandler) {
-    this.#router.addRoute(route); // add route to manifest
+  $mountRoute(
+    method: Method,
+    route: string,
+    handler: RequestHandler,
+    origin?: string
+  ) {
+    this.#router.addRoute(route, origin); // add route to manifest
     this.$app[method](this.#bfConfig.withRestPrefix(route), handler);
+  }
+
+  $extendFrom(path: string, pluginName?: string) {
+    const sub = new Router(this.#bfConfig, pluginName); // sub-router
+    sub.init(path, "routes");
+    this.#router.mergeRouter(sub);
+  }
+
+  $listRoutes() {
+    const { manifest } = this.#router;
+    return manifest.getRoutesMeta();
   }
 }
 
@@ -367,6 +403,6 @@ export function defaultServer() {
  * export default server
  * ```
  */
-export function createServer<T>(cfg: IBfServerConfig<T>) {
+export function createServer<T extends DB>(cfg: IBfServerConfig<T>) {
   return new BfServer(merge(DEFAULT_CFG, cfg));
 }
