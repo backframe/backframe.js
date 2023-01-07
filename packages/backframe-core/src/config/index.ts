@@ -65,11 +65,12 @@ export interface IBfServer<T> {
   $init: (cfg: BfConfig) => Promise<void>;
   $start: (port?: number) => Promise<void>;
   $extendFrom: (path: string, name?: string) => void;
-  $listRoutes: () => string;
+  $listRoutes: () => { route: string; type: string; name: string }[];
   $mountRoute: (
     method: "get" | "post" | "put" | "patch" | "delete",
     route: string,
-    handler: RequestHandler
+    handler: RequestHandler,
+    origin?: string
   ) => void;
 }
 
