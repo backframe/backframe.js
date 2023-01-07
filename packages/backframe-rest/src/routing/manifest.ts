@@ -32,11 +32,11 @@ export class Manifest {
     this.#items.push(i);
   }
 
-  formatted() {
-    this.#items.forEach((_i) => {
-      // load js module from file path
-      // Get Enabled methods/default ones
-      // format these values and return table string
+  getRoutesMeta() {
+    return this.#items.map(($) => {
+      const type = $.isExtended ? "PLUGIN" : "FILE";
+      const name = $.isExtended ? $.pluginName : $.filePath;
+      return { route: $.route, type, name };
     });
   }
 
