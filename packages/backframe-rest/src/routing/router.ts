@@ -42,15 +42,19 @@ const SPEC = [
 ];
 
 export class Router {
-  #prefix: string;
+  #restPrefix: string;
   #rootDir: string;
   #sourceDir: string;
 
   matches: string[];
   manifest: Manifest;
 
-  constructor(private bfConfig: BfConfig, private origin?: string) {
-    this.#prefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
+  constructor(
+    private bfConfig: BfConfig,
+    private origin?: string,
+    private routerPrefix?: string
+  ) {
+    this.#restPrefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
     this.manifest = new Manifest(bfConfig);
   }
 
@@ -117,7 +121,7 @@ export class Router {
   #normalizeRoute(route: string) {
     // strip leading dirs and add prefix
     const r = route.replace(`./${this.#rootDir}/${this.#sourceDir}`, "");
-    return path.join(this.#prefix, r);
+    return path.join(this.#restPrefix, this.routerPrefix ?? "", r);
   }
 
   #validateRoute(route: string) {
@@ -149,10 +153,12 @@ export class Router {
   addRoute(route: string, origin?: string) {
     // set to null to skip reading file
     this.manifest.add({
-      basename: origin || route,
-      dirname: null,
-      filePath: null,
       route,
+      dirname: null,
+      basename: null,
+      filePath: null,
+      pluginName: origin,
+      isExtended: true,
     });
   }
 
