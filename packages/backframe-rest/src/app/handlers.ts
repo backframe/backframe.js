@@ -274,8 +274,8 @@ export class DefaultHandlers<T> {
 
   constructor(r: Resource<T>, bfConfig: BfConfig) {
     this.#db = bfConfig.$database as DB;
-    this.#model = (r.model as string) ?? r.route;
-    this.#dbObject = this.#db[this.#model] ?? this.#db[r.routeItem.dirname];
+    this.#model = (r.model as string) ?? r.route.replace(/\//g, "");
+    this.#dbObject = this.#db?.[this.#model] ?? this.#db?.[r.routeItem.dirname];
   }
 
   GET() {

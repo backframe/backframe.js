@@ -1,3 +1,4 @@
+import type { DB } from "@backframe/models";
 import { resolveCwd } from "@backframe/utils";
 import swc from "@swc/core";
 import type { Express, NextFunction, RequestHandler } from "express";
@@ -63,6 +64,14 @@ export interface IBfServer<T> {
 
   $init: (cfg: BfConfig) => Promise<void>;
   $start: (port?: number) => Promise<void>;
+  $extendFrom: (path: string, name?: string) => void;
+  $listRoutes: () => { route: string; type: string; name: string }[];
+  $mountRoute: (
+    method: "get" | "post" | "put" | "patch" | "delete",
+    route: string,
+    handler: RequestHandler,
+    origin?: string
+  ) => void;
 }
 
 export interface IAuthDef {
@@ -77,8 +86,8 @@ export class BfConfig {
 
   // server related values
   $app?: Express;
-  $server?: IBfServer<unknown>;
-  $database?: unknown;
+  $server?: IBfServer<DB>;
+  $database?: DB;
   $sockets?: unknown;
 
   // config related values/extensions
@@ -150,11 +159,11 @@ export class BfConfig {
   }
 
   // configure server,app,database,sockets
-  $setServer<T>(server: IBfServer<T>) {
+  $setServer<T extends DB>(server: IBfServer<T>) {
     this.$server = server;
     this.$app = server.$app;
-    this.$database = server.$database || {};
-    this.$sockets = server.$sockets || {};
+    this.$database = server.$database;
+    this.$sockets = server.$sockets;
   }
 
   /**
@@ -268,7 +277,9 @@ export class BfConfig {
    * config.withRoutePrefix("/api/users"); // "/api/api/users"
    */
   withRestPrefix(route: string) {
-    return this.getInterfaceConfig("rest").urlPrefix + route;
+    return path
+      .join(this.getInterfaceConfig("rest").urlPrefix, route)
+      .replace(/\\/g, "/");
   }
 }
 
@@ -312,7 +323,7 @@ const defaultBuilder = (cfg: BfConfig) => {
           legacyDecorator: true,
           decoratorMetadata: true,
         },
-        baseUrl: tsconfig.compilerOptions.baseUrl ?? root,
+        baseUrl: resolveCwd(tsconfig.compilerOptions.baseUrl ?? root),
         paths: tsconfig.compilerOptions.paths,
       },
       module: {
@@ -320,6 +331,7 @@ const defaultBuilder = (cfg: BfConfig) => {
       },
       swcrc: false,
       configFile: false,
+      isModule: true,
     });
 
     const dest = f.replace(`./${root}`, `./${BF_OUT_DIR}`).replace(/ts$/, "js");

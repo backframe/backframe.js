@@ -1,0 +1,18 @@
+{
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentSize": 2,
+    "lineWidth": 80
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "files": {
+    "ignore": ["node_modules", "tmp", "dist", "coverage", "build", ".bf"]
+  }
+}

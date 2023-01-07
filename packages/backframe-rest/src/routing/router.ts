@@ -9,13 +9,15 @@ export interface RouteItem {
   filePath: string;
   basename: string;
   dirname: string;
+  isExtended?: boolean;
+  pluginName?: string;
 }
 
 const stdRoute = /^([^$()[\]]+).js$/;
 const indexRoute = /^index.js$/;
 const indexShadow = /^\([^)]+\).js$/;
 const dynRoute = /^\$(\w+).js$/;
-const multiPart = /^((?:(?:\w+|\$\w+).){2,})js$/; // FIXME
+const multiPart = /^((?:(?:\w+|\$\w+).){2,})js$/;
 const catchAll = /^\$.js$/;
 
 const SPEC = [
@@ -40,33 +42,37 @@ const SPEC = [
 ];
 
 export class Router {
-  #prefix: string;
+  #restPrefix: string;
   #rootDir: string;
   #sourceDir: string;
 
   matches: string[];
   manifest: Manifest;
 
-  constructor(private bfConfig: BfConfig) {
-    this.#prefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
+  constructor(
+    private bfConfig: BfConfig,
+    private origin?: string,
+    private routerPrefix?: string
+  ) {
+    this.#restPrefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
     this.manifest = new Manifest(bfConfig);
   }
 
-  init() {
+  init(root?: string, routesDir?: string) {
     const cfg = this.bfConfig;
-    const root = cfg.getDirName("root");
-    const src = cfg.getDirName("routesDir");
-    const ptrn = `./${root}/${src}/**/*.js`;
+    const cwd = root ?? cfg.getDirName("root");
+    const src = routesDir ?? cfg.getDirName("routesDir");
+    const ptrn = `./${src}/**/*.js`;
 
-    this.#rootDir = root;
+    this.#rootDir = cwd;
     this.#sourceDir = src;
 
-    const matches = globbySync(ptrn);
+    const matches = globbySync(ptrn, { cwd });
     if (!matches.length) {
       logger.warn(`no routes detected in the ${src} directory`);
     }
     this.matches = matches;
-    matches.map((m) => this.#processRoute(m));
+    matches.map((m) => this.#processRoute(m.replace("./", `./${cwd}/`)));
   }
 
   #processRoute(r: string) {
@@ -101,6 +107,7 @@ export class Router {
       basename: base,
       filePath: r,
       dirname: path.dirname(r),
+      pluginName: this.origin ?? undefined,
     };
 
     this.manifest.add(item);
@@ -114,7 +121,7 @@ export class Router {
   #normalizeRoute(route: string) {
     // strip leading dirs and add prefix
     const r = route.replace(`./${this.#rootDir}/${this.#sourceDir}`, "");
-    return path.join(this.#prefix, r);
+    return path.join(this.#restPrefix, this.routerPrefix ?? "", r);
   }
 
   #validateRoute(route: string) {
@@ -142,13 +149,25 @@ export class Router {
     });
   }
 
+  // Manually add route to the manifest with reading from file-system
   addRoute(route: string, origin?: string) {
-    // convert to dummy item
+    // set to null to skip reading file
     this.manifest.add({
-      basename: origin || route,
-      dirname: route,
-      filePath: route,
       route,
+      dirname: null,
+      basename: null,
+      filePath: null,
+      pluginName: origin,
+      isExtended: true,
+    });
+  }
+
+  // Merge one router into another to enable extending one from another
+  mergeRouter(router: Router) {
+    const { items } = router.manifest;
+    items.forEach((itm) => {
+      itm.isExtended = true;
+      this.manifest.add(itm);
     });
   }
 }

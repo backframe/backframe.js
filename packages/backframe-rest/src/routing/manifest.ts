@@ -18,18 +18,25 @@ export class Manifest {
   }
 
   add(i: RouteItem) {
-    if (this.#items.some(($) => $.route === i.route)) {
-      logger.warn(`duplicate route: ${i.route} found`);
-      logger.warn("one of the routes will be overriden");
+    const match = this.#items.find(($) => $.route === i.route);
+    if (match) {
+      logger.warn(`ignoring duplicate route: \`${i.route}\` found`);
+
+      if (match.isExtended) {
+        logger.warn(
+          `route is already defined by plugin: \`${match.pluginName}\``
+        );
+      }
+      return;
     }
     this.#items.push(i);
   }
 
-  formatted() {
-    this.#items.forEach((_i) => {
-      // load js module from file path
-      // Get Enabled methods/default ones
-      // format these values and return table string
+  getRoutesMeta() {
+    return this.#items.map(($) => {
+      const type = $.isExtended ? "PLUGIN" : "FILE";
+      const name = $.isExtended ? $.pluginName : $.filePath;
+      return { route: $.route, type, name };
     });
   }
 
