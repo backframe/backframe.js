@@ -60,7 +60,7 @@
   "lint-staged": {
     "*.{md,yml,json}": "prettier --write",
     "*.{js,ts}": [
-      "eslint --fix"
+      "rome check --apply-suggested"
     ]
   },
   "pnpm": {
