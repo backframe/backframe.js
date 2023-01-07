@@ -352,8 +352,8 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     this.$app[method](this.#bfConfig.withRestPrefix(route), handler);
   }
 
-  $extendFrom(path: string, pluginName?: string) {
-    const sub = new Router(this.#bfConfig, pluginName); // sub-router
+  $extendFrom(path: string, cfg: { name?: string; prefix?: string }) {
+    const sub = new Router(this.#bfConfig, cfg); // sub-router
     sub.init(path, "routes");
     this.#router.mergeRouter(sub);
   }
