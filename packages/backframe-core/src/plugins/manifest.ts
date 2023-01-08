@@ -1,21 +1,21 @@
 import { logger } from "@backframe/utils";
 import {
   BfConfig,
+  ConfigKey,
   Listener,
   LISTENERS_LIST,
-  PluginKey,
   PLUGINS_LIST,
 } from "../config/index.js";
-import { BfPluginConfig } from "./index.js";
+import { Plugin } from "./index.js";
 
 export class PluginManifest {
-  #plugins: BfPluginConfig[];
+  #plugins: Plugin[];
 
   constructor(private cfg: BfConfig) {
     this.#plugins = [];
   }
 
-  register(p: BfPluginConfig) {
+  register(p: Plugin) {
     this.#inspect(p);
     this.#plugins.push(p);
     const { ...keys } = p;
@@ -28,18 +28,18 @@ export class PluginManifest {
         this.cfg.$addListener(key as Listener, listener);
       } else {
         // tis a plugin
-        const plugin = keys[key as PluginKey];
-        this.cfg.$addPlugin(key as PluginKey, plugin);
+        const plugin = keys[key as ConfigKey];
+        this.cfg.$addPlugin(key as ConfigKey, plugin);
       }
     });
   }
 
-  #inspect(p: BfPluginConfig) {
+  #inspect(p: Plugin) {
     // iterate through keys
     Object.keys(p).forEach((key) => {
-      if (PLUGINS_LIST.includes(key as PluginKey)) {
+      if (PLUGINS_LIST.includes(key as ConfigKey)) {
         // check conflict
-        const conflict = this.#plugins.find(($) => $[key as PluginKey]);
+        const conflict = this.#plugins.find(($) => $[key as ConfigKey]);
         if (conflict) {
           const rand = () =>
             `unknown-plugin-${Math.round(Math.random() * 100000)}`;
