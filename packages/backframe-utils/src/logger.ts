@@ -15,7 +15,7 @@ export const info = (msg: string) => _log(msg, "info");
 export const debug = (msg: string) => _log(msg, "debug");
 export const warn = (msg: string) => _log(msg, "warn");
 export const http = (msg: string) => _log(msg, "http");
-export const error = (msg: string) => _log(msg, "error");
+export const error = (msg: string) => Logger.error(msg, "error");
 export const log = (level: string, msg: string) => Logger.log(level, msg);
 
 const fmt = printf(({ level, message, timestamp }) => {
