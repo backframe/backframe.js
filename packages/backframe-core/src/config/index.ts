@@ -66,7 +66,15 @@ export interface IBfServer<T> {
 
   $init: (cfg: BfConfig) => Promise<void>;
   $start: (port?: number) => Promise<void>;
-  $extendFrom: (path: string, cfg?: { name?: string; prefix?: string }) => void;
+  $extendFrom: (
+    path: string,
+    cfg?: {
+      name?: string;
+      prefix?: string;
+      ignored?: string[];
+      [key: string]: unknown;
+    }
+  ) => void;
   $listRoutes: () => { route: string; type: string; name: string }[];
   $createValidator: (t: ZodType) => RequestHandler;
   $mountRoute: (
