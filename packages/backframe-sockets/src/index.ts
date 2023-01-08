@@ -1,14 +1,10 @@
-import { BfPluginConfig } from "@backframe/core";
-import { require } from "@backframe/utils";
+import { Plugin } from "@backframe/core";
 import { Server as SocketServer, ServerOptions } from "socket.io";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require("../package.json");
-
-export default function (options?: Partial<ServerOptions>): BfPluginConfig {
+export default function (options?: Partial<ServerOptions>): Plugin {
   return {
-    name: pkg.name,
-    description: pkg.description || "",
+    name: "@backframe/sockets",
+    description: "Adds socket.io support to your backframe app",
     onServerInit(cfg) {
       const server = cfg.$server;
       const io = new SocketServer(server.$handle, options);
