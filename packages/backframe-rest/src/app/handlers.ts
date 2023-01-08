@@ -2,7 +2,7 @@
 
 import { BfConfig } from "@backframe/core";
 import type { DB, DbEntry } from "@backframe/models";
-import { NextFunction } from "express";
+import { NextFunction, RequestHandler } from "express";
 import { ServerResponse } from "http";
 import { ZodObject, ZodRawShape } from "zod";
 import { GenericException } from "../lib/errors.js";
@@ -89,12 +89,12 @@ export function createHandler<T extends ZodRawShape>(h: IHandlerConfig<T>) {
  */
 export function wrapHandler<U, Z extends ZodRawShape>(
   handler: Handler<U, Z>,
-  db?: U
-) {
+  cfg: BfConfig
+): RequestHandler {
   return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
     const ctx =
       (req.sharedCtx as Context<U, ZodObject<Z>>) ??
-      new Context<U, ZodObject<Z>>(req, res, next, db);
+      new Context<U, ZodObject<Z>>(req, res, next, cfg.$database as U, cfg);
 
     req.sharedCtx = ctx; // plant ctx in req object for reuse
     const value = await handler(ctx);
