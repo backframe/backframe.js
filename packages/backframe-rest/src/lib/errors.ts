@@ -7,7 +7,7 @@ export class GenericException extends Error {
     super(message);
   }
 
-  getValues() {
+  toJSON() {
     const { description, statusCode, message } = this;
     return {
       statusCode,

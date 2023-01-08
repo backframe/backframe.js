@@ -289,7 +289,11 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       ) => {
         res
           .status(err.statusCode || 500)
-          .json(err || InternalException().getValues);
+          .json(
+            err instanceof GenericException
+              ? err.toJSON()
+              : err || InternalException().toJSON()
+          );
       }
     );
   }
