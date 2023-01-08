@@ -162,19 +162,13 @@ export class BfServer<T extends DB> implements IBfServer<T> {
         // check for rest methods handlers
         Object.keys(handlers).forEach((k) => {
           const method = k as Method;
-          type T = (
-            req: ExpressReq,
-            res: ExpressRes,
-            next: NextFunction
-          ) => void | Promise<void | ExpressRes> | ExpressRes;
-
           const { action, input, middleware } = r.handlers[
             method as Method
           ] as IHandlerConfig<{}>;
 
           // check for before and after handler hooks
           const { beforeAll, afterAll } = r;
-          const handlers: T[] = [
+          const handlers = [
             beforeAll,
             ...globalMware,
             ...(middleware ?? []),
@@ -192,11 +186,11 @@ export class BfServer<T extends DB> implements IBfServer<T> {
             },
           ]
             .filter((h) => typeof h !== "undefined")
-            .map((h) => wrapHandler(h, this.$database));
+            .map((h) => wrapHandler(h, this.#bfConfig));
 
           // add validator (should be `unshifted` last... First line of defense)
           if (input) {
-            handlers.unshift(this.#validator(input));
+            handlers.unshift(this.$createValidator(input));
           }
 
           // mount resource on express app
@@ -206,8 +200,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     );
   }
 
-  #validator(input: ZodType) {
-    // TODO: input sanitization
+  $createValidator(input: ZodType): RequestHandler {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
       if (!opts.success) {
@@ -222,6 +215,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
           )
         );
       } else {
+        // TODO: sanitize input
         next();
       }
     };
@@ -274,7 +268,11 @@ export class BfServer<T extends DB> implements IBfServer<T> {
   #setupErrHandlers() {
     // at this point, no route has been found
     this.$app.use("*", (req, _res, _next) => {
-      if (this.#resources.some((r) => r.route === req.originalUrl))
+      if (
+        this.#resources.some(
+          (r) => this.#bfConfig.withRestPrefix(r.route) === req.originalUrl
+        )
+      )
         throw MethodNotAllowed(
           "Method Not Allowed",
           `The \`${req.method}\` method is not allowed on this resource`
@@ -290,8 +288,12 @@ export class BfServer<T extends DB> implements IBfServer<T> {
         _next: NextFunction
       ) => {
         res
-          .status(err.statusCode)
-          .json((err || InternalException()).getValues());
+          .status(err.statusCode || 500)
+          .json(
+            err instanceof GenericException
+              ? err.toJSON()
+              : err || InternalException().toJSON()
+          );
       }
     );
   }
@@ -313,20 +315,20 @@ export class BfServer<T extends DB> implements IBfServer<T> {
    * ```
    */
   use(handler: Handler<T, {}>) {
-    this.$app.use(wrapHandler(handler));
+    this.$app.use(wrapHandler(handler, this.#bfConfig));
   }
 
   /**
    * Use this method to define a static directory. This is a wrapper around the `express.static` method. Static dirs can also be defined in the `staticDirs` property of the `bf.config.js` file. Use this method if you want to define a static dir with a custom prefix.
-   * @param p - The prefix to be used for the static dir
+   * @param prefix - The prefix to be used for the static dir
    * @param path - The path to the static dir
    * @example
    * ```ts
    * server.static("/static", "./public")
    * ```
    */
-  static(p: string, path: string) {
-    this.$app.use(this.#bfConfig.withRestPrefix(p), express.static(path));
+  static(prefix: string, path: string) {
+    this.$app.use(this.#bfConfig.withRestPrefix(prefix), express.static(path));
   }
 
   /**
@@ -345,15 +347,15 @@ export class BfServer<T extends DB> implements IBfServer<T> {
   $mountRoute(
     method: Method,
     route: string,
-    handler: RequestHandler,
+    handler: RequestHandler | RequestHandler[],
     origin?: string
   ) {
     this.#router.addRoute(route, origin); // add route to manifest
     this.$app[method](this.#bfConfig.withRestPrefix(route), handler);
   }
 
-  $extendFrom(path: string, pluginName?: string) {
-    const sub = new Router(this.#bfConfig, pluginName); // sub-router
+  $extendFrom(path: string, cfg: { name?: string; prefix?: string }) {
+    const sub = new Router(this.#bfConfig, cfg); // sub-router
     sub.init(path, "routes");
     this.#router.mergeRouter(sub);
   }

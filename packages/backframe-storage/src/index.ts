@@ -1,10 +1,11 @@
-import type { BfConfig, BfPluginConfig } from "@backframe/core";
+import type { BfConfig, Plugin } from "@backframe/core";
 import { logger } from "@backframe/utils";
 import multer from "multer";
 import { DEFAULT_CONFIG, IStorageConfig } from "./config.js";
 
-export default function (cfg: IStorageConfig = DEFAULT_CONFIG): BfPluginConfig {
+export default function (cfg: IStorageConfig = DEFAULT_CONFIG): Plugin {
   return {
+    name: "@backframe/storage",
     onServerInit(bfCfg) {
       const storage = createStorageObject(cfg, bfCfg);
       const upload = multer({ storage });

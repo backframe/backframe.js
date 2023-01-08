@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { BfConfig } from "@backframe/core";
 import type { NextFunction } from "express";
 import type { z, ZodType } from "zod";
 import { ExpressReq, ExpressRes } from "../lib/types";
@@ -17,11 +18,27 @@ export class Context<U, T extends ZodType> {
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private database?: U
+    private database?: U,
+    private bfConfig?: BfConfig
   ) {}
+
+  get db(): U {
+    return this.database;
+  }
+
+  get auth() {
+    return {
+      session: "",
+    };
+  }
 
   get input() {
     return this.request.body as z.infer<T>;
+  }
+
+  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
+  get query(): any {
+    return this.request.query;
   }
 
   // rome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -30,13 +47,8 @@ export class Context<U, T extends ZodType> {
     return this.request.params;
   }
 
-  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
-  get query(): any {
-    return this.request.query;
-  }
-
-  get db(): U {
-    return this.database;
+  get config() {
+    return this.bfConfig;
   }
 
   #applyHeaders(options: IResponseOptions) {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BfPluginConfig } from "../plugins/index.js";
+import { Plugin } from "../plugins/index.js";
 
 export const BF_CONFIG_DEFAULTS = {
   root: "src",
@@ -15,7 +15,7 @@ export const BF_CONFIG_DEFAULTS = {
       mount: "/graphql",
     },
   },
-  plugins: [] as BfPluginConfig[],
+  plugins: [] as Plugin[],
   database: {
     provider: "postgres",
     url: process.env.DB_URL || "",
@@ -73,72 +73,10 @@ export const BfUserConfigSchema = z.object({
   authentication: z
     .object({
       strategy: z.enum(["token-based", "session-based"]).default("token-based"),
-      providers: z.array(
-        z.object({
-          provider: z.enum([
-            "google",
-            "facebook",
-            "github",
-            "twitter",
-            "spotify",
-            "twitch",
-            "discord",
-            "reddit",
-            "slack",
-            "tumblr",
-            "yahoo",
-            "yandex",
-            "vk",
-            "okta",
-            "auth0",
-            "oidc",
-            "azure-ad",
-            "salesforce",
-            "bitbucket",
-            "37signals",
-            "dropbox",
-            "box",
-            "evernote",
-            "battlenet",
-            "dribbble",
-            "fitbit",
-            "foursquare",
-            "github",
-            "gitlab",
-            "instagram",
-            "linkedin",
-            "medium",
-            "meetup",
-            "oauth1",
-            "oauth2",
-            "office365",
-            "paypal",
-            "reddit",
-            "salesforce",
-            "saml",
-            "shopify",
-            "soundcloud",
-            "spotify",
-            "strava",
-            "twitch",
-            "untappd",
-            "vkontakte",
-            "wordpress",
-            "yammer",
-            "yandex",
-            "zoom",
-          ]),
-          config: z.object({
-            clientID: z.string(),
-            clientSecret: z.string(),
-            callbackURL: z.string().optional(),
-            providerOptions: z.object({}).optional(),
-          }),
-        })
-      ),
+      providers: z.array(z.unknown()),
     })
     .optional(),
-  plugins: z.array(z.custom<BfPluginConfig>()).optional().default([]),
+  plugins: z.array(z.custom<Plugin>()).optional().default([]),
 });
 
 export type _BfUserConfig = z.input<typeof BfUserConfigSchema>;
@@ -199,21 +137,21 @@ export type BfUserConfig = {
    * }
    * @example
    * import { defineConfig } from "@backframe/core";
+   * import auth from "@backframe/auth";
+   * import google from "@backframe/providers/google";
    *
    * export default defineConfig({
    *    // ...
+   *    plugins: [auth()],
    *    authentication: [
    *      strategy: "token-based",
    *      providers: [
-   *        {
-   *            provider: "google",
-   *            config: {
+   *        google({
    *            clientID: "google-client-id",
    *            clientSecret: "google-client-secret",
    *            callbackURL: "http://localhost:3000/auth/google/callback",
-   *            providerOptions: {
-   *            scope: ["profile", "email"],
-   *        },
+   *            scope: ["profile", "email"]
+   *        })
    *     ],
    *    // ...
    * })

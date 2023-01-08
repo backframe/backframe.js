@@ -1,12 +1,21 @@
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import dotenv from "dotenv";
 import { buildSync } from "esbuild";
-import { globby } from "globby";
+import { globby, globbySync } from "globby";
 import { BfConfig } from "./index.js";
 import { BfUserConfig, BfUserConfigSchema } from "./schema.js";
 
 export function defineConfig(config: BfUserConfig) {
   return config;
+}
+
+export function env(key: string, defaultValue?: string) {
+  globbySync("./.env*")
+    .filter((f) => !f.includes(".example"))
+    .forEach((file) => {
+      dotenv.config({ path: file });
+    });
+  return process.env[key] ?? defaultValue;
 }
 
 // find bf.config.{ts,js,mjs} file and load the module
@@ -40,6 +49,14 @@ async function openConfig() {
 }
 
 export async function loadConfig() {
+  // Load env vars(they might be needed in the later steps)
+  globbySync(".env*")
+    .filter((f) => !f.includes(".example"))
+    .forEach((file) => {
+      dotenv.config({ path: file });
+      logger.info(`loaded env vars from ${file}`);
+    });
+
   const cfg = await openConfig();
   const opts = BfUserConfigSchema.safeParse(cfg);
 
@@ -47,18 +64,6 @@ export async function loadConfig() {
     logger.error("your config file is not valid");
     process.exit(1);
   }
-
-  // Load env vars(they might be needed in the later steps)
-  globby(".env*")
-    .then((f) => f.filter((_) => !_.includes(".env.example")))
-    .then((m) => {
-      if (m.length) {
-        dotenv.config({
-          path: m[0],
-        });
-        logger.info(`loaded env variables from \`${m[0]}\``);
-      }
-    });
 
   // expand config
   return new BfConfig(cfg);

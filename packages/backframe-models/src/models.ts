@@ -1,5 +1,5 @@
 export type AuthAccount = {
-  id: string;
+  id?: string;
   userID: string;
   provider: string;
   providerID: string;
@@ -7,19 +7,19 @@ export type AuthAccount = {
   refreshToken?: string;
   accessToken?: string;
   accessTokenExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   user: AuthUser;
 };
 
 export type AuthSession = {
-  id: string;
+  id?: string;
   userID: string;
-  expires: Date;
+  expires?: Date;
   sessionToken: string;
   accessToken: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   user: AuthUser;
 };
 
@@ -30,6 +30,7 @@ export type AuthUser = {
   emailVerified: Date;
   name?: string;
   imageURL?: string;
+  password?: string;
   accounts: AuthAccount[];
   sessions: AuthSession[];
   createdAt: Date;
@@ -37,12 +38,12 @@ export type AuthUser = {
 };
 
 export type AuthVerificationRequest = {
-  id: string;
+  id?: string;
   identifier: string;
   token: string;
-  expires: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  expires?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 // model used for storing logs

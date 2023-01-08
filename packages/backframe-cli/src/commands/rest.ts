@@ -18,7 +18,11 @@ export default defineBfCommand({
         //
       },
       async (_h) => {
-        await printRoutesTable();
+        try {
+          await printRoutesTable();
+        } catch (error) {
+          console.error(error);
+        }
       }
     ).command(
       "generate <resource>",
@@ -39,7 +43,7 @@ export default defineBfCommand({
 });
 
 async function printRoutesTable() {
-  // dont log anything
+  // dont log anything, except errors
   process.env.BF_SILENT_LOG = "true";
 
   const cfg = await loadBfCfg();
