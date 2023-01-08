@@ -1,7 +1,6 @@
 import { BfConfig } from "../config/index.js";
 
-export type Plugin = (args: unknown) => BfPluginConfig;
-export type PluginListener = (cfg: BfConfig) => void;
+export type PluginFunction = (cfg: BfConfig) => void;
 
 // this are hooks that can be used by the plugin to modify the behavior of the app by `hooking` in at different points of the app lifecycle
 export type PluginHooks = {
@@ -29,7 +28,7 @@ export type PluginHooks = {
    *    // ...
    * })
    */
-  onConfigInit?: PluginListener;
+  onConfigInit?: PluginFunction;
   /**
    * The `onServerInit` hook is called after the `BfConfig` object has been created and the `BfServer` object has been initialized but not started yet. It is in this step that resources are added to the server, middleware applied and other server configuration is done. This hook is useful if you want to modify the `BfServer` object before it is started.
    * @link https://backframe.github.io/js/docs/plugins/config#onserverinit
@@ -54,7 +53,7 @@ export type PluginHooks = {
    *    // ...
    * })
    */
-  onServerInit?: PluginListener;
+  onServerInit?: PluginFunction;
   /**
    * The `onServerStart` hook is called after the `BfServer` object has been started. This hook is useful if you want to do something after the server has started.
    * @link https://backframe.github.io/js/docs/plugins/config#onserverstart
@@ -78,34 +77,31 @@ export type PluginHooks = {
    * })
    *
    */
-  onServerStart?: PluginListener;
-  onServerStop?: PluginListener;
-  onSocketsInit?: PluginListener;
-  emailProvider?: PluginListener;
-  smsProvider?: PluginListener;
-  pushProvider?: PluginListener;
-  storageProvider?: PluginListener;
-  compiler?: PluginListener;
+  onServerStart?: PluginFunction;
+  onServerStop?: PluginFunction;
+  onSocketsInit?: PluginFunction;
+  emailProvider?: PluginFunction;
+  smsProvider?: PluginFunction;
+  pushProvider?: PluginFunction;
+  storageProvider?: PluginFunction;
+  compiler?: PluginFunction;
 };
 
-export type BfPluginConfig = {
+export type Plugin = {
   /**
    * This is the name assigned to the plugin. This is dispayed to the user when an issue is found with a plugin or general reporting.
    * @link https://backframe.github.io/js/docs/plugins/config#name
-   * @default `unknown-plugin-$randID`
    */
-  name?: string;
+  name: string;
   /**
    * This is a simple description of the plugin. This is dispayed to the user when an issue is found with a plugin or general reporting.
    * @link https://backframe.github.io/js/docs/plugins/config#description
-   * @default `unknown-plugin-$randID`
    *
    */
   description?: string;
   /**
    * This is the version of the plugin. This is dispayed to the user when an issue is found with a plugin or general reporting.
    * @link https://backframe.github.io/js/docs/plugins/config#version
-   * @default `unknown-plugin-$randID`
    */
   version?: string;
 } & PluginHooks;
