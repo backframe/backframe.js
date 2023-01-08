@@ -1,72 +1,68 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { BfPluginConfig } from "@backframe/core";
-import { hashSync } from "bcrypt";
-import jwt from "jsonwebtoken";
-import { createRequire } from "module";
+
+import type { Plugin } from "@backframe/core";
+import { require } from "@backframe/utils";
+import merge from "lodash.merge";
+import path from "path";
 import { fileURLToPath } from "url";
+import { Provider } from "./lib/types.js";
 
 const __filename = fileURLToPath(import.meta.url);
-const require = createRequire(__filename);
-const pkg = require("../package.json");
+const __dirname = path.dirname(__filename);
+const pkg = require(path.join(__dirname, "../package.json"));
 
-export default function (): BfPluginConfig {
+export interface AuthConfig {
+  prefix?: string;
+  encode?: (payload: string, options?: unknown) => string;
+  decode?: <T extends { payload: string }>(
+    token: string,
+    options?: unknown
+  ) => T;
+  hash?: (
+    data: string | Buffer,
+    options?: unknown
+  ) => string | PromiseLike<string>;
+  compare?: (
+    data: string | Buffer,
+    encrypted: string
+  ) => boolean | PromiseLike<boolean>;
+}
+
+export const DEFAULT_CFG: AuthConfig = {
+  prefix: "/auth",
+};
+
+export default function (cfg = DEFAULT_CFG): Plugin {
+  cfg = merge(DEFAULT_CFG, cfg);
   return {
     name: pkg.name,
-    description: pkg.description || "Backframe auth plugin",
-    onServerInit(cfg) {
-      const app = cfg.$server.$app;
-      const route = (r: string) => cfg.withRestPrefix(r);
+    description:
+      pkg.description || "Provides authentication for a backframe app",
+    version: pkg.version || "0.0.0",
+    onServerInit(bfCfg) {
+      const { $server } = bfCfg;
+      const { $app } = bfCfg.$server;
+      const providers = bfCfg.getConfig("authentication")
+        .providers as Provider[];
 
-      app?.post(route("auth/local"), async (rq, rs) => {
-        // TODO: Get access to database and create new user if not already exists
-        const body = rq.body;
-        if (!(body.email || body.password)) {
-          return rs.status(400).json({
-            status: "ERROR",
-            message: "Invalid request body",
-            description:
-              "Expected to find email and password fields in the request body",
-          });
-        }
+      $app.use(bfCfg.withRestPrefix(cfg.prefix), (rq, _rs, nxt) => {
+        // @ts-expect-error - it will be there
+        rq.authCfg = cfg;
+        nxt();
+      });
 
-        // check if user exists
-        // rome-ignore lint/suspicious/noExplicitAny: <explanation>
-        const db = cfg.$database as any;
-        let user = await db.user.findUnique({ where: { email: body.email } });
-        if (user) {
-          return rs.status(400).json({
-            status: "ERROR",
-            message: "Invalid credentials",
-            description: "User already exists",
-          });
-        }
+      const ignored = [];
+      const credentials = providers.find((p) => p.id === "credentials");
+      if (!credentials) {
+        ignored.push("register.js");
+      }
 
-        // create new user
-        user = await db.user.create({
-          data: {
-            email: body.email,
-            passwordHash: hashSync(body.password, 10),
-          },
-        });
-
-        return rs.status(200).json({
-          status: "SUCCESS",
-          message: "User authenticated successfully",
-          token: jwt.sign(
-            { id: user.id },
-            process.env.JWT_SECRET || "someSecretKey",
-            {
-              expiresIn: "1d",
-            }
-          ),
-        });
+      // mount auth pkg routes
+      $server.$extendFrom(__dirname, {
+        name: pkg.name,
+        prefix: cfg.prefix,
+        ignored,
       });
     },
   };
 }
-
-// authenticate() {
-//   initializers: [];
-//   middleware: [];
-//   strategies: [];
-// }
