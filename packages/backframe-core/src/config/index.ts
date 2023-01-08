@@ -7,19 +7,20 @@ import { globbySync } from "globby";
 import { Server } from "http";
 import merge from "lodash.merge";
 import path from "path";
-import { PluginListener } from "../plugins/index.js";
+import { ZodType } from "zod";
+import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
 import { BfUserConfig, BF_CONFIG_DEFAULTS } from "./schema.js";
 import { loadTsConfig } from "./tsconfig.js";
 
 // each key corresponds to a prop of the BfConfig class
-export type PluginKey =
+export type ConfigKey =
   | "emailProvider"
   | "storageProvider"
   | "compiler"
   | "smsProvider"
   | "pushProvider";
-export const PLUGINS_LIST: PluginKey[] = [
+export const PLUGINS_LIST: ConfigKey[] = [
   "compiler",
   "emailProvider",
   "storageProvider",
@@ -34,11 +35,11 @@ export type Listener =
   | "onServerStart"
   | "onServerStop";
 export type Listeners = {
-  onServerInit: PluginListener[];
-  onConfigInit: PluginListener[];
-  onSocketsInit: PluginListener[];
-  onServerStart: PluginListener[];
-  onServerStop: PluginListener[];
+  onServerInit: PluginFunction[];
+  onConfigInit: PluginFunction[];
+  onSocketsInit: PluginFunction[];
+  onServerStart: PluginFunction[];
+  onServerStop: PluginFunction[];
 };
 export const LISTENERS_LIST: Listener[] = [
   "onServerInit",
@@ -56,6 +57,7 @@ export type DirKey =
 
 export const BF_OUT_DIR = ".bf";
 
+type Method = "get" | "post" | "put" | "patch" | "delete";
 export interface IBfServer<T> {
   $app: Express;
   $handle: Server;
@@ -66,10 +68,11 @@ export interface IBfServer<T> {
   $start: (port?: number) => Promise<void>;
   $extendFrom: (path: string, cfg?: { name?: string; prefix?: string }) => void;
   $listRoutes: () => { route: string; type: string; name: string }[];
+  $createValidator: (t: ZodType) => RequestHandler;
   $mountRoute: (
-    method: "get" | "post" | "put" | "patch" | "delete",
+    method: Method,
     route: string,
-    handler: RequestHandler,
+    handler: RequestHandler | RequestHandler[],
     origin?: string
   ) => void;
 }
@@ -92,11 +95,11 @@ export class BfConfig {
 
   // config related values/extensions
   $modifiers: Listeners;
-  compiler: PluginListener;
-  smsProvider?: PluginListener;
-  pushProvider?: PluginListener;
-  emailProvider?: PluginListener;
-  storageProvider?: PluginListener;
+  compiler: PluginFunction;
+  smsProvider?: PluginFunction;
+  pushProvider?: PluginFunction;
+  emailProvider?: PluginFunction;
+  storageProvider?: PluginFunction;
 
   // Third party plugins can mount their own options to the config
   pluginsOptions: Record<string, Record<string, unknown>> = {};
@@ -134,7 +137,7 @@ export class BfConfig {
     this.$modifiers[key].forEach((m) => m(this));
   }
 
-  $addListener<T extends keyof Listeners>(key: T, m: PluginListener | null) {
+  $addListener<T extends keyof Listeners>(key: T, m: PluginFunction | null) {
     m && this.$modifiers[key].push(m);
   }
 
@@ -142,15 +145,15 @@ export class BfConfig {
     return this.$modifiers[key];
   }
 
-  $addPlugin(key: PluginKey, p: PluginListener) {
+  $addPlugin(key: ConfigKey, p: PluginFunction) {
     this[key] = p;
   }
 
-  $invokePlugin(key: PluginKey) {
+  $invokePlugin(key: ConfigKey) {
     this[key]?.(this);
   }
 
-  $getPlugin(key: PluginKey) {
+  $getPlugin(key: ConfigKey) {
     return this[key];
   }
 
