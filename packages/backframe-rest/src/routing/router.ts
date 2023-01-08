@@ -54,6 +54,7 @@ export class Router {
     private cfg?: {
       name?: string;
       prefix?: string;
+      ignore?: string[];
     }
   ) {
     this.#restPrefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
@@ -75,12 +76,14 @@ export class Router {
     }
     this.matches = matches;
     matches.map((m) => this.#processRoute(m.replace("./", `./${cwd}/`)));
+    this.manifest.orderRoutes();
   }
 
   #processRoute(r: string) {
     const fileRoute = this.#normalizeRoute(r);
     const base = path.basename(fileRoute);
     const leading = path.dirname(fileRoute);
+    if (this.cfg?.ignore?.includes(base)) return;
 
     // try match route pattern
     let route;
