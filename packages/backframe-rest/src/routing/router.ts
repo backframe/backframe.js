@@ -109,7 +109,7 @@ export class Router {
       basename: base,
       filePath: r,
       dirname: path.dirname(r),
-      pluginName: this.cfg.name ?? undefined,
+      pluginName: this.cfg?.name ?? undefined,
     };
 
     this.manifest.add(item);
@@ -123,7 +123,7 @@ export class Router {
   #normalizeRoute(route: string) {
     // strip leading dirs and add prefix
     const r = route.replace(`./${this.#rootDir}/${this.#sourceDir}`, "");
-    return path.join(this.#restPrefix, this.cfg.prefix ?? "", r);
+    return path.join(this.#restPrefix, this.cfg?.prefix ?? "", r);
   }
 
   #validateRoute(route: string) {
