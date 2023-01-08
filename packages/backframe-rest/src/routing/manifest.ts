@@ -43,4 +43,22 @@ export class Manifest {
   listRoutes() {
     return this.#items.map(($) => `${$.route}\n`);
   }
+
+  orderRoutes() {
+    // if /signin/:provider & /signin/google, /signin/google must be first
+    this.#items.sort((a, b) => {
+      // check if a is dynamic route and b is named route
+      if (a.route.includes(":") && !b.route.includes(":")) {
+        return 1;
+      }
+
+      // check if b is dynamic route and a is named route
+      if (!a.route.includes(":") && b.route.includes(":")) {
+        return -1;
+      }
+
+      // return 0 if both are dynamic or named routes
+      return 0;
+    });
+  }
 }
