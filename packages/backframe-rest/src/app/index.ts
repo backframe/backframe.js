@@ -268,7 +268,11 @@ export class BfServer<T extends DB> implements IBfServer<T> {
   #setupErrHandlers() {
     // at this point, no route has been found
     this.$app.use("*", (req, _res, _next) => {
-      if (this.#resources.some((r) => r.route === req.originalUrl))
+      if (
+        this.#resources.some(
+          (r) => this.#bfConfig.withRestPrefix(r.route) === req.originalUrl
+        )
+      )
         throw MethodNotAllowed(
           "Method Not Allowed",
           `The \`${req.method}\` method is not allowed on this resource`
@@ -284,8 +288,8 @@ export class BfServer<T extends DB> implements IBfServer<T> {
         _next: NextFunction
       ) => {
         res
-          .status(err.statusCode)
-          .json((err || InternalException()).getValues());
+          .status(err.statusCode || 500)
+          .json(err || InternalException().getValues);
       }
     );
   }
