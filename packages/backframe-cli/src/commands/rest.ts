@@ -63,14 +63,19 @@ async function printRoutesTable() {
   // | route             | origin
   // | /api/v1/users     | FILE: /path/to/file
   // | /api/v1/users/:id | PLUGIN: plugin-name
-  const tbl = routes.map((route) => {
-    return [
-      route.route,
-      `${route.type === "FILE" ? cyan(route.type) : green(route.type)}: ${
-        route.name
-      }`,
-    ];
-  });
+  const tbl = routes
+    .sort((a, b) => {
+      if (b.route > a.route) return -1;
+      return 1;
+    })
+    .map((route) => {
+      return [
+        route.route,
+        `${route.type === "FILE" ? cyan(route.type) : green(route.type)}: ${
+          route.name
+        }`,
+      ];
+    });
 
   tbl.unshift([yellow("Route"), magenta("Origin")]);
 
