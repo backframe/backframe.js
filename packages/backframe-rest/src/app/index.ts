@@ -10,7 +10,7 @@ import helmet from "helmet";
 import http, { Server as HttpServer } from "http";
 import merge from "lodash.merge";
 import type { Server as SocketServer } from "socket.io";
-import { ZodObject, ZodType } from "zod";
+import { ZodObject, ZodRawShape } from "zod";
 import {
   GenericException,
   InternalException,
@@ -200,7 +200,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     );
   }
 
-  $createValidator(input: ZodType): RequestHandler {
+  $createValidator<T extends ZodRawShape>(input: ZodObject<T>): RequestHandler {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
       if (!opts.success) {
@@ -215,7 +215,13 @@ export class BfServer<T extends DB> implements IBfServer<T> {
           )
         );
       } else {
-        // TODO: sanitize input
+        // sanitize input
+        const sanitized = {};
+        Object.keys(input.shape).forEach((k) => {
+          // @ts-expect-error (value exists)
+          sanitized[k] = opts.data[k];
+        });
+        req.body = sanitized;
         next();
       }
     };
