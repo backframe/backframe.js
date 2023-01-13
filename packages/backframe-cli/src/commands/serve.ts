@@ -3,7 +3,6 @@ import { ChildProcess } from "child_process";
 import chokidar, { FSWatcher } from "chokidar";
 import { spawn } from "cross-spawn";
 import { existsSync } from "fs";
-import { globbySync } from "globby";
 import readline from "readline";
 import { ensureBfProject } from "../util.js";
 import { defineBfCommand } from "./index.js";
@@ -78,22 +77,6 @@ export default defineBfCommand({
         child = start();
       };
 
-      const toWatch = globbySync(
-        `./**/*.{${[
-          ...["js", "ts", "json", "mjs", "cjs"],
-          ...(args["ext"] as string[]),
-        ].join(",")}}`,
-        {
-          ignore: [
-            ...["node_modules/", ".bf/"],
-            ...(args["ignore"] as string[]),
-          ],
-        }
-      );
-
-      (args["watch"] as string[]).forEach((i) => toWatch.push(i));
-      logger.dev(toWatch.join("\n"));
-
       const setupRL = () => {
         rl = readline.createInterface(process.stdin);
         rl.on("line", async (i) => {
@@ -106,9 +89,23 @@ export default defineBfCommand({
       };
 
       const setupWatcher = () => {
-        watcher = chokidar.watch([...toWatch, ...globbySync("bf.config.*")], {
-          ignored: ["node_modules", ".bf/", ...(args["ignore"] as string[])],
-        });
+        watcher = chokidar.watch(
+          [
+            `./**/*.{${[
+              ...["js", "ts", "json", "mjs", "cjs"],
+              ...(args["ext"] as string[]),
+            ].join(",")}}`,
+            "bf.config.*",
+            ...(args["watch"] as string[]),
+          ],
+          {
+            ignored: [
+              "./node_modules",
+              "./.bf/**/*",
+              ...(args["ignore"] as string[]),
+            ],
+          }
+        );
 
         watcher.on("ready", () => {
           logger.debug("watching for file changes...");
