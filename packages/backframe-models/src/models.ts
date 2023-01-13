@@ -1,18 +1,24 @@
-export type AuthAccount = {
+export type BaseModel = {
   id?: string;
-  userID: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export interface AuthAccount extends BaseModel {
+  id?: string;
+  userID?: string;
   provider: string;
   providerID: string;
-  providerAccountID: number;
+  providerAccountID: string;
   refreshToken?: string;
   accessToken?: string;
   accessTokenExpires?: Date;
   createdAt?: Date;
   updatedAt?: Date;
   user: AuthUser;
-};
+}
 
-export type AuthSession = {
+export interface AuthSession extends BaseModel {
   id?: string;
   userID: string;
   expires?: Date;
@@ -21,30 +27,30 @@ export type AuthSession = {
   createdAt?: Date;
   updatedAt?: Date;
   user: AuthUser;
-};
+}
 
-export type AuthUser = {
+export interface AuthUser extends BaseModel {
   id?: string;
   role?: string;
   email: string;
-  emailVerified: Date;
+  emailVerified?: Date;
   name?: string;
   imageURL?: string;
   password?: string;
-  accounts: AuthAccount[];
-  sessions: AuthSession[];
-  createdAt: Date;
-  updatedAt: Date;
-};
+  accounts?: AuthAccount[];
+  sessions?: AuthSession[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
-export type AuthVerificationRequest = {
+export interface AuthVerificationRequest extends BaseModel {
   id?: string;
   identifier: string;
   token: string;
   expires?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-};
+}
 
 // model used for storing logs
 export type Log = {

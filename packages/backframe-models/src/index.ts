@@ -3,23 +3,48 @@ import {
   AuthSession,
   AuthUser,
   AuthVerificationRequest,
+  BaseModel,
 } from "./models.js";
 
 // Object mimicking expected database shape
-export interface DB {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type DB<T = {}> = {
   authUser: DbEntry<AuthUser>;
   authSession: DbEntry<AuthSession>;
   authAccount: DbEntry<AuthAccount>;
   authVerificationRequest: DbEntry<AuthVerificationRequest>;
   [key: string]: DbEntry<unknown>;
-}
+} & T;
 
 export * from "./models.js";
 export * from "./prisma.js";
 
+type QueryWithRelations<T> = {
+  every?: ExpandWithOps<T>;
+  some?: ExpandWithOps<T>;
+  none?: ExpandWithOps<T>;
+};
+
+type ExpandedCreate<T> = {
+  [P in keyof T]: T[P] extends BaseModel ? CreateWithRelations<T[P]> : T[P];
+};
+
+type CreateWithRelations<T extends { id?: string }> = {
+  create?: Omit<T, "id" | "createdAt" | "updatedAt">;
+  connect?: Pick<T, "id">;
+  connectOrCreate?: {
+    where: Pick<T, "id">;
+    create: Omit<T, "id" | "createdAt" | "updatedAt">;
+  };
+};
+
+type ExpandedDeleteMany<T> = {
+  [P in keyof T]: T[P] extends BaseModel[] ? QueryWithRelations<T[P]> : T[P];
+};
+
 export interface DbEntry<T> {
   create: <S extends BooleanKeys<T>>(args: {
-    data: T;
+    data: ExpandedCreate<T>;
     select?: S;
   }) => Promise<InferKeys<S, T> | T>;
   delete: <S extends BooleanKeys<T>>(args: {
@@ -27,7 +52,7 @@ export interface DbEntry<T> {
     select?: S;
   }) => Promise<InferKeys<S, T> | T>;
   deleteMany: <S extends Partial<T> & ExpandWithOps<Partial<T>>>(args: {
-    where: S;
+    where: ExpandedDeleteMany<S>;
   }) => Promise<{ count: number }>;
   findFirst: <
     S extends BooleanKeys<T>,
