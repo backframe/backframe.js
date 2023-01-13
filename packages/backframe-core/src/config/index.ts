@@ -1,6 +1,6 @@
 import type { DB } from "@backframe/models";
 import { resolveCwd } from "@backframe/utils";
-import swc from "@swc/core";
+import { buildSync } from "esbuild";
 import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
 import { globbySync } from "globby";
@@ -319,37 +319,10 @@ const defaultBuilder = (cfg: BfConfig) => {
   }
 
   const files = globbyWithOpts(`./${root}/**/*.{js,ts}`);
-  files.forEach((f) => {
-    // compile files with swc then write to .bf
-    const { code } = swc.transformFileSync(resolveCwd(f), {
-      jsc: {
-        parser: {
-          syntax: "typescript",
-          tsx: false,
-          decorators: true,
-          dynamicImport: true,
-        },
-        target: "es2020",
-        transform: {
-          legacyDecorator: true,
-          decoratorMetadata: true,
-        },
-        baseUrl: resolveCwd(tsconfig.compilerOptions.baseUrl ?? root),
-        paths: tsconfig.compilerOptions.paths,
-      },
-      module: {
-        type: "nodenext",
-      },
-      swcrc: false,
-      configFile: false,
-      isModule: true,
-    });
-
-    const dest = f.replace(`./${root}`, `./${BF_OUT_DIR}`).replace(/ts$/, "js");
-    if (!fs.existsSync(path.dirname(dest))) {
-      fs.mkdirSync(path.dirname(dest));
-    }
-    fs.writeFileSync(dest, code);
+  buildSync({
+    format: "esm",
+    outdir: BF_OUT_DIR,
+    entryPoints: files,
   });
 
   // update root dir name
