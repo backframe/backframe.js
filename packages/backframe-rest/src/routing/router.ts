@@ -54,7 +54,7 @@ export class Router {
     private cfg?: {
       name?: string;
       prefix?: string;
-      ignore?: string[];
+      ignored?: string[];
     }
   ) {
     this.#restPrefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
@@ -83,7 +83,7 @@ export class Router {
     const fileRoute = this.#normalizeRoute(r);
     const base = path.basename(fileRoute);
     const leading = path.dirname(fileRoute);
-    if (this.cfg?.ignore?.includes(base)) return;
+    if (this.cfg?.ignored?.includes(base)) return;
 
     // try match route pattern
     let route;

@@ -56,7 +56,7 @@ export interface OAuthConfig<P> extends CommonProviderOptions, PartialIssuer {
    * [Authorization endpoint](https://datatracker.ietf.org/doc/html/rfc6749#section-3.1)
    */
   authorization?: {
-    url: string;
+    url?: string;
     params?: Record<string, unknown>;
   };
   token?: string;

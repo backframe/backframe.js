@@ -1,4 +1,4 @@
-import { BfConfig } from "@backframe/core";
+import { BfConfig, BfUserConfig } from "@backframe/core";
 import { DB } from "@backframe/models";
 import { Context } from "@backframe/rest";
 import { Issuer } from "openid-client";
@@ -8,10 +8,19 @@ import { InternalProvider, Provider } from "./types";
 export type InternalOptions = {
   db: DB;
   bf: BfConfig;
-  auth: AuthConfig;
+  auth: AuthConfig & BfUserConfig["authentication"];
   providerId: string;
   providers: InternalProvider[];
   provider: InternalProvider;
+  cookies: {
+    names: {
+      nonce: string;
+      state: string;
+      codeVerifier: string;
+      session: string;
+    };
+    vals?: Record<string, string>;
+  };
 };
 
 export async function openidClient(opts: InternalOptions) {
@@ -43,7 +52,11 @@ export async function openidClient(opts: InternalOptions) {
 
 export function getOptions(ctx: Context<unknown, any>): InternalOptions {
   const bf = ctx.config;
-  const auth = (ctx.request.authCfg ?? DEFAULT_CFG) as AuthConfig;
+
+  const auth = (ctx.request.authCfg ?? {
+    ...DEFAULT_CFG,
+    ...bf.getConfig("authentication"),
+  }) as AuthConfig;
   const { provider: providerId } = ctx.params;
   const providers = bf.getConfig("authentication").providers as Provider[];
 
@@ -54,9 +67,28 @@ export function getOptions(ctx: Context<unknown, any>): InternalOptions {
         callbackURL: `${
           process.env.APP_URL ?? "http://localhost:6969"
         }${bf.withRestPrefix(auth.prefix)}/callback/${providerId}`,
-        ...p.options,
+        options: {
+          clientId: process.env[`${p.id.toUpperCase()}_CLIENT_ID`],
+          clientSecret: process.env[`${p.id.toUpperCase()}_CLIENT_SECRET`],
+          ...p.options,
+        },
       } as InternalProvider)
   );
+
+  const reqCookies = (ctx.request.cookies || {}) as Record<string, string>;
+  const cookies: InternalOptions["cookies"] = {
+    names: {
+      state: `${bf}-oauth-state`,
+      codeVerifier: `${bf}-oauth-code-verifier`,
+      nonce: `${bf}-oauth-nonce`,
+      session: `${bf}-auth-session`,
+    },
+    vals: {},
+  };
+
+  for (const [key, value] of Object.entries(reqCookies)) {
+    cookies.vals[key] = reqCookies[value];
+  }
 
   return {
     bf,
@@ -65,5 +97,6 @@ export function getOptions(ctx: Context<unknown, any>): InternalOptions {
     providers: normalized,
     provider: normalized.find((provider) => provider.id === providerId),
     db: ctx.db as DB,
+    cookies,
   };
 }

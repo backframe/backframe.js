@@ -2,6 +2,8 @@
 
 import type { Plugin } from "@backframe/core";
 import { require } from "@backframe/utils";
+import bcrypt from "bcrypt";
+import * as jose from "jose";
 import merge from "lodash.merge";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -13,11 +15,9 @@ const pkg = require(path.join(__dirname, "../package.json"));
 
 export interface AuthConfig {
   prefix?: string;
-  encode?: (payload: string, options?: unknown) => string;
-  decode?: <T extends { payload: string }>(
-    token: string,
-    options?: unknown
-  ) => T;
+  encode?: <T>(payload: T, options?: unknown) => string | PromiseLike<string>;
+  decode?: (token: string, options?: unknown) => any;
+  verify?: (token: string, options?: unknown) => boolean | Promise<boolean>;
   hash?: (
     data: string | Buffer,
     options?: unknown
@@ -30,6 +30,45 @@ export interface AuthConfig {
 
 export const DEFAULT_CFG: AuthConfig = {
   prefix: "/auth",
+  // default encode is jwt
+  async encode(payload, options: { secret: string; alg?: string }) {
+    const s = new TextEncoder().encode(
+      options?.secret || process.env.BF_AUTH_SECRET
+    );
+
+    const token = await new jose.SignJWT(payload as jose.JWTPayload)
+      .setProtectedHeader({ alg: options?.alg ?? "HS256" })
+      .setIssuedAt()
+      // .setIssuer("urn:example:issuer")
+      // .setAudience("urn:example:audience")
+      .setExpirationTime("2h")
+      .sign(s);
+
+    return token;
+  },
+  // default decode is jwt
+  async decode(token, options: { secret: string }) {
+    const s = jose.base64url.decode(
+      options?.secret || process.env.BF_AUTH_SECRET
+    );
+    const { payload } = await jose.jwtDecrypt(token, s);
+    return payload;
+  },
+  async verify(token, options: { secret: string }) {
+    const s = new TextEncoder().encode(
+      options?.secret || process.env.BF_AUTH_SECRET
+    );
+    const { payload } = await jose.jwtVerify(token, s);
+    return !!payload;
+  },
+  async hash(data) {
+    const hash = await bcrypt.hash(data, 10);
+    return hash;
+  },
+  async compare(data, hash) {
+    const valid = await bcrypt.compare(data, hash);
+    return valid;
+  },
 };
 
 export default function (cfg = DEFAULT_CFG): Plugin {
@@ -42,19 +81,21 @@ export default function (cfg = DEFAULT_CFG): Plugin {
     onServerInit(bfCfg) {
       const { $server } = bfCfg;
       const { $app } = bfCfg.$server;
-      const providers = bfCfg.getConfig("authentication")
-        .providers as Provider[];
+      const authCfg = bfCfg.getConfig("authentication");
+      const providers = authCfg.providers as Provider[];
 
       $app.use(bfCfg.withRestPrefix(cfg.prefix), (rq, _rs, nxt) => {
         // @ts-expect-error - it will be there
-        rq.authCfg = cfg;
+        rq.authCfg = { ...cfg, ...authCfg };
         nxt();
       });
 
       const ignored = [];
       const credentials = providers.find((p) => p.id === "credentials");
       if (!credentials) {
+        // ignore /register & /signin/credentials
         ignored.push("register.js");
+        ignored.push("signin.credentials.js");
       }
 
       // mount auth pkg routes

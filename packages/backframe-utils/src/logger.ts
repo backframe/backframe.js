@@ -17,6 +17,11 @@ export const warn = (msg: string) => _log(msg, "warn");
 export const http = (msg: string) => _log(msg, "http");
 export const error = (msg: string) => Logger.error(msg, "error");
 export const log = (level: string, msg: string) => Logger.log(level, msg);
+export const dev = (msg: string) => {
+  if (process.env.BF_DEV_DEBUG) {
+    Logger.debug(msg);
+  }
+};
 
 const fmt = printf(({ level, message, timestamp }) => {
   return `[${timestamp}] ${level} - ${message}`;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import yargs from "yargs";
 
 export const defineBfCommand = ({
@@ -5,7 +6,9 @@ export const defineBfCommand = ({
   builder,
   handler,
   description,
+  alias,
 }: {
+  alias?: string;
   command: string;
   description: string;
   builder?: yargs.BuilderCallback<{}, {}> | undefined;
@@ -17,5 +20,6 @@ export const defineBfCommand = ({
     builder,
     handler,
     description,
+    alias,
   };
 };

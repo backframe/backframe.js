@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import { OAuthConfig, OAuthUserConfig } from "../lib/types";
 
 /** @see https://docs.github.com/en/rest/users/users#get-the-authenticated-user */
@@ -57,7 +58,7 @@ export interface GithubEmail extends Record<string, unknown> {
 }
 
 export default function Github<P extends GithubProfile>(
-  options?: Partial<OAuthUserConfig<P>>
+  options?: OAuthUserConfig<P>
 ): OAuthConfig<P> {
   return {
     id: "github",
@@ -81,7 +82,7 @@ export default function Github<P extends GithubProfile>(
         });
 
         if (res.ok) {
-          const emails: GithubEmail[] = await res.json();
+          const emails: GithubEmail[] = (await res.json()) as GithubEmail[];
           profile.email = (emails.find((e) => e.primary) ?? emails[0]).email;
         }
       }
@@ -96,12 +97,6 @@ export default function Github<P extends GithubProfile>(
         image: profile.avatar_url,
       };
     },
-    options: {
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      ...(options ?? {}),
-    },
-    // clientId: options?.clientId ?? process.env.GITHUB_CLIENT_ID,
-    // clientSecret: options?.clientSecret ?? process.env.GITHUB_CLIENT_SECRET,
+    options,
   };
 }
