@@ -5,11 +5,12 @@
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
   "workspaces": [
+    "www",
+    "docs",
+    "tests/*",
     "packages/*",
     "examples/*",
-    "docs",
-    "packages/plugins/*",
-    "tests/*"
+    "packages/plugins/*"
   ],
   "keywords": [
     "nodejs",
@@ -65,7 +66,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@changesets/assemble-release-plan@5.2.3": "patches/@changesets__assemble-release-plan@5.2.3.patch",
+      "@changesets/assemble-release-plan@5.2.2": "patches/@changesets__assemble-release-plan@5.2.3.patch",
       "prisma-schema-transformer@0.8.1": "patches/prisma-schema-transformer@0.8.1.patch"
     }
   }
