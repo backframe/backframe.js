@@ -1,5 +1,5 @@
 {
-  "name": "test:routing",
+  "name": "@test/routing",
   "private": true,
   "type": "module",
   "scripts": {
