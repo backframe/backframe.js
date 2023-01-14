@@ -24,7 +24,7 @@ jobs:
         node: [14, 16, 18]
 
     name: "${{ matrix.os }} / Node.js ${{ matrix.node }}"
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: checkout code repository
