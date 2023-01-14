@@ -1,0 +1,19 @@
+---
+import Scripts from "$/components/Scripts.astro";
+import "$/styles/global.css";
+---
+
+<html lang="en" class="motion-safe:scroll-smooth 2xl:text-[20px]">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body class="bg-white dark:bg-[rgb(17,17,17)] font-plex w-full">
+    <main class="h-screen overflow-y-scroll">
+      <slot />
+    </main>
+    <Scripts />
+  </body>
+</html>
