@@ -85,8 +85,10 @@ async function createMinimalApp(cfg: IConfig) {
 
   await tasks.run();
   // show success message
-  console.log(cyan("Success!"));
+  console.log();
+  console.log(cyan("Success! A new project has been created!"));
   console.log(cyan("Run the following commands to get started:"));
-  console.log(`   cd ${cfg.targetDir}`);
-  console.log(`   ${pacman.name} run dev`);
+  process.cwd() !== cfg.targetDir && console.log(`\n$ cd \`${cfg.targetDir}\``);
+  !cfg.installDeps && console.log(`\n$ ${pacman.name} install`);
+  console.log(`\n$ ${pacman.name} run dev`);
 }
