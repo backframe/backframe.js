@@ -1,18 +1,10 @@
-name: backframe.js/workflow
+name: backframe.js/ci
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
       - dev-main
-
-env:
-  CI: true
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
   ci:
@@ -34,7 +26,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ matrix.node }}
 
       - uses: pnpm/action-setup@v2
         name: Install pnpm
@@ -74,14 +66,3 @@ jobs:
 
       - name: run tests
         run: pnpm run:tests
-
-      - name: create and publish versions
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: changesets/action@v1
-        with:
-          commit: "chore: update versions"
-          title: "chore: update versions"
-          publish: pnpm ci:publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
