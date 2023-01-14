@@ -1,0 +1,19 @@
+---
+import bfLogo from "$/assets/bff.png";
+import bfName from "$/assets/bf_combo.svg";
+import Theme from "./Theme.astro";
+---
+
+<header
+  class="p-5 md:p-9 h-12 flex place-items-center place-content-center border-b border-gray-300/40 dark:border-gray-700/40 top-0 sticky bg-white dark:bg-[rgb(17,17,17)]/80 backdrop-blur-xl z-20"
+>
+  <section
+    class="mx-auto max-w-7xl w-full h-full flex flex-row items-center justify-between"
+  >
+    <div class="flex gap-4 items-center">
+      <img src={bfLogo} alt="Backframe logo" class="h-10" />
+      <img src={bfName} alt="Backframe" class="w-36 h-auto text-white" />
+    </div>
+    <Theme />
+  </section>
+</header>
