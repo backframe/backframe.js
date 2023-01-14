@@ -7,7 +7,7 @@
     "start": "node bin/serve.mjs"
   },
   "dependencies": {
-    "@backframe/auth": "workspace:*",
+    "@backframe/auth": "workspace:0.0.0-alpha.5",
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
     "@backframe/sockets": "workspace:*",
