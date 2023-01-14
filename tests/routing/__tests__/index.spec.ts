@@ -60,4 +60,17 @@ describe("test routing functionality", () => {
         .expect("Catchall works");
     });
   });
+
+  // Test route `sorting` functionality
+  // When two routes match the same path, and one is a named route while the other is a dynamic route,
+  // the named route should be matched first
+  describe("test route sorting", () => {
+    it("should receive 200 and `google` as response", async () => {
+      await request(app).get("/auth/google").expect(200).expect("google");
+    });
+
+    it("should receive 200 and `dynamic` as response", async () => {
+      await request(app).get("/auth/dynamic").expect(200).expect("dynamic");
+    });
+  });
 });
