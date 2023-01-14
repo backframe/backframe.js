@@ -10,10 +10,9 @@ import serve from "./commands/serve";
 export function buildCommands(cli: yargs.Argv) {
   // preserve order: commands without args first
   return [rest, serve, add, _new, db].forEach((c) => {
-    cli.command(c.command, c.description, c.builder, c.handler);
-    // check for command alias
-    const alias = c.alias;
-    if (alias) cli.alias(alias, c.command);
+    cli
+      .command(c.command, c.description, c.builder, c.handler)
+      .alias([...(c.aliases ?? [])], c.command);
   });
 }
 

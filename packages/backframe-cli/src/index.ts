@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+import { require } from "@backframe/utils";
 import yargs from "yargs";
 import { buildCommands } from "./util";
 
-let cli = yargs(process.env.argv).parserConfiguration({
+const cli = yargs(process.env.argv).parserConfiguration({
   "boolean-negation": true,
 });
 
@@ -23,6 +24,15 @@ try {
 buildCommands(cli);
 
 cli
+  .command(
+    "test",
+    "Run tests",
+    (_) => _,
+    (_) => {
+      console.log("first");
+    }
+  )
+  .alias(["t"], "test")
   .wrap(cli.terminalWidth())
   .demandCommand(1, "Pass --help to see all available commands and options.")
   .strict()

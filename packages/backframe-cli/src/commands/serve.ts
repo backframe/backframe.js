@@ -8,7 +8,7 @@ import { ensureBfProject } from "../util.js";
 import { defineBfCommand } from "./index.js";
 
 export default defineBfCommand({
-  alias: "s",
+  aliases: ["s", "dev"],
   command: "serve",
   description: "Serve local backframe project in dev mode",
   builder: (_) => {
