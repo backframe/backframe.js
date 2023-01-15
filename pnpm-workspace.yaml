@@ -1,6 +1,6 @@
 # pnpm-workspace.yaml
 packages:
-  - "docs/"
+  - "www/"
   - "tests/*"
   - "examples/*"
   - "packages/*"

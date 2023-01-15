@@ -7,9 +7,10 @@ export const prisma = new PrismaClient();
 export type DB = typeof prisma;
 
 const server = createServer({
-  port: 8989,
   database: prisma,
 });
+
+// listen for db events
 
 export const listeners = (io: SocketServer) => {
   io.on("connection", (_sock) => {

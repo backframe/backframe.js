@@ -1,32 +1,9 @@
-import { gray } from "kleur/colors";
 import { PromptObject } from "prompts";
 import { pacman } from "../lib/pm";
 import { isManualTrack } from "./utils";
 
 export const outroPrompts = (): PromptObject[] => {
   return [
-    {
-      type: (_, { track }) => {
-        if (isManualTrack(track)) return "select";
-        return null;
-      },
-      name: "deployTarget",
-      message: `Where would you like to deploy ? ${gray(
-        "You can change this later"
-      )}`,
-      choices: [
-        {
-          title: "backframe.app (coming soon)",
-          value: "backframe",
-          disabled: true,
-        },
-        { title: "railway.app", value: "railway" },
-        { title: "fly.io", value: "fly" },
-        { title: "render.com", value: "render" },
-        { title: "cyclic.sh", value: "cyclic" },
-        { title: "I'll set this later", value: "none" },
-      ],
-    },
     {
       type: "confirm",
       name: "installDeps",

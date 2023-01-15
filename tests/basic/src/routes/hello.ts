@@ -1,4 +1,9 @@
-import { createHandler, defineRouteConfig } from "@backframe/rest";
+import {
+  createHandler,
+  defineRouteConfig,
+  ForbiddenException,
+  z,
+} from "@backframe/rest";
 import type { Namespace } from "@backframe/sockets";
 
 export const config = defineRouteConfig({
@@ -15,7 +20,18 @@ export const listeners = (io: Namespace) => {
 };
 
 export const GET = createHandler({
+  async action(_ctx) {
+    return ForbiddenException();
+    // return "Hello World!!!";
+  },
+});
+
+export const POST = createHandler({
+  input: z.object({
+    name: z.string(),
+  }),
   action(_ctx) {
+    console.log(_ctx.input);
     return "Hello World!!!";
   },
 });
