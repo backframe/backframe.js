@@ -1,5 +1,5 @@
 {
-  "name": "test:basic",
+  "name": "@test/basic",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,7 +7,7 @@
     "start": "node bin/serve.mjs"
   },
   "dependencies": {
-    "@backframe/auth": "workspace:0.0.0-alpha.5",
+    "@backframe/auth": "workspace:*",
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
     "@backframe/sockets": "workspace:*",

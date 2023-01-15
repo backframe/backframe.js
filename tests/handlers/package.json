@@ -1,5 +1,5 @@
 {
-  "name": "test-handlers",
+  "name": "@test/handlers",
   "private": true,
   "type": "module",
   "scripts": {
