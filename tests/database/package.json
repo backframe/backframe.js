@@ -2,11 +2,16 @@
   "name": "database",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.js",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "prisma": {
+    "seed": "tsx ./prisma/seed.ts"
+  },
   "scripts": {
     "db:push": "prisma db push",
-    "build": "tsc"
+    "postinstall": "prisma generate",
+    "db:seed": "prisma seed",
+    "db:studio": "prisma studio"
   },
   "keywords": [],
   "author": "Victor Ndaba",

@@ -1,22 +1,18 @@
-name: backframe.js/ci
+name: backframe.js/deploy
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-      - dev-main
+
+env:
+  CI: true
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
-  ci:
-    timeout-minutes: 15
-    strategy:
-      matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        node: [14, 16, 18]
-
-    name: "${{ matrix.os }} / Node.js ${{ matrix.node }}"
-    runs-on: ${{ matrix.os }}
-
+  deploy:
+    runs-on: ubuntu-latest
     steps:
       - name: checkout code repository
         uses: actions/checkout@v3
@@ -26,7 +22,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 16
 
       - uses: pnpm/action-setup@v2
         name: Install pnpm
@@ -64,5 +60,13 @@ jobs:
       - name: build packages
         run: pnpm build
 
-      - name: run tests
-        run: pnpm run:tests
+      - name: create and publish versions
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: changesets/action@v1
+        with:
+          commit: "chore: update versions"
+          title: "chore: update versions"
+          publish: pnpm ci:publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
