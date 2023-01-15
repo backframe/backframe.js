@@ -44,6 +44,8 @@ async function _main(_argv: Argv) {
       process.exit(1);
     },
   })) as IConfig;
+
+  results.projectName = argTargetDir || results.projectName; // if passed as arg, use that
   results.targetDir = results.projectName;
 
   await create(results);

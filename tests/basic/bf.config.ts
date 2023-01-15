@@ -1,24 +1,38 @@
-import { BfPluginConfig, defineConfig } from "@backframe/core";
-import sockets from "@backframe/sockets";
+import auth from "@backframe/auth";
+import credentials from "@backframe/auth/providers/credentials";
+import github from "@backframe/auth/providers/github";
+
+import { defineConfig, Plugin } from "@backframe/core";
 
 export default defineConfig({
   interfaces: {
     rest: {},
   },
   plugins: [
-    plugin(),
-    sockets({
-      cors: {
-        origin: "*",
-      },
-    }),
+    auth(),
+    // plugin(),
+    // sockets({
+    //   cors: {
+    //     origin: "*",
+    //   },
+    // }),
   ],
+  authentication: {
+    strategy: "token-based",
+    providers: [github(), credentials()],
+  },
 });
 
-function plugin(): BfPluginConfig {
+function plugin(): Plugin {
   return {
-    modifyServer() {
-      console.log("first");
+    name: "some",
+    onServerInit(cfg) {
+      cfg.$server?.$mountRoute(
+        "get",
+        "/extraa",
+        (rq, rs) => rs.send("hiiii"),
+        "@backframe/plugin"
+      );
     },
   };
 }

@@ -136,8 +136,8 @@ example*
 !examples/
 types
 todo.*
-pnpm-lock.yaml
 .turbo
+pnpm-lock.yaml
 
 # pnpm ignore files
 .pnmp*
