@@ -86,10 +86,12 @@ export const configPrompts = ({
         {
           title: green("Choose from preconfigured stacks/templates"),
           value: TEMPLATE_TRACK,
+          disabled: true,
         },
         {
           title: yellow("Manually select features"),
           value: MANUAL_TRACK,
+          disabled: true,
         },
       ],
     },

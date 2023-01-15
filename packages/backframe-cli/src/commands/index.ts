@@ -6,9 +6,9 @@ export const defineBfCommand = ({
   builder,
   handler,
   description,
-  alias,
+  aliases: aliases,
 }: {
-  alias?: string;
+  aliases?: string[];
   command: string;
   description: string;
   builder?: yargs.BuilderCallback<{}, {}> | undefined;
@@ -20,6 +20,6 @@ export const defineBfCommand = ({
     builder,
     handler,
     description,
-    alias,
+    aliases,
   };
 };
