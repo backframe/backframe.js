@@ -6,6 +6,11 @@ on:
       - main
       - dev-main
 
+env:
+  CI: true
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
 jobs:
   ci:
     timeout-minutes: 15
@@ -59,7 +64,7 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
 
       - name: install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: build packages
         run: pnpm build
