@@ -29,9 +29,9 @@ model AuthAccount {
   provider           String
   providerID         String   @unique
   providerAccountID  String
-  refreshToken       String
+  refreshToken       String?
   accessToken        String
-  accessTokenExpires String
+  accessTokenExpires String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   user               AuthUser @relation(references: [id], fields: [userID])
@@ -52,9 +52,10 @@ model AuthUser {
   id            String        @id @default(cuid())
   role          String        @default("user")
   email         String        @unique
-  emailVerified DateTime
-  name          String
-  imageURL      String
+  emailVerified DateTime?
+  name          String?
+  imageURL      String?
+  password      String?
   accounts      AuthAccount[]
   sessions      AuthSession[]
   createdAt     DateTime      @default(now())
