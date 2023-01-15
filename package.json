@@ -63,10 +63,5 @@
     "*.{js,ts}": [
       "rome check --apply-suggested"
     ]
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@changesets/cli@2.25.2": "patches/@changesets__cli@2.25.2.patch"
-    }
   }
 }
