@@ -6,7 +6,6 @@
   "license": "MIT",
   "workspaces": [
     "www",
-    "docs",
     "tests/*",
     "packages/*",
     "examples/*",
