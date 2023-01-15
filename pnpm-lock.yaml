@@ -1,5 +1,10 @@
 lockfileVersion: 5.4
 
+patchedDependencies:
+  '@changesets/cli@2.25.2':
+    hash: j6r7gcmvwpyk4qmesn7m6tchu4
+    path: patches/@changesets__cli@2.25.2.patch
+
 importers:
 
   .:
@@ -30,7 +35,7 @@ importers:
       vite: ^4.0.4
       vitest: ^0.26.2
     devDependencies:
-      '@changesets/cli': 2.25.2
+      '@changesets/cli': 2.25.2_j6r7gcmvwpyk4qmesn7m6tchu4
       '@commitlint/cli': 17.1.2
       '@commitlint/config-conventional': 17.1.0
       '@faker-js/faker': 7.6.0
@@ -1117,7 +1122,7 @@ packages:
       '@changesets/types': 5.2.0
     dev: true
 
-  /@changesets/cli/2.25.2:
+  /@changesets/cli/2.25.2_j6r7gcmvwpyk4qmesn7m6tchu4:
     resolution: {integrity: sha512-ACScBJXI3kRyMd2R8n8SzfttDHi4tmKSwVwXBazJOylQItSRSF4cGmej2E4FVf/eNfGy6THkL9GzAahU9ErZrA==}
     hasBin: true
     dependencies:
@@ -1155,6 +1160,7 @@ packages:
       term-size: 2.2.1
       tty-table: 4.1.6
     dev: true
+    patched: true
 
   /@changesets/config/2.2.0:
     resolution: {integrity: sha512-GGaokp3nm5FEDk/Fv2PCRcQCOxGKKPRZ7prcMqxEr7VSsG75MnChQE8plaW1k6V8L2bJE+jZWiRm19LbnproOw==}

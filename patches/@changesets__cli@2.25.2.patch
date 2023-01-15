@@ -1,0 +1,15 @@
+diff --git a/package.json b/package.json
+index cf49f43009e45cc9179741d1b095052fdc21c02f..c562ce2cf3670ddb0d1cc36eab79823b4471f398 100644
+--- a/package.json
++++ b/package.json
+@@ -69,5 +69,10 @@
+     "@changesets/test-utils": "*",
+     "fixturez": "^1.1.0",
+     "strip-ansi": "^5.2.0"
++  },
++  "pnpm": {
++    "patchedDependencies": {
++      "@changesets/assemble-release-plan@5.2.2": "patches/@changesets__assemble-release-plan@5.2.2.patch"
++    }
+   }
+ }
