@@ -1,10 +1,5 @@
 lockfileVersion: 5.4
 
-patchedDependencies:
-  '@changesets/assemble-release-plan@5.2.3':
-    hash: pru5yxvphi5iaziccudjjbnore
-    path: patches/@changesets__assemble-release-plan@5.2.3.patch
-
 importers:
 
   .:
@@ -306,7 +301,7 @@ importers:
     dependencies:
       '@loancrate/prisma-schema-parser': 2.0.0
       '@mrleebo/prisma-ast': 0.5.1
-      prisma-schema-transformer: 0.8.1_vddgid6vmbr6ufztifoq5icape
+      prisma-schema-transformer: 0.8.1
 
   packages/backframe-rest:
     specifiers:
@@ -459,7 +454,7 @@ importers:
 
   tests/basic:
     specifiers:
-      '@backframe/auth': workspace:0.0.0-alpha.5
+      '@backframe/auth': workspace:*
       '@backframe/cli': workspace:*
       '@backframe/core': workspace:*
       '@backframe/rest': workspace:*
@@ -9332,7 +9327,7 @@ packages:
     resolution: {integrity: sha512-VVtxR7sOh0VsG8o06Ttq5TrI1aiZKmC+ClSn4eBPaNf4SHr5lzbYW+kYGX3HocBL/MfpVrRfFZ9V3vCbLaiplg==}
     dev: false
 
-  /prisma-schema-transformer/0.8.1_vddgid6vmbr6ufztifoq5icape:
+  /prisma-schema-transformer/0.8.1:
     resolution: {integrity: sha512-zCvmXqKXoBI5eTM+/D8+JMOnraO5xWj+Oiqb1SxVuwe4XOdYwPvPlQP1jMANC65r2eMEyCzPc3A8TAiU6/6OpQ==}
     hasBin: true
     dependencies:
@@ -9348,7 +9343,6 @@ packages:
       - encoding
       - supports-color
     dev: false
-    patched: true
 
   /prisma/2.30.3:
     resolution: {integrity: sha512-48qYba2BIyUmXuosBZs0g3kYGrxKvo4VkSHYOuLlDdDirmKyvoY2hCYMUYHSx3f++8ovfgs+MX5KmNlP+iAZrQ==}
