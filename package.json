@@ -62,5 +62,10 @@
     "*.{js,ts}": [
       "rome check --apply-suggested"
     ]
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@changesets/assemble-release-plan@5.2.2": "patches/@changesets__assemble-release-plan@5.2.2.patch"
+    }
   }
 }
