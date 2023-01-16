@@ -12,9 +12,11 @@
     "@backframe/storage": "0.0.0-alpha.3",
     "@backframe/utils": "0.0.0-alpha.3",
     "@backframe/create-bf": "0.0.0-alpha.4",
-    "@backframe/eslint-config": "0.0.0-alpha.3"
+    "@backframe/eslint-config": "0.0.0-alpha.3",
+    "@backframe/admin": "0.0.0-alpha.5"
   },
   "changesets": [
+    "heavy-apricots-grow",
     "mighty-moose-admire"
   ]
 }
