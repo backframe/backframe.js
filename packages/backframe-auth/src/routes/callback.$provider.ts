@@ -33,16 +33,7 @@ export const GET = createHandler({
 
     const p = await provider.profile(userInfo, tokens);
     p.email = p.email?.toLowerCase();
-    // const data = {
-    //   profile: p,
-    //   account: {
-    //     provider: provider.id,
-    //     type: provider.type,
-    //     providerAccountId: p.id.toString(),
-    //     ...tokens,
-    //   },
-    //   ...userInfo,
-    // };
+    
 
     // create user then account then session
     let user = await db.authUser.findUnique({
