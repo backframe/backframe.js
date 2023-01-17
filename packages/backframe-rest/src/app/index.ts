@@ -17,6 +17,7 @@ import {
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
+import { httpLogger } from "../lib/middleware.js";
 import {
   ExpressReq,
   ExpressRes,
@@ -235,22 +236,10 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     this.$app.use(express.urlencoded({ extended: true }));
 
     const useCors = this.$cfg.enableCors;
-    const log = this.$cfg.logRequests;
     const logAdmin = this.$cfg.logAdminRequests;
 
     useCors && this.$app.use(cors(this.$cfg.corsOptions));
-    if (log) {
-      this.$app.use((req, res, next) => {
-        const start = Date.now();
-        next();
-        if (req.originalUrl.startsWith("/_/") && !logAdmin) return;
-        logger.http(
-          `${req.method} ${req.originalUrl} HTTP/${req.httpVersion} -> ${
-            res.statusCode
-          } in ${Date.now() - start}ms`
-        );
-      });
-    }
+    this.$app.use(httpLogger({ logAdmin }));
 
     // additional "middleware" i.e staticDir handlers
     const staticDirs = bfCfg.getDirPath("staticDirs");
@@ -262,13 +251,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       }
     });
 
-    // configure default templating setup
-    const viewsDir = bfCfg.getDirPath("viewsDir");
-    if (fs.existsSync(resolveCwd(viewsDir))) {
-      logger.info(`loading views from dir: ${viewsDir}`);
-      this.$app.set("view engine", "hbs");
-      this.$app.set("views", viewsDir);
-    }
+    // TODO: configure default templating setup
   }
 
   #setupErrHandlers() {
