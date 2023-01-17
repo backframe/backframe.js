@@ -1,5 +1,5 @@
 {
-  "name": "backframe-minimal-starter",
+  "name": "@bf/example",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -7,10 +7,10 @@
     "start": "node bin/serve.mjs"
   },
   "dependencies": {
-    "@backframe/core": "^0.0.0-alpha.3",
-    "@backframe/rest": "^0.0.0-alpha.3"
+    "@backframe/core": "^0.0.0-alpha.6",
+    "@backframe/rest": "^0.0.0-alpha.6"
   },
   "devDependencies": {
-    "@backframe/cli": "^0.0.0-alpha.3"
+    "@backframe/cli": "^0.0.0-alpha.6"
   }
 }
