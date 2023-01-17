@@ -31,10 +31,9 @@
     "cors": "^2.8.5",
     "express": "^4.18.1",
     "globby": "^13.1.2",
-    "hbs": "^4.2.0",
     "helmet": "^6.0.0",
     "lodash.merge": "^4.6.2",
-    "minimist": "^1.2.7",
+    "morgan": "^1.10.0",
     "zod": "^3.19.1"
   },
   "devDependencies": {
@@ -46,6 +45,7 @@
     "@types/hbs": "^4.0.1",
     "@types/lodash.merge": "^4.6.7",
     "@types/minimist": "^1.2.2",
+    "@types/morgan": "^1.9.4",
     "socket.io": "^4.5.4"
   },
   "eslintConfig": {
