@@ -1,10 +1,11 @@
+/* eslint-disable quotes */
 import { logger } from "@backframe/utils";
 import morgan from "morgan";
 
 export const httpLogger = ({ logAdmin }: { logAdmin: boolean }) => {
   const fmt =
     process.env.NODE_ENV === "PRODUCTION"
-      ? "combined"
+      ? ':remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'
       : ":method :url HTTP/:http-version -> :status in :response-time ms";
 
   return morgan(fmt, {
