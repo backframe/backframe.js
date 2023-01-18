@@ -26,8 +26,12 @@ export type Handler<U, T extends ZodRawShape> = (
   ctx: Context<U, ZodObject<T>>
 ) => HandlerResult | Promise<HandlerResult>;
 
-export interface IHandlerConfig<T extends ZodRawShape> {
+export interface IHandlerConfig<
+  T extends ZodRawShape,
+  O extends ZodRawShape = {}
+> {
   input?: ZodObject<T>;
+  output?: ZodObject<O>;
   action: Handler<unknown, T>;
   middleware?: Handler<unknown, T>[];
 }
