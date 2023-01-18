@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-pnpm build && pnpm run:tests
+# Run `pnpm i` to make sure lockfile is upto date
+pnpm i && pnpm build && pnpm run:tests

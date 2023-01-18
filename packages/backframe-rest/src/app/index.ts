@@ -13,11 +13,10 @@ import type { Server as SocketServer } from "socket.io";
 import { ZodObject, ZodRawShape } from "zod";
 import {
   GenericException,
-  InternalException,
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
-import { httpLogger } from "../lib/middleware.js";
+import { errorHandler, httpLogger } from "../lib/middleware.js";
 import {
   ExpressReq,
   ExpressRes,
@@ -183,6 +182,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
                 // eslint-disable-next-line no-console
                 console.log(error);
                 ctx.json({ msg: "An internal error occurred" });
+                return null;
               }
             },
           ]
@@ -217,7 +217,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
         );
       } else {
         // sanitize input
-        const sanitized = {};
+        const sanitized: Record<string, unknown> = {};
         Object.keys(input.shape).forEach((k) => {
           // @ts-expect-error (value exists)
           sanitized[k] = opts.data[k];
@@ -256,7 +256,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
 
   #setupErrHandlers() {
     // at this point, no route has been found
-    this.$app.use("*", (req, _res, _next) => {
+    this.$app.use("*", (req) => {
       if (
         this.#resources.some(
           (r) => this.#bfConfig.withRestPrefix(r.route) === req.originalUrl
@@ -269,22 +269,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       throw NotFoundExeption();
     });
 
-    this.$app.use(
-      (
-        err: GenericException,
-        _req: ExpressReq,
-        res: ExpressRes,
-        _next: NextFunction
-      ) => {
-        res
-          .status(err.statusCode || 500)
-          .json(
-            err instanceof GenericException
-              ? err.toJSON()
-              : err || InternalException().toJSON()
-          );
-      }
-    );
+    this.$app.use(errorHandler());
   }
 
   /**
