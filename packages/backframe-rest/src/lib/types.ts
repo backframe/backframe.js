@@ -3,7 +3,7 @@
 import type { Request, Response } from "express";
 import { ServerResponse } from "http";
 import { Namespace } from "socket.io";
-import { ZodObject, ZodRawShape } from "zod";
+import { z, ZodObject, ZodRawShape } from "zod";
 import { Context } from "../app/context.js";
 import { ResourceConfig } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
@@ -22,13 +22,23 @@ export type HandlerResult =
   | void;
 
 export type Hook = H;
-export type Handler<U, T extends ZodRawShape> = (
+export type Handler<U, T extends ZodRawShape, O = HandlerResult> = (
   ctx: Context<U, ZodObject<T>>
-) => HandlerResult | Promise<HandlerResult>;
+) => O extends ZodRawShape
+  ? z.infer<ZodObject<O>> | Promise<z.infer<ZodObject<O>>>
+  : O | Promise<O>;
 
-export interface IHandlerConfig<T extends ZodRawShape> {
+export interface IHandlerConfig<
+  T extends ZodRawShape,
+  O extends ZodRawShape = {}
+> {
   input?: ZodObject<T>;
-  action: Handler<unknown, T>;
+  output?: ZodObject<O>;
+  action: (
+    ctx: Context<unknown, ZodObject<T>>
+  ) => O extends ZodRawShape
+    ? z.infer<ZodObject<O>> | Promise<z.infer<ZodObject<O>>>
+    : O | Promise<O>;
   middleware?: Handler<unknown, T>[];
 }
 
