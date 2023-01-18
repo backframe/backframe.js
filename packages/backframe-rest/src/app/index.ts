@@ -182,6 +182,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
                 // eslint-disable-next-line no-console
                 console.log(error);
                 ctx.json({ msg: "An internal error occurred" });
+                return null;
               }
             },
           ]
@@ -216,7 +217,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
         );
       } else {
         // sanitize input
-        const sanitized = {};
+        const sanitized: Record<string, unknown> = {};
         Object.keys(input.shape).forEach((k) => {
           // @ts-expect-error (value exists)
           sanitized[k] = opts.data[k];
