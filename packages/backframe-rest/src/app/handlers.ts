@@ -274,8 +274,8 @@ export class DefaultHandlers<T> {
 
   constructor(r: Resource<T>, bfConfig: BfConfig) {
     this.#db = bfConfig.$database as DB;
-    this.#model = (r.model as string) ?? r.route.replace(/\//g, "");
-    this.#dbObject = this.#db?.[this.#model] ?? this.#db?.[r.routeItem.dirname];
+    this.#model = r.resolveModel();
+    this.#dbObject = this.#db?.[this.#model];
   }
 
   GET() {
@@ -285,8 +285,8 @@ export class DefaultHandlers<T> {
         let data;
 
         // check if [param] exists
-        const k = Object.keys(ctx.params)[0] ?? "";
-        const v = Object.values(ctx.params)[0] ?? "";
+        const k = Object.keys(ctx.params)[0] ?? undefined;
+        const v = Object.values(ctx.params)[0] ?? undefined;
 
         if (k && v) {
           // get one from collection
