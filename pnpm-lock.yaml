@@ -476,6 +476,19 @@ importers:
       '@backframe/cli': link:../../packages/backframe-cli
       '@types/node': 18.8.3
 
+  tests/config:
+    specifiers:
+      '@backframe/cli': workspace:*
+      '@backframe/core': workspace:*
+      '@backframe/rest': workspace:*
+      '@types/node': ^18.7.17
+    dependencies:
+      '@backframe/core': link:../../packages/backframe-core
+      '@backframe/rest': link:../../packages/backframe-rest
+    devDependencies:
+      '@backframe/cli': link:../../packages/backframe-cli
+      '@types/node': 18.8.3
+
   tests/database:
     specifiers:
       '@prisma/client': ^4.8.0
