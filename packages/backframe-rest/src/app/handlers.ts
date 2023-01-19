@@ -97,8 +97,16 @@ export function wrapHandler<U, Z extends ZodRawShape>(
       new Context<U, ZodObject<Z>>(req, res, next, cfg.$database as U, cfg);
 
     req.sharedCtx = ctx; // plant ctx in req object for reuse
-    const value = await handler(ctx);
 
+    let value;
+    try {
+      value = await handler(ctx);
+    } catch (error) {
+      // in the case user `throws` the error
+      return next(error);
+    }
+
+    // in the case user `returns` the error
     if (value instanceof GenericException) return next(value); // forward error
     else if (value instanceof ServerResponse) return; // response already sent
     else if (isRawValue(value) || typeof value === "object") {
