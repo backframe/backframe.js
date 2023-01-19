@@ -66,5 +66,6 @@ export async function loadConfig() {
   }
 
   // expand config
+  logger.dev("config parsing complete");
   return new BfConfig(cfg);
 }

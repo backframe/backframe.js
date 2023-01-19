@@ -13,10 +13,10 @@ import type { Server as SocketServer } from "socket.io";
 import { ZodObject, ZodRawShape } from "zod";
 import {
   GenericException,
-  InternalException,
   MethodNotAllowed,
   NotFoundExeption,
 } from "../lib/errors.js";
+import { errorHandler, httpLogger } from "../lib/middleware.js";
 import {
   ExpressReq,
   ExpressRes,
@@ -24,6 +24,7 @@ import {
   IHandlerConfig,
   Method,
 } from "../lib/types.js";
+import { validatePort } from "../lib/utils.js";
 import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
 import { wrapHandler } from "./handlers.js";
@@ -46,16 +47,16 @@ export class BfServer<T extends DB> implements IBfServer<T> {
 
   #router: Router;
   #bfConfig!: BfConfig;
-  #resources!: Resource<unknown>[];
-  #middleware: Handler<T, {}>[];
+  $resources!: Resource<unknown>[];
+  $middleware: Handler<T, {}>[];
 
   constructor(public $cfg: IBfServerConfig<T>) {
     this.$app = express();
     this.$database = $cfg.database;
     this.$handle = http.createServer(this.$app);
 
-    this.#middleware = [];
-    this.#resources = [];
+    this.$middleware = [];
+    this.$resources = [];
   }
 
   // Initializes the server and returns a promise that resolves when the server is ready
@@ -72,41 +73,9 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     this.#setupErrHandlers(); // ensure called last
   }
 
-  #isPortFree(port: number) {
-    return new Promise<boolean>((resolve) => {
-      const server = http
-        .createServer()
-        .listen(port, () => {
-          server.close();
-          resolve(true);
-        })
-        .on("error", () => {
-          resolve(false);
-        });
-    });
-  }
-
-  async #validatePort(port: number, iter = 1): Promise<number> {
-    let p = port;
-    // range
-    if (!(65536 > port && port > 0)) {
-      logger.error(`received invalid port: ${port}`);
-      process.exit(10);
-    }
-    // check if port is in use
-    const valid = await this.#isPortFree(port);
-    if (!valid) {
-      p = port + 5 * iter;
-      logger.warn(`port: ${port} is in use, trying: ${p}`);
-      return this.#validatePort(p, iter + 1);
-    }
-
-    return p;
-  }
-
   // Starts the server on provided port or default port
   async $start(port = this.$cfg.port) {
-    port = await this.#validatePort(port);
+    port = await validatePort(port);
     this.$cfg.port = port;
 
     this.$handle.listen(port, () => {
@@ -135,17 +104,17 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       // not a dummy route
       if (i.filePath !== null) {
         const r = new Resource(i, this.#bfConfig);
-        if (!this.#resources.some((_) => _.route === r.route))
-          this.#resources.push(r);
+        if (!this.$resources.some((_) => _.route === r.route))
+          this.$resources.push(r);
       }
     });
 
     // init all resources
     return Promise.all(
-      this.#resources.map(async (r) => {
+      this.$resources.map(async (r) => {
         await r.initialize();
         const handlers = r.handlers ?? {};
-        const globalMware = this.#middleware?.concat(r.middleware ?? []);
+        const globalMware = this.$middleware?.concat(r.middleware ?? []);
 
         // check for realtime listeners
         if (r.listeners) {
@@ -182,6 +151,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
                 // eslint-disable-next-line no-console
                 console.log(error);
                 ctx.json({ msg: "An internal error occurred" });
+                return null;
               }
             },
           ]
@@ -216,7 +186,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
         );
       } else {
         // sanitize input
-        const sanitized = {};
+        const sanitized: Record<string, unknown> = {};
         Object.keys(input.shape).forEach((k) => {
           // @ts-expect-error (value exists)
           sanitized[k] = opts.data[k];
@@ -235,22 +205,10 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     this.$app.use(express.urlencoded({ extended: true }));
 
     const useCors = this.$cfg.enableCors;
-    const log = this.$cfg.logRequests;
     const logAdmin = this.$cfg.logAdminRequests;
 
     useCors && this.$app.use(cors(this.$cfg.corsOptions));
-    if (log) {
-      this.$app.use((req, res, next) => {
-        const start = Date.now();
-        next();
-        if (req.originalUrl.startsWith("/_/") && !logAdmin) return;
-        logger.http(
-          `${req.method} ${req.originalUrl} HTTP/${req.httpVersion} -> ${
-            res.statusCode
-          } in ${Date.now() - start}ms`
-        );
-      });
-    }
+    this.$app.use(httpLogger({ logAdmin }));
 
     // additional "middleware" i.e staticDir handlers
     const staticDirs = bfCfg.getDirPath("staticDirs");
@@ -262,20 +220,14 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       }
     });
 
-    // configure default templating setup
-    const viewsDir = bfCfg.getDirPath("viewsDir");
-    if (fs.existsSync(resolveCwd(viewsDir))) {
-      logger.info(`loading views from dir: ${viewsDir}`);
-      this.$app.set("view engine", "hbs");
-      this.$app.set("views", viewsDir);
-    }
+    // TODO: configure default templating setup
   }
 
   #setupErrHandlers() {
     // at this point, no route has been found
-    this.$app.use("*", (req, _res, _next) => {
+    this.$app.use("*", (req) => {
       if (
-        this.#resources.some(
+        this.$resources.some(
           (r) => this.#bfConfig.withRestPrefix(r.route) === req.originalUrl
         )
       )
@@ -286,22 +238,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       throw NotFoundExeption();
     });
 
-    this.$app.use(
-      (
-        err: GenericException,
-        _req: ExpressReq,
-        res: ExpressRes,
-        _next: NextFunction
-      ) => {
-        res
-          .status(err.statusCode || 500)
-          .json(
-            err instanceof GenericException
-              ? err.toJSON()
-              : err || InternalException().toJSON()
-          );
-      }
-    );
+    this.$app.use(errorHandler());
   }
 
   /**
