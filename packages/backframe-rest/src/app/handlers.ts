@@ -97,8 +97,16 @@ export function wrapHandler<U, Z extends ZodRawShape>(
       new Context<U, ZodObject<Z>>(req, res, next, cfg.$database as U, cfg);
 
     req.sharedCtx = ctx; // plant ctx in req object for reuse
-    const value = await handler(ctx);
 
+    let value;
+    try {
+      value = await handler(ctx);
+    } catch (error) {
+      // in the case user `throws` the error
+      return next(error);
+    }
+
+    // in the case user `returns` the error
     if (value instanceof GenericException) return next(value); // forward error
     else if (value instanceof ServerResponse) return; // response already sent
     else if (isRawValue(value) || typeof value === "object") {
@@ -274,8 +282,8 @@ export class DefaultHandlers<T> {
 
   constructor(r: Resource<T>, bfConfig: BfConfig) {
     this.#db = bfConfig.$database as DB;
-    this.#model = (r.model as string) ?? r.route.replace(/\//g, "");
-    this.#dbObject = this.#db?.[this.#model] ?? this.#db?.[r.routeItem.dirname];
+    this.#model = r.resolveModel();
+    this.#dbObject = this.#db?.[this.#model];
   }
 
   GET() {
@@ -285,8 +293,8 @@ export class DefaultHandlers<T> {
         let data;
 
         // check if [param] exists
-        const k = Object.keys(ctx.params)[0] ?? "";
-        const v = Object.values(ctx.params)[0] ?? "";
+        const k = Object.keys(ctx.params)[0] ?? undefined;
+        const v = Object.values(ctx.params)[0] ?? undefined;
 
         if (k && v) {
           // get one from collection
