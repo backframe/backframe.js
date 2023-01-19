@@ -93,9 +93,20 @@ export class Resource<T> {
     }
   }
 
+  resolveModel() {
+    let model = this.#model as string;
+
+    if (!model) {
+      const parts = this.#route.split("/");
+      model = parts[1];
+    }
+
+    return model;
+  }
+
   #getHandler(method: Method): IHandlerConfig<{}> {
     const db = this.#bfConfig.$database as DB;
-    const model = (this.#model ?? this.route.replace(/\//g, "")) as string;
+    const model = this.resolveModel();
 
     // check for a model
     if (db?.[model]) {

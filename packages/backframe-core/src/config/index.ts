@@ -1,5 +1,5 @@
 import type { DB } from "@backframe/models";
-import { resolveCwd } from "@backframe/utils";
+import { logger, resolveCwd } from "@backframe/utils";
 import { buildSync } from "esbuild";
 import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
@@ -139,6 +139,7 @@ export class BfConfig {
 
     // invoke config modifiers
     this.$invokeListeners("onConfigInit");
+    logger.dev("config initilization complete");
   }
 
   $invokeListeners<T extends keyof Listeners>(key: T) {
@@ -305,12 +306,13 @@ const defaultBuilder = (cfg: BfConfig) => {
         "node_modules/",
         "dist/",
         `${BF_OUT_DIR}/`,
+        "bf.config.*",
       ],
     });
   };
 
   // No ts files
-  if (!globbyWithOpts(`./${root}/**/*.ts`).length) {
+  if (!globbyWithOpts(`${root}/**/*.ts`).length) {
     return;
   }
 
@@ -318,7 +320,7 @@ const defaultBuilder = (cfg: BfConfig) => {
     fs.rmSync(resolveCwd(BF_OUT_DIR), { force: true, recursive: true });
   }
 
-  const files = globbyWithOpts(`./${root}/**/*.{js,ts}`);
+  const files = globbyWithOpts(`${root}/**/*.{js,ts}`);
   buildSync({
     format: "esm",
     outdir: BF_OUT_DIR,
