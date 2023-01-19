@@ -24,6 +24,7 @@ import {
   IHandlerConfig,
   Method,
 } from "../lib/types.js";
+import { validatePort } from "../lib/utils.js";
 import { Router } from "../routing/router.js";
 import { Context } from "./context.js";
 import { wrapHandler } from "./handlers.js";
@@ -46,16 +47,16 @@ export class BfServer<T extends DB> implements IBfServer<T> {
 
   #router: Router;
   #bfConfig!: BfConfig;
-  #resources!: Resource<unknown>[];
-  #middleware: Handler<T, {}>[];
+  $resources!: Resource<unknown>[];
+  $middleware: Handler<T, {}>[];
 
   constructor(public $cfg: IBfServerConfig<T>) {
     this.$app = express();
     this.$database = $cfg.database;
     this.$handle = http.createServer(this.$app);
 
-    this.#middleware = [];
-    this.#resources = [];
+    this.$middleware = [];
+    this.$resources = [];
   }
 
   // Initializes the server and returns a promise that resolves when the server is ready
@@ -72,41 +73,9 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     this.#setupErrHandlers(); // ensure called last
   }
 
-  #isPortFree(port: number) {
-    return new Promise<boolean>((resolve) => {
-      const server = http
-        .createServer()
-        .listen(port, () => {
-          server.close();
-          resolve(true);
-        })
-        .on("error", () => {
-          resolve(false);
-        });
-    });
-  }
-
-  async #validatePort(port: number, iter = 1): Promise<number> {
-    let p = port;
-    // range
-    if (!(65536 > port && port > 0)) {
-      logger.error(`received invalid port: ${port}`);
-      process.exit(10);
-    }
-    // check if port is in use
-    const valid = await this.#isPortFree(port);
-    if (!valid) {
-      p = port + 5 * iter;
-      logger.warn(`port: ${port} is in use, trying: ${p}`);
-      return this.#validatePort(p, iter + 1);
-    }
-
-    return p;
-  }
-
   // Starts the server on provided port or default port
   async $start(port = this.$cfg.port) {
-    port = await this.#validatePort(port);
+    port = await validatePort(port);
     this.$cfg.port = port;
 
     this.$handle.listen(port, () => {
@@ -135,17 +104,17 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       // not a dummy route
       if (i.filePath !== null) {
         const r = new Resource(i, this.#bfConfig);
-        if (!this.#resources.some((_) => _.route === r.route))
-          this.#resources.push(r);
+        if (!this.$resources.some((_) => _.route === r.route))
+          this.$resources.push(r);
       }
     });
 
     // init all resources
     return Promise.all(
-      this.#resources.map(async (r) => {
+      this.$resources.map(async (r) => {
         await r.initialize();
         const handlers = r.handlers ?? {};
-        const globalMware = this.#middleware?.concat(r.middleware ?? []);
+        const globalMware = this.$middleware?.concat(r.middleware ?? []);
 
         // check for realtime listeners
         if (r.listeners) {
@@ -258,7 +227,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
     // at this point, no route has been found
     this.$app.use("*", (req) => {
       if (
-        this.#resources.some(
+        this.$resources.some(
           (r) => this.#bfConfig.withRestPrefix(r.route) === req.originalUrl
         )
       )
