@@ -21,6 +21,7 @@ export type InternalOptions = {
     };
     vals?: Record<string, string>;
   };
+  referer?: string;
 };
 
 export async function openidClient(opts: InternalOptions) {
@@ -60,20 +61,24 @@ export function getOptions(ctx: Context<unknown, any>): InternalOptions {
   const { provider: providerId } = ctx.params;
   const providers = bf.getConfig("authentication").providers as Provider[];
 
-  const normalized: InternalProvider[] = providers.map(
-    (p) =>
-      ({
-        ...p,
-        callbackURL: `${
-          process.env.APP_URL ?? "http://localhost:6969"
-        }${bf.withRestPrefix(auth.prefix)}/callback/${providerId}`,
-        options: {
-          clientId: process.env[`${p.id.toUpperCase()}_CLIENT_ID`],
-          clientSecret: process.env[`${p.id.toUpperCase()}_CLIENT_SECRET`],
-          ...p.options,
-        },
-      } as InternalProvider)
-  );
+  const normalized: InternalProvider[] = providers.map((p) => {
+    const clientId = process.env[`${p.id.toUpperCase()}_CLIENT_ID`];
+    const clientSecret = process.env[`${p.id.toUpperCase()}_CLIENT_SECRET`];
+
+    return {
+      clientId,
+      clientSecret,
+      ...p,
+      callbackURL: `${
+        process.env.APP_URL ?? "http://localhost:6969"
+      }${bf.withRestPrefix(auth.prefix)}/callback/${providerId}`,
+      options: {
+        clientId,
+        clientSecret,
+        ...p.options,
+      },
+    } as InternalProvider;
+  });
 
   const reqCookies = (ctx.request.cookies || {}) as Record<string, string>;
   const cookies: InternalOptions["cookies"] = {
@@ -98,5 +103,6 @@ export function getOptions(ctx: Context<unknown, any>): InternalOptions {
     provider: normalized.find((provider) => provider.id === providerId),
     db: ctx.db as DB,
     cookies,
+    referer: cookies.vals?.["referer"] ?? ctx.request.headers.referer,
   };
 }
