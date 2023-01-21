@@ -3,19 +3,18 @@ import { AuthorizationParameters } from "openid-client";
 import { ProviderNotFound } from "../lib/errors.js";
 import { getOptions, openidClient } from "../lib/oauth.js";
 import { createPKCE } from "../lib/pkce-handler.js";
+import { createState } from "../lib/state-handler.js";
 import { Cookie } from "../lib/types.js";
 
 export const GET = createHandler({
   async action(ctx) {
     const opts = getOptions(ctx);
-    const { provider } = opts;
+    const { provider, referer } = opts;
     const cookies: Cookie[] = [];
 
     if (!provider) {
       return ctx.json(ProviderNotFound(), 400);
     }
-
-    cookies.push({ name: "host", value: ctx.request.hostname, options: {} });
 
     const client = await openidClient(opts);
     const params: AuthorizationParameters = provider.authorization.params ?? {};
@@ -27,10 +26,24 @@ export const GET = createHandler({
       cookies.push(pkce.cookie as Cookie);
     }
 
+    const state = createState(opts);
+    if (state) {
+      params.state = state.value;
+      cookies.push(state.cookie as Cookie);
+    }
+
     const authorizationUrl = client.authorizationUrl(params);
     cookies.forEach((cookie) => {
       ctx.response.cookie(cookie.name, cookie.value, cookie.options);
     });
+
+    if (referer) {
+      ctx.response.cookie("referer", referer, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
+    }
 
     return ctx.redirect(authorizationUrl);
   },
