@@ -1,11 +1,12 @@
 import { createHandler } from "@backframe/rest";
+import crypto from "crypto";
 import { TokenSet } from "openid-client";
 import { getOptions, openidClient } from "../lib/oauth.js";
 
 export const GET = createHandler({
   async action(ctx) {
     const options = getOptions(ctx);
-    const { auth, db, provider, cookies } = options;
+    const { auth, db, provider, cookies, referer } = options;
     const client = await openidClient(options);
     const params = client.callbackParams(ctx.request);
 
@@ -33,16 +34,6 @@ export const GET = createHandler({
 
     const p = await provider.profile(userInfo, tokens);
     p.email = p.email?.toLowerCase();
-    // const data = {
-    //   profile: p,
-    //   account: {
-    //     provider: provider.id,
-    //     type: provider.type,
-    //     providerAccountId: p.id.toString(),
-    //     ...tokens,
-    //   },
-    //   ...userInfo,
-    // };
 
     // create user then account then session
     let user = await db.authUser.findUnique({
@@ -124,10 +115,44 @@ export const GET = createHandler({
 
     if (auth.strategy === "token-based") {
       const token = await auth.encode({ id: user.id });
-      return ctx.json({
+      const nonce = crypto.randomBytes(16).toString("base64");
+      ctx.response.setHeader(
+        "Content-Security-Policy",
+        `script-src 'nonce-${nonce}'`
+      );
+
+      // use postMessage to send token to parent window
+      const vals = JSON.stringify({
         ...body,
         token,
       });
+      
+      // decode the referer
+      const decoded = Buffer.from(referer, "base64").toString("ascii");
+      console.log("DECODED:", decoded);
+
+      return ctx.string(
+        `
+          <script nonce="${nonce}">
+            console.log(${vals})
+            console.log("PARENT:", window.parent);
+
+            window.location.href = ${decoded};
+            
+          </script>
+        `,
+        200,
+        {
+          headers: {
+            "Content-Type": "text/html",
+          },
+        }
+      );
+
+      // return ctx.json({
+      //   ...body,
+      //   token,
+      // });
     }
 
     // create session

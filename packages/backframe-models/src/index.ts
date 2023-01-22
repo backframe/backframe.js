@@ -14,7 +14,7 @@ export type DB<T = {}> = {
   authAccount: DbEntry<AuthAccount>;
   authVerificationRequest: DbEntry<AuthVerificationRequest>;
   [key: string]: DbEntry<unknown>;
-} & T;
+} & { [k in keyof T]: DbEntry<T[k]> };
 
 export * from "./models.js";
 export * from "./prisma.js";
@@ -25,21 +25,76 @@ type QueryWithRelations<T> = {
   none?: ExpandWithOps<T>;
 };
 
-type ExpandedCreate<T> = {
-  [P in keyof T]: T[P] extends BaseModel ? CreateWithRelations<T[P]> : T[P];
+type CreateWithRelations<T extends { id?: string }> = {
+  create?: Partial<Omit<T, "id" | "createdAt" | "updatedAt">>;
+  connect?: Partial<Pick<T, "id">>;
+  connectOrCreate?: {
+    where: Partial<Pick<T, "id">>;
+    create: Partial<Omit<T, "id" | "createdAt" | "updatedAt">>;
+  };
 };
 
-type CreateWithRelations<T extends { id?: string }> = {
-  create?: Omit<T, "id" | "createdAt" | "updatedAt">;
-  connect?: Pick<T, "id">;
-  connectOrCreate?: {
-    where: Pick<T, "id">;
-    create: Omit<T, "id" | "createdAt" | "updatedAt">;
-  };
+type ExpandedCreate<T> = {
+  [P in keyof T]: T[P] extends BaseModel
+    ? CreateWithRelations<T[P]>
+    : T[P] extends BaseModel[]
+    ? CreateWithRelations<T[P][0]>
+    : T[P];
+};
+
+type _ExpandedUpdate<T> = {
+  [P in keyof T]: T[P] extends BaseModel
+    ? CreateWithRelations<T[P]>
+    : T[P] extends BaseModel[]
+    ? CreateWithRelations<T[P][0]> & {
+        delete?: Partial<T[P]>;
+        deleteMany: ExpandWithOps<Partial<T[P]>>;
+        update?: {
+          data: T[P];
+          where: Partial<T[P]>;
+        };
+        updateMany?: {
+          data: T[P];
+          where: Partial<ExpandWithOps<T[P]>>;
+        };
+        disconnect?: Partial<T[P]>;
+        set?: Partial<T[P]>;
+      }
+    : T[P];
+};
+
+type DeleteIncludeClause<T> = {
+  _count?:
+    | boolean
+    | {
+        select?: {
+          [P in keyof T]?: T[P] extends BaseModel | BaseModel[]
+            ? boolean
+            : never;
+        };
+      };
+} & {
+  [P in keyof T]?: T[P] extends BaseModel | BaseModel[]
+    ?
+        | boolean
+        | {
+            cursor?: Partial<T[P]>;
+            skip?: number;
+            take?: number;
+            orderBy?: SortOrder<Partial<T>>;
+            distinct?: keyof T;
+            where?: T[P];
+            select?: T[P];
+          }
+    : never;
 };
 
 type ExpandedDeleteMany<T> = {
   [P in keyof T]: T[P] extends BaseModel[] ? QueryWithRelations<T[P]> : T[P];
+};
+
+type ExpandedFindFirst<T> = {
+  [P in keyof T]: T[P] extends BaseModel ? QueryWithRelations<T[P]> : T[P];
 };
 
 export interface DbEntry<T> {
@@ -50,6 +105,7 @@ export interface DbEntry<T> {
   delete: <S extends BooleanKeys<T>>(args: {
     where: T;
     select?: S;
+    include?: DeleteIncludeClause<T>;
   }) => Promise<InferKeys<S, T> | T>;
   deleteMany: <S extends Partial<T> & ExpandWithOps<Partial<T>>>(args: {
     where: ExpandedDeleteMany<S>;
@@ -58,7 +114,7 @@ export interface DbEntry<T> {
     S extends BooleanKeys<T>,
     W extends Partial<T> & ExpandWithOps<Partial<T>>
   >(args: {
-    where?: W;
+    where?: ExpandedFindFirst<W>;
     select?: S;
     skip?: number;
     take?: number;
@@ -80,7 +136,7 @@ export interface DbEntry<T> {
   }) => Promise<Array<InferKeys<S, T> | T>>;
   findUnique: <
     S extends BooleanKeys<T>,
-    K extends keyof T & Unique<string>
+    K extends keyof T
   >(args: {
     where: Pick<T, K>;
     select?: S;
@@ -134,9 +190,6 @@ export interface DbEntry<T> {
   }>;
 }
 
-export type Unique<T> = {
-  [K in keyof T]: T[K] extends string | number ? K : never;
-};
 
 export type SortOrder<T> = {
   [key in keyof T]: "asc" | "desc";
@@ -157,3 +210,5 @@ export type Enumerable<T> = T | Array<T>;
 export type BooleanKeys<T> = {
   [key in keyof T]: boolean;
 };
+
+
