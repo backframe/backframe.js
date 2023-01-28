@@ -8,6 +8,17 @@ import { Context } from "../app/context.js";
 import { ResourceConfig } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
 
+export type Awaitable<T> =
+  | T
+  | Omit<Promise<T>, "then" | "catch" | "finally">
+  | Omit<PromiseLike<T>, "then" | "catch" | "finally">;
+
+type HasKeys<T> = T extends object
+  ? keyof T extends never
+    ? false
+    : true
+  : false;
+
 export type Method = "get" | "post" | "put" | "patch" | "delete";
 export type MethodUpper = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -27,15 +38,13 @@ export type HandlerResult =
 
 type ZodReturnValue<T extends ZodType> = {
   [K in keyof z.infer<T>]-?: z.infer<T>[K];
-};
-
-export type HandlerReturnType<T> = T extends ZodType
-  ? ZodReturnValue<T>
-  : HandlerResult;
+} & { status?: number; headers?: Record<string, string> };
 
 export type Handler<T extends ZodRawShape, O extends ZodRawShape> = (
   ctx: Context<ZodObject<T>>
-) => HandlerReturnType<ZodObject<O>> | Promise<HandlerReturnType<ZodObject<O>>>;
+) => HasKeys<O> extends true
+  ? Awaitable<ZodReturnValue<ZodObject<O>>>
+  : Awaitable<HandlerResult>;
 
 export interface IHandlerConfig<T extends ZodRawShape, O extends ZodRawShape> {
   input?: ZodObject<T>;
