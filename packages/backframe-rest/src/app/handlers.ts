@@ -75,9 +75,10 @@ export function defineResource(): ResourceConfig {
  * @returns @type{Handler}
  * @see {@link defineResource}
  */
-export function createHandler<T extends ZodRawShape, O extends ZodRawShape>(
-  h: IHandlerConfig<T, O>
-) {
+export function createHandler<
+  T extends ZodRawShape,
+  O extends ZodRawShape = {}
+>(h: IHandlerConfig<T, O>) {
   return h;
 }
 
@@ -89,7 +90,7 @@ export function createHandler<T extends ZodRawShape, O extends ZodRawShape>(
  * @returns @type{Handler}
  * @see {@link Resource}
  */
-export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape>(
+export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape = {}>(
   handler: Handler<I, O>,
   cfg: BfConfig
 ): RequestHandler {
