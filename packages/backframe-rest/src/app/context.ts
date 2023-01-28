@@ -11,19 +11,21 @@ interface IResponseOptions {
   };
 }
 
-export class Context<U, T extends ZodType> {
+export class Context<I extends ZodType> {
   [key: string]: unknown; // extended by user
 
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private database?: U,
+    private database?: unknown,
     private bfConfig?: BfConfig
   ) {}
 
-  get db(): U {
-    return this.database;
+  get db() {
+    // TODO: Find a better way for this
+    // @ts-expect-error (come from user end)
+    return this.database as Database;
   }
 
   get auth() {
@@ -33,7 +35,7 @@ export class Context<U, T extends ZodType> {
   }
 
   get input() {
-    return this.request.body as z.infer<T>;
+    return this.request.body as z.infer<I>;
   }
 
   // rome-ignore lint/suspicious/noExplicitAny: <explanation>
