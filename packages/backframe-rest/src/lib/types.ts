@@ -34,7 +34,7 @@ export type HandlerReturnType<T> = T extends ZodType
   : HandlerResult;
 
 export type Handler<T extends ZodRawShape, O extends ZodRawShape> = (
-  ctx: Context<ZodObject<T>, ZodObject<O>>
+  ctx: Context<ZodObject<T>>
 ) => HandlerReturnType<ZodObject<O>> | Promise<HandlerReturnType<ZodObject<O>>>;
 
 export interface IHandlerConfig<T extends ZodRawShape, O extends ZodRawShape> {
