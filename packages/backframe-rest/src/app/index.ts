@@ -18,9 +18,9 @@ import {
 } from "../lib/errors.js";
 import { errorHandler, httpLogger } from "../lib/middleware.js";
 import {
+  BfHandler,
   ExpressReq,
   ExpressRes,
-  Handler,
   IHandlerConfig,
   Method,
 } from "../lib/types.js";
@@ -48,7 +48,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
   #router: Router;
   #bfConfig!: BfConfig;
   $resources!: Resource<unknown>[];
-  $middleware: Handler<T, {}>[];
+  $middleware: BfHandler[];
 
   constructor(public $cfg: IBfServerConfig<T>) {
     this.$app = express();
@@ -133,7 +133,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
           const method = k as Method;
           const { action, input, middleware } = r.handlers[
             method as Method
-          ] as IHandlerConfig<{}>;
+          ] as IHandlerConfig<{}, {}>;
 
           // check for before and after handler hooks
           const { beforeAll, afterAll } = r;
@@ -141,7 +141,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
             beforeAll,
             ...globalMware,
             ...(middleware ?? []),
-            async function <T, U extends ZodObject<{}>>(ctx: Context<T, U>) {
+            async function <U extends ZodObject<{}>>(ctx: Context<U>) {
               try {
                 const value = await action(ctx);
                 afterAll?.(ctx); // dont await
@@ -257,7 +257,7 @@ export class BfServer<T extends DB> implements IBfServer<T> {
    * })
    * ```
    */
-  use(handler: Handler<T, {}>) {
+  use(handler: BfHandler) {
     this.$app.use(wrapHandler(handler, this.#bfConfig));
   }
 
