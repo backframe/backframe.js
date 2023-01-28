@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 
 import type { Request, Response } from "express";
@@ -8,10 +9,7 @@ import { Context } from "../app/context.js";
 import { ResourceConfig } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
 
-export type Awaitable<T> =
-  | T
-  | Omit<Promise<T>, "then" | "catch" | "finally">
-  | Omit<PromiseLike<T>, "then" | "catch" | "finally">;
+export type Awaitable<T> = T | Promise<T>;
 
 type HasKeys<T> = T extends object
   ? keyof T extends never
@@ -44,7 +42,7 @@ export type Handler<T extends ZodRawShape, O extends ZodRawShape> = (
   ctx: Context<ZodObject<T>>
 ) => HasKeys<O> extends true
   ? Awaitable<ZodReturnValue<ZodObject<O>>>
-  : Awaitable<HandlerResult>;
+  : Awaitable<any>;
 
 export interface IHandlerConfig<T extends ZodRawShape, O extends ZodRawShape> {
   input?: ZodObject<T>;
