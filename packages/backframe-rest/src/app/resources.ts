@@ -4,7 +4,7 @@ import { BfConfig } from "@backframe/core";
 import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import {
-  Handler,
+  BfHandler,
   IHandlerConfig,
   IHandlers,
   IModuleConfig,
@@ -28,12 +28,12 @@ export class Resource<T> {
   #route!: string;
   #routeItem: RouteItem;
   #bfConfig!: BfConfig;
-  #middleware?: Handler<unknown, {}>[];
+  #middleware?: BfHandler[];
   #handlers!: IHandlers;
 
   listeners?: NspListener;
-  afterAll?: Handler<unknown, {}>;
-  beforeAll?: Handler<unknown, {}>;
+  afterAll?: BfHandler;
+  beforeAll?: BfHandler;
   secured?: Method[];
   enabled?: Method[];
 
@@ -104,7 +104,7 @@ export class Resource<T> {
     return model;
   }
 
-  #getHandler(method: Method): IHandlerConfig<{}> {
+  #getHandler(method: Method): IHandlerConfig<{}, {}> {
     const db = this.#bfConfig.$database as DB;
     const model = this.resolveModel();
 
@@ -154,9 +154,10 @@ export class Resource<T> {
     // check for named methods exports
     STD_METHODS.forEach((m) => {
       if (module[m]) {
-        this.#handlers[m.toLowerCase() as Method] = module[
-          m
-        ] as IHandlerConfig<{}>;
+        this.#handlers[m.toLowerCase() as Method] = module[m] as IHandlerConfig<
+          {},
+          {}
+        >;
       }
     });
 
