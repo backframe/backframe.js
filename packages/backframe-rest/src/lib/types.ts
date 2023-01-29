@@ -6,7 +6,6 @@ import { ServerResponse } from "http";
 import { Namespace } from "socket.io";
 import { z, ZodObject, ZodRawShape, ZodType } from "zod";
 import { Context } from "../app/context.js";
-import { ResourceConfig } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
 
 export type Awaitable<T> = T | Promise<T>;
@@ -36,7 +35,7 @@ export type HandlerResult =
 
 type ZodReturnValue<T extends ZodType> = {
   [K in keyof z.infer<T>]-?: z.infer<T>[K];
-} & { status?: number; headers?: Record<string, string> };
+} & { statusCode?: number; headers?: Record<string, string> };
 
 export type Handler<T extends ZodRawShape, O extends ZodRawShape> = (
   ctx: Context<ZodObject<T>>
@@ -69,11 +68,10 @@ export interface IModuleConfig<T> {
   PATCH?: BfHandler;
   DELETE?: BfHandler;
   listeners?: NspListener;
-  afterAll?: BfHandler;
-  beforeAll?: BfHandler;
+  afterAll?: BfHandler[];
+  beforeAll?: BfHandler[];
   middleware?: BfHandler[];
   config: IRouteConfig<T>;
-  default: ResourceConfig;
   [key: string]: unknown;
 }
 
