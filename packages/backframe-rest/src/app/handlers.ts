@@ -112,7 +112,13 @@ export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape = {}>(
     // in the case user `returns` the error
     if (value instanceof GenericException) return next(value); // forward error
     else if (value instanceof ServerResponse) return; // response already sent
-    else if (isRawValue(value) || typeof value === "object") {
+    else if ("statusCode" in value || "headers" in value) {
+      const { statusCode, headers, ...body } = value;
+      return res
+        .status(statusCode || res.statusCode || 200)
+        .set(headers)
+        .send(body);
+    } else if (isRawValue(value) || typeof value === "object") {
       // return plain values
       return res.status(200).send(value);
     }
