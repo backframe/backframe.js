@@ -1,10 +1,11 @@
 {
-  "name": "config",
+  "name": "@test/config",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "bf serve",
-    "start": "node bin/serve.mjs"
+    "start": "node bin/serve.mjs",
+    "run:tests": "vitest --run"
   },
   "dependencies": {
     "@backframe/core": "workspace:*",
