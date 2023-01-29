@@ -33,13 +33,16 @@ export type Listener =
   | "onConfigInit"
   | "onSocketsInit"
   | "onServerStart"
-  | "onServerStop";
+  | "onServerStop"
+  | "onDatabaseInit";
+
 export type Listeners = {
   onServerInit: PluginFunction[];
   onConfigInit: PluginFunction[];
   onSocketsInit: PluginFunction[];
   onServerStart: PluginFunction[];
   onServerStop: PluginFunction[];
+  onDatabaseInit: PluginFunction[];
 };
 export const LISTENERS_LIST: Listener[] = [
   "onServerInit",
@@ -47,6 +50,7 @@ export const LISTENERS_LIST: Listener[] = [
   "onSocketsInit",
   "onServerStart",
   "onServerStop",
+  "onDatabaseInit",
 ];
 export type DirKey =
   | "viewsDir"
@@ -58,10 +62,9 @@ export type DirKey =
 export const BF_OUT_DIR = ".bf";
 
 type Method = "get" | "post" | "put" | "patch" | "delete";
-export interface IBfServer<T> {
+export interface IBfServer {
   $app: Express;
   $handle: Server;
-  $database?: T;
   $sockets?: unknown;
 
   $init: (cfg: BfConfig) => Promise<void>;
@@ -97,12 +100,12 @@ export class BfConfig {
 
   // server related values
   $app?: Express;
-  $server?: IBfServer<DB>;
+  $server?: IBfServer;
   $database?: DB;
   $sockets?: unknown;
 
   // config related values/extensions
-  $modifiers: Listeners;
+  $listeners: Listeners;
   compiler: PluginFunction;
   smsProvider?: PluginFunction;
   pushProvider?: PluginFunction;
@@ -113,9 +116,10 @@ export class BfConfig {
   pluginsOptions: Record<string, Record<string, unknown>> = {};
 
   constructor(private userCfg: BfUserConfig) {
-    this.$modifiers = {
+    this.$listeners = {
       onServerInit: [],
       onConfigInit: [],
+      onDatabaseInit: [],
       onSocketsInit: [],
       onServerStart: [],
       onServerStop: [],
@@ -140,18 +144,25 @@ export class BfConfig {
     // invoke config modifiers
     this.$invokeListeners("onConfigInit");
     logger.dev("config initilization complete");
+
+    // invoke db listeners
+    if (this.userCfg.database) {
+      this.$database = this.userCfg.database as DB;
+      this.$invokeListeners("onDatabaseInit");
+      logger.dev("database initilization complete");
+    }
   }
 
   $invokeListeners<T extends keyof Listeners>(key: T) {
-    this.$modifiers[key].forEach((m) => m(this));
+    this.$listeners[key].forEach((m) => m(this));
   }
 
   $addListener<T extends keyof Listeners>(key: T, m: PluginFunction | null) {
-    m && this.$modifiers[key].push(m);
+    m && this.$listeners[key].push(m);
   }
 
   $getListeners<T extends keyof Listeners>(key: T) {
-    return this.$modifiers[key];
+    return this.$listeners[key];
   }
 
   $addPlugin(key: ConfigKey, p: PluginFunction) {
@@ -171,10 +182,9 @@ export class BfConfig {
   }
 
   // configure server,app,database,sockets
-  $setServer<T extends DB>(server: IBfServer<T>) {
+  $setServer(server: IBfServer) {
     this.$server = server;
     this.$app = server.$app;
-    this.$database = server.$database;
     this.$sockets = server.$sockets;
   }
 
