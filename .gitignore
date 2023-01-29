@@ -137,6 +137,7 @@ example*
 types
 todo.*
 .turbo
+tests/playground
 
 # pnpm ignore files
 .pnmp*
