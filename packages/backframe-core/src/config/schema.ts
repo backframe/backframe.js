@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@backframe/utils/zod";
 import { Plugin } from "../plugins/index.js";
 
 export const BF_CONFIG_DEFAULTS = {

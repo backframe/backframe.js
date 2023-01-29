@@ -25,17 +25,12 @@
   },
   "devDependencies": {
     "@backframe/eslint-config": "workspace:*",
-    "@backframe/models": "workspace:*",
-    "@types/lodash.merge": "^4.6.7"
+    "@backframe/models": "workspace:*"
   },
   "dependencies": {
     "@backframe/utils": "workspace:*",
-    "dotenv": "^16.0.2",
     "esbuild": "^0.16.12",
-    "globby": "^13.1.2",
-    "lodash.merge": "^4.6.2",
-    "tsconfig-resolver": "^3.0.1",
-    "zod": "^3.19.1"
+    "tsconfig-resolver": "^3.0.1"
   },
   "eslintIgnore": [
     "dist/*"
