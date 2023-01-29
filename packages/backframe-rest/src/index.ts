@@ -12,7 +12,7 @@ export {
 export { BfServer, createServer, defaultServer } from "./app/index.js";
 export * from "./lib/errors.js";
 export {
-  H,
+  BfHandler,
   Handler,
   Hook,
   IHandlerConfig,

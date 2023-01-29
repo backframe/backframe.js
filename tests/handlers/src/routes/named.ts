@@ -15,7 +15,7 @@ export const POST = createHandler({
   action(ctx) {
     const { email, name } = ctx.input;
     // store used somewhere
-    ctx.json({
+    return ctx.json({
       status: "SUCCESS",
       msg: "Model created successfully",
       user: {

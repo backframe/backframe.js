@@ -51,7 +51,7 @@ export async function openidClient(opts: InternalOptions) {
   return client;
 }
 
-export function getOptions(ctx: Context<unknown, any>): InternalOptions {
+export function getOptions(ctx: Context<any>): InternalOptions {
   const bf = ctx.config;
 
   const auth = (ctx.request.authCfg ?? {
