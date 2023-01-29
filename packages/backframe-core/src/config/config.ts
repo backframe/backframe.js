@@ -1,21 +1,11 @@
-import { loadModule, logger, resolveCwd } from "@backframe/utils";
-import dotenv from "dotenv";
+import { loadEnv, loadModule, logger, resolveCwd } from "@backframe/utils";
+import { globby } from "@backframe/utils/globby";
 import { buildSync } from "esbuild";
-import { globby, globbySync } from "globby";
 import { BfConfig } from "./index.js";
 import { BfUserConfig, BfUserConfigSchema } from "./schema.js";
 
 export function defineConfig(config: BfUserConfig) {
   return config;
-}
-
-export function env(key: string, defaultValue?: string) {
-  globbySync("./.env*")
-    .filter((f) => !f.includes(".example"))
-    .forEach((file) => {
-      dotenv.config({ path: file });
-    });
-  return process.env[key] ?? defaultValue;
 }
 
 // find bf.config.{ts,js,mjs} file and load the module
@@ -50,12 +40,7 @@ async function openConfig() {
 
 export async function loadConfig() {
   // Load env vars(they might be needed in the later steps)
-  globbySync(".env*")
-    .filter((f) => !f.includes(".example"))
-    .forEach((file) => {
-      dotenv.config({ path: file });
-      logger.info(`loaded env vars from ${file}`);
-    });
+  loadEnv(false);
 
   const cfg = await openConfig();
   const opts = BfUserConfigSchema.safeParse(cfg);

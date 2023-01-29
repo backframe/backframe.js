@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
-
 import type { BfConfig, IBfServer } from "@backframe/core";
-import { loadModule, logger, resolveCwd } from "@backframe/utils";
+import { deepMerge, loadModule, logger, resolveCwd } from "@backframe/utils";
+import { ZodObject, ZodRawShape } from "@backframe/utils/zod";
 import cors, { CorsOptions } from "cors";
 import express, { NextFunction, RequestHandler, type Express } from "express";
 import fs from "fs";
 import helmet from "helmet";
 import http, { Server as HttpServer } from "http";
-import merge from "lodash.merge";
 import type { Server as SocketServer } from "socket.io";
-import { ZodObject, ZodRawShape } from "zod";
 import {
   GenericException,
   MethodNotAllowed,
@@ -285,5 +283,5 @@ export function defaultServer() {
  * ```
  */
 export function createServer(cfg: IBfServerConfig) {
-  return new BfServer(merge(DEFAULT_CFG, cfg));
+  return new BfServer(deepMerge(DEFAULT_CFG, cfg));
 }

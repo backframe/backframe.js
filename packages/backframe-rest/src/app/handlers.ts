@@ -2,9 +2,9 @@
 
 import { BfConfig } from "@backframe/core";
 import type { DB, DbEntry } from "@backframe/models";
+import { ZodObject, ZodRawShape } from "@backframe/utils/zod";
 import { NextFunction, RequestHandler } from "express";
 import { ServerResponse } from "http";
-import { ZodObject, ZodRawShape } from "zod";
 import { GenericException } from "../lib/errors.js";
 import {
   BfHandler,

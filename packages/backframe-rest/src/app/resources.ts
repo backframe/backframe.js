@@ -3,7 +3,7 @@
 import { BfConfig } from "@backframe/core";
 import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
-import { ZodObject } from "zod";
+import { ZodObject } from "@backframe/utils/zod";
 import { GenericException } from "../lib/errors.js";
 import {
   BfHandler,

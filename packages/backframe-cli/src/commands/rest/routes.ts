@@ -1,48 +1,9 @@
-/* eslint-disable no-console */
-
 import loadBfCfg, { IBfServer } from "@backframe/core";
-import type { DB } from "@backframe/models";
 import { loadModule, logger } from "@backframe/utils";
 import { cyan, green, magenta, yellow } from "kleur/colors";
 import { table } from "table";
-import { defineBfCommand } from "./index";
 
-export default defineBfCommand({
-  command: "rest",
-  description: "A command to manage REST api functionality",
-  builder: (_) => {
-    _.command(
-      "routes",
-      "List configured project routes",
-      (_) => {
-        //
-      },
-      async (_h) => {
-        try {
-          await printRoutesTable();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    ).command(
-      "generate <resource>",
-      "Generate a new resource",
-      (_) => {
-        _.option("skip-model", {
-          boolean: true,
-        }).option("skip-tests", {
-          boolean: true,
-          default: true,
-        });
-      },
-      (h) => {
-        console.log(h);
-      }
-    );
-  },
-});
-
-async function printRoutesTable() {
+export async function routes() {
   // dont log anything, except errors
   process.env.BF_SILENT_LOG = "true";
 
@@ -55,7 +16,7 @@ async function printRoutesTable() {
     process.exit(1);
   }
 
-  const server: IBfServer<DB> = file.default;
+  const server: IBfServer = file.default;
   await server.$init(cfg);
   const routes = server.$listRoutes();
 
@@ -79,6 +40,7 @@ async function printRoutesTable() {
 
   tbl.unshift([yellow("Route"), magenta("Origin")]);
 
+  // eslint-disable-next-line no-console
   console.log(
     table(tbl, {
       spanningCells: [

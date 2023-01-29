@@ -1,40 +1,26 @@
 #!/usr/bin/env node
 
-import { require } from "@backframe/utils";
-import yargs from "yargs";
-import { buildCommands } from "./util";
+import { logger } from "@backframe/utils";
+import { Command } from "commander";
+import * as commands from "./commands";
+import { ICommandConfig } from "./commands/util";
 
-const cli = yargs(process.env.argv).parserConfiguration({
-  "boolean-negation": true,
-});
+const program = new Command();
 
-cli
-  .scriptName("bf")
-  .usage("Usage: $0 <command> [options]")
-  .alias("h", "help")
-  .alias("v", "version");
+program.name("bf").version("0.0.1").usage("<command> [options]");
 
-try {
-  const { version } = require("../package.json");
-  cli.version("version", "Show the backframe CLI version info", version);
-} catch (e) {
-  // ignore
+for (const [_, command] of Object.entries(commands)) {
+  const cfg = command.default as ICommandConfig;
+
+  cfg.builder(
+    program
+      .command(cfg.command)
+      .description(cfg.description)
+      .aliases(cfg.aliases ?? [])
+      .action(cfg.action)
+  );
+
+  logger.dev(`Added command: ${cfg.command}`);
 }
 
-buildCommands(cli);
-
-cli
-  .command(
-    "test",
-    "Run tests",
-    (_) => _,
-    (_) => {
-      console.log("first");
-    }
-  )
-  .alias(["t"], "test")
-  .wrap(cli.terminalWidth())
-  .demandCommand(1, "Pass --help to see all available commands and options.")
-  .strict()
-  .recommendCommands()
-  .parse(process.argv.slice(2));
+program.showHelpAfterError().showSuggestionAfterError().parse(process.argv);

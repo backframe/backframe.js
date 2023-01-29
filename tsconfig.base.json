@@ -10,7 +10,14 @@
     "strict": false,
     "allowJs": true,
     "noImplicitAny": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "baseUrl": "./",
+    "paths": {
+      "@backframe/utils/*": ["node_modules/@backframe/utils/dist/thirdparty/*"],
+      "@backframe/auth/providers/*": [
+        "node_modules/@backframe/auth/dist/providers/*"
+      ]
+    }
   },
   "exclude": ["**/node_modules", "**/dist"]
 }
