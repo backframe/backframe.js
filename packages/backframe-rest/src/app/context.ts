@@ -76,9 +76,9 @@ export class Context<I extends ZodType> {
     return this.response.status(status).send(value);
   }
 
-  json(json: object, status = 200, options?: IResponseOptions) {
+  json(json: object, _status = 200, options?: IResponseOptions) {
     this.#applyHeaders(options || {});
-    return this.response.status(status).json(json);
+    return json;
   }
 
   file(contents: string, status = 200, options?: IResponseOptions) {
