@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import type { BfConfig, IBfServer } from "@backframe/core";
-import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
 import express, { NextFunction, RequestHandler, type Express } from "express";
@@ -17,32 +16,23 @@ import {
   NotFoundExeption,
 } from "../lib/errors.js";
 import { errorHandler, httpLogger } from "../lib/middleware.js";
-import {
-  BfHandler,
-  ExpressReq,
-  ExpressRes,
-  IHandlerConfig,
-  Method,
-} from "../lib/types.js";
+import { BfHandler, ExpressReq, ExpressRes, Method } from "../lib/types.js";
 import { validatePort } from "../lib/utils.js";
 import { Router } from "../routing/router.js";
-import { Context } from "./context.js";
 import { wrapHandler } from "./handlers.js";
 import { Resource } from "./resources.js";
 
-interface IBfServerConfig<T> {
+interface IBfServerConfig {
   port?: number;
   enableCors?: boolean;
   corsOptions?: CorsOptions;
   logRequests?: boolean;
   logAdminRequests?: boolean;
-  database?: T;
 }
 
-export class BfServer<T extends DB> implements IBfServer<T> {
+export class BfServer implements IBfServer {
   $app: Express;
   $handle: HttpServer;
-  $database?: T;
   $sockets?: SocketServer;
 
   #router: Router;
@@ -50,9 +40,8 @@ export class BfServer<T extends DB> implements IBfServer<T> {
   $resources!: Resource<unknown>[];
   $middleware: BfHandler[];
 
-  constructor(public $cfg: IBfServerConfig<T>) {
+  constructor(public $cfg: IBfServerConfig) {
     this.$app = express();
-    this.$database = $cfg.database;
     this.$handle = http.createServer(this.$app);
 
     this.$middleware = [];
@@ -109,63 +98,10 @@ export class BfServer<T extends DB> implements IBfServer<T> {
       }
     });
 
-    // init all resources
+    // mount all resources
     return Promise.all(
       this.$resources.map(async (r) => {
-        await r.initialize();
-        const handlers = r.handlers ?? {};
-        const globalMware = this.$middleware?.concat(r.middleware ?? []);
-
-        // check for realtime listeners
-        if (r.listeners) {
-          if (!this.$sockets) {
-            logger.warn(
-              `listeners found in route: \`${r.route}\` but sockets plugin not enabled`
-            );
-          } else {
-            const nsp = this.$sockets.of(r.route);
-            r.listeners(nsp);
-          }
-        }
-
-        // check for rest methods handlers
-        Object.keys(handlers).forEach((k) => {
-          const method = k as Method;
-          const { action, input, middleware } = r.handlers[
-            method as Method
-          ] as IHandlerConfig<{}, {}>;
-
-          // check for before and after handler hooks
-          const { beforeAll, afterAll } = r;
-          const handlers = [
-            beforeAll,
-            ...globalMware,
-            ...(middleware ?? []),
-            async function <U extends ZodObject<{}>>(ctx: Context<U>) {
-              try {
-                const value = await action(ctx);
-                afterAll?.(ctx); // dont await
-
-                return value;
-              } catch (error) {
-                // eslint-disable-next-line no-console
-                console.log(error);
-                ctx.json({ msg: "An internal error occurred" });
-                return null;
-              }
-            },
-          ]
-            .filter((h) => typeof h !== "undefined")
-            .map((h) => wrapHandler(h, this.#bfConfig));
-
-          // add validator (should be `unshifted` last... First line of defense)
-          if (input) {
-            handlers.unshift(this.$createValidator(input));
-          }
-
-          // mount resource on express app
-          this.$app[method](r.route, handlers);
-        });
+        await r.mount(this);
       })
     );
   }
@@ -348,6 +284,6 @@ export function defaultServer() {
  * export default server
  * ```
  */
-export function createServer<T extends DB>(cfg: IBfServerConfig<T>) {
+export function createServer(cfg: IBfServerConfig) {
   return new BfServer(merge(DEFAULT_CFG, cfg));
 }
