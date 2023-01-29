@@ -78,6 +78,7 @@ export type PluginHooks = {
    *
    */
   onServerStart?: PluginFunction;
+  onDatabaseInit?: PluginFunction;
   onServerStop?: PluginFunction;
   onSocketsInit?: PluginFunction;
   emailProvider?: PluginFunction;

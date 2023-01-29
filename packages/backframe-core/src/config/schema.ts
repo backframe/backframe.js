@@ -16,10 +16,6 @@ export const BF_CONFIG_DEFAULTS = {
     },
   },
   plugins: [] as Plugin[],
-  database: {
-    provider: "postgres",
-    url: process.env.DB_URL || "",
-  },
   authentication: {
     strategy: "token-based",
     providers: [] as { [key: string]: string }[],
@@ -55,21 +51,7 @@ export const BfUserConfigSchema = z.object({
     })
     .optional()
     .default({}),
-  database: z
-    .object({
-      url: z.string(),
-      provider: z
-        .enum([
-          "postgres",
-          "sqlite",
-          "mysql",
-          "cockroachdb",
-          "mongodb",
-          "sqlserver",
-        ])
-        .default("postgres"),
-    })
-    .optional(),
+  database: z.unknown().optional(),
   authentication: z
     .object({
       strategy: z.enum(["token-based", "session-based"]).default("token-based"),

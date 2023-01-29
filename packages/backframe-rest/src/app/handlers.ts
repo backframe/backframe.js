@@ -7,9 +7,9 @@ import { ServerResponse } from "http";
 import { ZodObject, ZodRawShape } from "zod";
 import { GenericException } from "../lib/errors.js";
 import {
+  BfHandler,
   ExpressReq,
   ExpressRes,
-  H,
   Handler,
   IHandlerConfig,
   IHandlers,
@@ -75,7 +75,10 @@ export function defineResource(): ResourceConfig {
  * @returns @type{Handler}
  * @see {@link defineResource}
  */
-export function createHandler<T extends ZodRawShape>(h: IHandlerConfig<T>) {
+export function createHandler<
+  T extends ZodRawShape,
+  O extends ZodRawShape = {}
+>(h: IHandlerConfig<T, O>) {
   return h;
 }
 
@@ -87,14 +90,14 @@ export function createHandler<T extends ZodRawShape>(h: IHandlerConfig<T>) {
  * @returns @type{Handler}
  * @see {@link Resource}
  */
-export function wrapHandler<U, Z extends ZodRawShape>(
-  handler: Handler<U, Z>,
+export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape = {}>(
+  handler: Handler<I, O>,
   cfg: BfConfig
 ): RequestHandler {
   return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
     const ctx =
-      (req.sharedCtx as Context<U, ZodObject<Z>>) ??
-      new Context<U, ZodObject<Z>>(req, res, next, cfg.$database as U, cfg);
+      (req.sharedCtx as Context<ZodObject<I>>) ??
+      new Context<ZodObject<I>>(req, res, next, cfg.$database, cfg);
 
     req.sharedCtx = ctx; // plant ctx in req object for reuse
 
@@ -109,7 +112,17 @@ export function wrapHandler<U, Z extends ZodRawShape>(
     // in the case user `returns` the error
     if (value instanceof GenericException) return next(value); // forward error
     else if (value instanceof ServerResponse) return; // response already sent
-    else if (isRawValue(value) || typeof value === "object") {
+    else if (
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      ("statusCode" in value || "headers" in value)
+    ) {
+      const { statusCode, headers, ...body } = value;
+      return res
+        .status(statusCode || res.statusCode || 200)
+        .set(headers)
+        .send(body);
+    } else if (isRawValue(value) || typeof value === "object") {
       // return plain values
       return res.status(200).send(value);
     }
@@ -117,11 +130,11 @@ export function wrapHandler<U, Z extends ZodRawShape>(
 }
 
 export class ResourceConfig {
-  #afterAll?: H;
-  #beforeAll?: H;
+  #afterAll?: BfHandler;
+  #beforeAll?: BfHandler;
   #handlers?: IHandlers;
   #listeners?: NspListener;
-  #middleware?: Handler<unknown, {}>[];
+  #middleware?: BfHandler[];
 
   constructor() {
     this.#handlers = {};
@@ -163,7 +176,7 @@ export class ResourceConfig {
    */
   handle<T extends ZodRawShape>(
     method: MethodUpper,
-    config: IHandlerConfig<T>
+    config: IHandlerConfig<T, {}>
   ) {
     this.#handlers[method.toLowerCase() as Method] = config;
     return this;
@@ -189,7 +202,7 @@ export class ResourceConfig {
    * @see {@link defineResource}
    * @see {@link createHandler}
    */
-  middleware(m: Handler<unknown, {}>) {
+  middleware(m: BfHandler) {
     // resource level middleware
     this.#middleware?.push(m);
     return this;
@@ -235,7 +248,7 @@ export class ResourceConfig {
    * @returns @type{ResourceConfig}
    * @see {@link defineResource}
    */
-  beforeAll(handler: H) {
+  beforeAll(handler: BfHandler) {
     this.#beforeAll = handler;
     return this;
   }
@@ -256,7 +269,7 @@ export class ResourceConfig {
    *     },
    *   });
    */
-  afterAll(handler: H) {
+  afterAll(handler: BfHandler) {
     this.#afterAll = handler;
     return this;
   }

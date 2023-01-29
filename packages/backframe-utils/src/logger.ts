@@ -1,3 +1,4 @@
+import { dim } from "kleur/colors";
 import winston, { createLogger, format, transports } from "winston";
 const { printf, colorize, combine, timestamp } = format;
 
@@ -29,13 +30,13 @@ const fmt = printf(({ level, message, timestamp }) => {
 
 function getDevLogger() {
   const fmt = printf(({ level, message, timestamp }) => {
-    return `[${timestamp}] ${getPadding(level)} -  ${message}`;
+    return `${dim(`[${timestamp}]`)} ${getPadding(level)} -  ${message}`;
   });
   return createLogger({
     level: process.env.BF_LOG_LEVEL || "debug",
     format: combine(
       colorize({ all: true }),
-      timestamp({ format: "YY-MM-DD HH:mm:ss" }),
+      timestamp({ format: "HH:mm:ss A" }),
       fmt
     ),
     transports: [new transports.Console()],

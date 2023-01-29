@@ -1,18 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 
 import type { Request, Response } from "express";
 import { ServerResponse } from "http";
 import { Namespace } from "socket.io";
-import { z, ZodObject, ZodRawShape } from "zod";
+import { z, ZodObject, ZodRawShape, ZodType } from "zod";
 import { Context } from "../app/context.js";
-import { ResourceConfig } from "../app/handlers.js";
 import { GenericException } from "./errors.js";
+
+export type Awaitable<T> = T | Promise<T>;
+
+type HasKeys<T> = T extends object
+  ? keyof T extends never
+    ? false
+    : true
+  : false;
 
 export type Method = "get" | "post" | "put" | "patch" | "delete";
 export type MethodUpper = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type ExpressReq<S = Request> = S & { [key: string]: unknown };
 export type ExpressRes<S = Response> = S & { [key: string]: unknown };
+
+export type BfHandler = Handler<{}, {}>;
+export type BfHandlerConfig = IHandlerConfig<{}, {}>;
+export type Hook = BfHandler;
 
 export type HandlerResult =
   | string
@@ -21,51 +33,45 @@ export type HandlerResult =
   | ServerResponse
   | void;
 
-export type Hook = H;
-export type Handler<U, T extends ZodRawShape, O = HandlerResult> = (
-  ctx: Context<U, ZodObject<T>>
-) => O extends ZodRawShape
-  ? z.infer<ZodObject<O>> | Promise<z.infer<ZodObject<O>>>
-  : O | Promise<O>;
+type ZodReturnValue<T extends ZodType> = {
+  [K in keyof z.infer<T>]-?: z.infer<T>[K];
+} & { statusCode?: number; headers?: Record<string, string> };
 
-export interface IHandlerConfig<
-  T extends ZodRawShape,
-  O extends ZodRawShape = {}
-> {
+export type Handler<T extends ZodRawShape, O extends ZodRawShape> = (
+  ctx: Context<ZodObject<T>>
+) => HasKeys<O> extends true
+  ? Awaitable<ZodReturnValue<ZodObject<O>>>
+  : Awaitable<any>;
+
+export interface IHandlerConfig<T extends ZodRawShape, O extends ZodRawShape> {
   input?: ZodObject<T>;
   output?: ZodObject<O>;
-  action: (
-    ctx: Context<unknown, ZodObject<T>>
-  ) => O extends ZodRawShape
-    ? z.infer<ZodObject<O>> | Promise<z.infer<ZodObject<O>>>
-    : O | Promise<O>;
-  middleware?: Handler<unknown, T>[];
+  action?: Handler<T, O>;
+  middleware?: Handler<T, O>[];
 }
 
 export interface IHandlers {
-  get?: IHandlerConfig<{}>;
-  post?: IHandlerConfig<{}>;
-  put?: IHandlerConfig<{}>;
-  delete?: IHandlerConfig<{}>;
-  patch?: IHandlerConfig<{}>;
+  get?: BfHandlerConfig;
+  post?: BfHandlerConfig;
+  put?: BfHandlerConfig;
+  delete?: BfHandlerConfig;
+  patch?: BfHandlerConfig;
 }
 
-export type H = Handler<unknown, {}>;
 export type NspListener = (nsp: Namespace) => void;
 
 // expected shape of a file(module) all possible exports from route module
 export interface IModuleConfig<T> {
-  GET?: H;
-  POST?: H;
-  PUT?: H;
-  PATCH?: H;
-  DELETE?: H;
+  GET?: BfHandler;
+  POST?: BfHandler;
+  PUT?: BfHandler;
+  PATCH?: BfHandler;
+  DELETE?: BfHandler;
   listeners?: NspListener;
-  afterAll?: H;
-  beforeAll?: H;
-  middleware?: H[];
+  afterAll?: BfHandler[];
+  beforeAll?: BfHandler[];
+  middleware?: BfHandler[];
   config: IRouteConfig<T>;
-  default: ResourceConfig;
   [key: string]: unknown;
 }
 

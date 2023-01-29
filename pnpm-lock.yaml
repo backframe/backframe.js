@@ -381,13 +381,13 @@ importers:
 
   packages/backframe-utils:
     specifiers:
-      chalk: ^5.2.0
       chokidar: ^3.5.3
+      kleur: ^4.1.5
       winston: ^3.8.2
       zod: ^3.19.1
     dependencies:
-      chalk: 5.2.0
       chokidar: 3.5.3
+      kleur: 4.1.5
       winston: 3.8.2
       zod: 3.19.1
 
@@ -472,6 +472,19 @@ importers:
       '@backframe/rest': link:../../packages/backframe-rest
       '@backframe/sockets': link:../../packages/backframe-sockets
       database: link:../database
+    devDependencies:
+      '@backframe/cli': link:../../packages/backframe-cli
+      '@types/node': 18.8.3
+
+  tests/config:
+    specifiers:
+      '@backframe/cli': workspace:*
+      '@backframe/core': workspace:*
+      '@backframe/rest': workspace:*
+      '@types/node': ^18.7.17
+    dependencies:
+      '@backframe/core': link:../../packages/backframe-core
+      '@backframe/rest': link:../../packages/backframe-rest
     devDependencies:
       '@backframe/cli': link:../../packages/backframe-cli
       '@types/node': 18.8.3

@@ -1,0 +1,17 @@
+{
+  "name": "config",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bf serve",
+    "start": "node bin/serve.mjs"
+  },
+  "dependencies": {
+    "@backframe/core": "workspace:*",
+    "@backframe/rest": "workspace:*"
+  },
+  "devDependencies": {
+    "@backframe/cli": "workspace:*",
+    "@types/node": "^18.7.17"
+  }
+}
