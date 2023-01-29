@@ -1,7 +1,7 @@
 import { IRouteConfig } from "./lib/types.js";
 
 // re-export to house all-in-one
-export { z, ZodRawShape } from "zod";
+export { z, ZodRawShape } from "@backframe/utils/zod";
 export { Context } from "./app/context.js";
 export {
   createHandler,

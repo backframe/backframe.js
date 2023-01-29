@@ -1,6 +1,6 @@
 import { BfConfig } from "@backframe/core";
 import { logger } from "@backframe/utils";
-import { globbySync } from "globby";
+import { globbySync } from "@backframe/utils/globby";
 import path from "path";
 import { Manifest } from "./manifest.js";
 

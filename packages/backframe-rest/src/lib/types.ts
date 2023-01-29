@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 
+import { z, ZodObject, ZodRawShape, ZodType } from "@backframe/utils/zod";
 import type { Request, Response } from "express";
 import { ServerResponse } from "http";
 import { Namespace } from "socket.io";
-import { z, ZodObject, ZodRawShape, ZodType } from "zod";
 import { Context } from "../app/context.js";
 import { GenericException } from "./errors.js";
 

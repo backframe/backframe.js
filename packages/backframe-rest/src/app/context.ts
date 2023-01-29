@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { BfConfig } from "@backframe/core";
+import type { z, ZodType } from "@backframe/utils/zod";
 import type { NextFunction } from "express";
-import type { z, ZodType } from "zod";
 import { ExpressReq, ExpressRes } from "../lib/types";
 
 interface IResponseOptions {
