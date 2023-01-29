@@ -381,13 +381,13 @@ importers:
 
   packages/backframe-utils:
     specifiers:
-      chalk: ^5.2.0
       chokidar: ^3.5.3
+      kleur: ^4.1.5
       winston: ^3.8.2
       zod: ^3.19.1
     dependencies:
-      chalk: 5.2.0
       chokidar: 3.5.3
+      kleur: 4.1.5
       winston: 3.8.2
       zod: 3.19.1
 
