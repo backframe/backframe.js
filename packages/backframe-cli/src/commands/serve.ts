@@ -3,6 +3,7 @@ import { ChildProcess } from "child_process";
 import chokidar, { FSWatcher } from "chokidar";
 import { spawn } from "cross-spawn";
 import { existsSync } from "fs";
+import { cyan } from "kleur/colors";
 import readline from "readline";
 import { ensureBfProject } from "../util.js";
 import { defineBfCommand } from "./index.js";
@@ -12,24 +13,23 @@ export default defineBfCommand({
   command: "serve",
   description: "Serve local backframe project in dev mode",
   builder: (_) => {
-    _.option("port", {
-      alias: "p",
-      number: true,
-      description: "The port to start the dev server on",
+    _.option("ext", {
+      array: true,
+      description: "Additional file extensions to to include in watcher",
+      default: [],
     })
       .option("host", {
-        alias: "h",
         description: "The host address to start the server on",
+      })
+      .option("port", {
+        alias: "p",
+        number: true,
+        description: "The port to start the dev server on",
       })
       .option("ignore", {
         alias: "i",
-        description: "A array of paths to be ignored by the watcher",
+        description: "A list of paths to be ignored by the watcher",
         array: true,
-        default: [],
-      })
-      .option("ext", {
-        array: true,
-        description: "File extensions to to include i watcher",
         default: [],
       })
       .option("watch", {
@@ -88,6 +88,18 @@ export default defineBfCommand({
         rl.on("SIGINT", () => process.exit(0));
       };
 
+      const filterPaths = (paths: string[]) => {
+        const filtered: string[] = [];
+        for (const path of paths) {
+          if (existsSync(path)) filtered.push(path);
+          else
+            logger.warn(
+              `path ${cyan(`\`${path}\``)} does not exist, ignoring...`
+            );
+        }
+        return filtered;
+      };
+
       const setupWatcher = () => {
         watcher = chokidar.watch(
           [
@@ -96,13 +108,13 @@ export default defineBfCommand({
               ...(args["ext"] as string[]),
             ].join(",")}}`,
             "bf.config.*",
-            ...(args["watch"] as string[]),
+            ...filterPaths(args["watch"] as string[]),
           ],
           {
             ignored: [
               "./node_modules",
               "./.bf/**/*",
-              ...(args["ignore"] as string[]),
+              ...filterPaths(args["ignore"] as string[]),
             ],
           }
         );
