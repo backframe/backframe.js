@@ -1,6 +1,6 @@
 ## Backframe.js - The backend framework for rapid development and deployment of APIs/Backends
 
-_This is a WIP. Still in active development_
+_This is a WIP. Still in active development_ 
 
 ### Getting started
 
