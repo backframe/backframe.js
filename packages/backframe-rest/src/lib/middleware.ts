@@ -1,9 +1,9 @@
-import { GenericException, InternalException } from "./errors.js";
-import { ExpressReq, ExpressRes } from "./types.js";
 /* eslint-disable quotes */
 import { logger } from "@backframe/utils";
 import { NextFunction } from "express";
 import morgan from "morgan";
+import { GenericException, InternalException } from "./errors.js";
+import { ExpressReq, ExpressRes } from "./types.js";
 
 export const httpLogger = ({ logAdmin }: { logAdmin: boolean }) => {
   const fmt =

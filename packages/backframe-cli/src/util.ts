@@ -1,20 +1,6 @@
 import { logger, require, resolveCwd } from "@backframe/utils";
+import { Command } from "commander";
 import { globbySync } from "globby";
-import yargs from "yargs";
-import add from "./commands/add";
-import db from "./commands/db";
-import _new from "./commands/new";
-import rest from "./commands/rest";
-import serve from "./commands/serve";
-
-export function buildCommands(cli: yargs.Argv) {
-  // preserve order: commands without args first
-  return [rest, serve, add, _new, db].forEach((c) => {
-    cli
-      .command(c.command, c.description, c.builder, c.handler)
-      .alias([...(c.aliases ?? [])], c.command);
-  });
-}
 
 export function ensureBfProject() {
   const pkg = require(resolveCwd("package.json"));
@@ -33,4 +19,14 @@ export function ensureBfProject() {
     );
     process.exit(10);
   }
+}
+
+export function defineCommand(opts: {
+  command: string;
+  description: string;
+  aliases?: string[];
+  builder?: (cmd: Command) => Command;
+  action?: (...args: unknown[]) => void;
+}) {
+  return opts;
 }
