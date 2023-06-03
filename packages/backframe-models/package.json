@@ -1,6 +1,6 @@
 {
   "name": "@backframe/models",
-  "version": "0.0.0-alpha.6",
+  "version": "0.0.0-alpha.7",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
