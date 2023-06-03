@@ -1,0 +1,7 @@
+{
+  "index": "All plugins",
+  "auth": "@backframe/auth",
+  "admin": "@backframe/admin",
+  "sockets": "@backframe/sockets",
+  "storage": "@backframe/storage"
+}
