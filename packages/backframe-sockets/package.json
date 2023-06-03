@@ -1,6 +1,6 @@
 {
   "name": "@backframe/sockets",
-  "version": "0.0.0-alpha.6",
+  "version": "0.0.0-alpha.7",
   "description": "Realtime websocket connections for backframe servers",
   "type": "module",
   "main": "dist/index.js",
