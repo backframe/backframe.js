@@ -1,6 +1,7 @@
 {
   "name": "docs",
   "version": "1.0.0",
+  "private": true,
   "description": "backframe.js documentation",
   "main": "index.js",
   "scripts": {
