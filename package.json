@@ -5,7 +5,7 @@
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
   "workspaces": [
-    "www",
+    "docs",
     "tests/*",
     "packages/*",
     "examples/*",
@@ -57,7 +57,7 @@
   },
   "engines": {
     "node": ">=16.16",
-    "pnpm": ">=7.3.0 <8"
+    "pnpm": ">=7.3.0"
   },
   "lint-staged": {
     "*.{md,yml,json}": "prettier --write",
