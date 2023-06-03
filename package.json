@@ -5,7 +5,7 @@
   "author": "Victor Ndaba <mwangindaba@gmail.com>",
   "license": "MIT",
   "workspaces": [
-    "www",
+    "docs",
     "tests/*",
     "packages/*",
     "examples/*",
