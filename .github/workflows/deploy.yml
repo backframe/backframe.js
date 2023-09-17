@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  packages: write
+
 env:
   CI: true
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -64,8 +70,8 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: changesets/action@v1
         with:
-          commit: "chore: update versions"
-          title: "chore: update versions"
+          commit: "ci: update versions"
+          title: "ci: update versions"
           publish: pnpm ci:publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
