@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/@changesets/config@2.2.0/schema.json",
   "changelog": false,
   "commit": false,
-  "fixed": [["@backframe/*"]],
+  "fixed": [["@backframe/*", "create-bf"]],
   "linked": [],
   "access": "restricted",
   "baseBranch": "main",

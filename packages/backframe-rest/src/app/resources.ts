@@ -3,7 +3,7 @@
 import { BfConfig } from "@backframe/core";
 import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
-import { ZodObject } from "@backframe/utils/zod";
+import { ZodObject } from "zod";
 import { GenericException } from "../lib/errors.js";
 import {
   BfHandler,
@@ -17,7 +17,7 @@ import {
 } from "../lib/types.js";
 import { RouteItem } from "../routing/router.js";
 import { Context } from "./context.js";
-import { DefaultHandlers, wrapHandler, _getStaticHandler } from "./handlers.js";
+import { DefaultHandlers, _getStaticHandler, wrapHandler } from "./handlers.js";
 import { BfServer } from "./index.js";
 
 export const DEFAULT_ENABLED: Method[] = ["get", "post", "put", "delete"];
@@ -140,20 +140,26 @@ export class Resource<T> {
         ) {
           const result = output.safeParse(returnValue);
           if (!result.success) {
+            // @ts-expect-error (value exists)
+            const errors = result.error.flatten().fieldErrors;
+            const field = Object.keys(errors)[0];
             throw new Error(
-              // @ts-expect-error (the value exists)
-              `output validation failed for route: \`${this.route}\` with method: \`${method}\` with error: ${result.error}`
+              `output validation failed for route: \`${
+                this.route
+              }\` with method: \`${method}\`. Error on field '${field}': ${errors[
+                field
+              ][0].toLowerCase()}`
             );
           } else {
-            // sanitize input
+            // sanitize output
             const sanitized: Record<string, unknown> = {};
             Object.keys(output.shape).forEach((k) => {
               sanitized[k] = (result.data as Record<string, unknown>)[k];
             });
 
             // not in schema, but should be preserved
-            sanitized["headers"] = returnValue.headers;
-            sanitized["statusCode"] = returnValue.status;
+            sanitized.headers = returnValue.headers;
+            sanitized.statusCode = returnValue.status;
 
             returnValue = sanitized;
           }

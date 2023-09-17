@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import type { BfConfig, IBfServer } from "@backframe/core";
 import { deepMerge, loadModule, logger, resolveCwd } from "@backframe/utils";
-import { ZodObject, ZodRawShape } from "@backframe/utils/zod";
 import cors, { CorsOptions } from "cors";
 import express, { NextFunction, RequestHandler, type Express } from "express";
 import fs from "fs";
 import helmet from "helmet";
 import http, { Server as HttpServer } from "http";
 import type { Server as SocketServer } from "socket.io";
+import { ZodObject, ZodRawShape } from "zod";
 import {
   GenericException,
   MethodNotAllowed,
@@ -62,10 +61,10 @@ export class BfServer implements IBfServer {
 
   // Starts the server on provided port or default port
   async $start(port = this.$cfg.port) {
-    port = await validatePort(port);
-    this.$cfg.port = port;
+    const availablePort = await validatePort(port);
+    this.$cfg.port = availablePort;
 
-    this.$handle.listen(port, () => {
+    this.$handle.listen(availablePort, () => {
       logger.info(`server started on: ${this.$getHost()}`);
       this.#bfConfig.$invokeListeners("onServerStart");
     });
@@ -122,7 +121,6 @@ export class BfServer implements IBfServer {
         // sanitize input
         const sanitized: Record<string, unknown> = {};
         Object.keys(input.shape).forEach((k) => {
-          // @ts-expect-error (value exists)
           sanitized[k] = opts.data[k];
         });
         req.body = sanitized;
