@@ -1,8 +1,13 @@
 import { createHandler, z } from "@backframe/rest";
 
 export const GET = createHandler({
-  action() {
-    return "Hello World!!!";
+  output: z.object({
+    msg: z.string(),
+    status: z.literal("SUCCESS"),
+  }),
+  // @ts-expect-error (test for validation error)
+  action(_ctx) {
+    return {};
   },
 });
 

@@ -30,6 +30,15 @@ describe("test named exports handlers", () => {
       });
   });
 
+  it("should return output validation errors", async () => {
+    await request(app).get("/named").expect(500).expect({
+      statusCode: 500,
+      message: "Invalid response body",
+      description:
+        "output validation failed for route: `/named` with method: `get`. Error on field 'msg': required",
+    });
+  });
+
   it("should respond with 200", async () => {
     await request(app)
       .post("/named")
