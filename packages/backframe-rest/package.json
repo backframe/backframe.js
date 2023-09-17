@@ -1,6 +1,6 @@
 {
   "name": "@backframe/rest",
-  "version": "0.0.0-alpha.11",
+  "version": "0.0.0-alpha.12",
   "main": "dist/index.js",
   "type": "module",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "prebuild": "rimraf dist"
   },
   "peerDependencies": {
-    "@backframe/core": "^0.0.0-alpha.11"
+    "@backframe/core": "^0.0.0-alpha.12"
   },
   "dependencies": {
     "@backframe/utils": "workspace:*",
