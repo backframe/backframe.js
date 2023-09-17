@@ -15,13 +15,15 @@
     "@backframe/eslint-config": "0.0.0-alpha.3",
     "@backframe/admin": "0.0.0-alpha.5",
     "docs": "1.0.0",
-    "@test/config": "1.0.0"
+    "@test/config": "1.0.0",
+    "create-bf": "0.0.0-alpha.9"
   },
   "changesets": [
     "cool-zebras-grow",
     "famous-dingos-brush",
     "heavy-apricots-grow",
     "mighty-moose-admire",
+    "orange-crabs-grab",
     "tidy-horses-ring"
   ]
 }
