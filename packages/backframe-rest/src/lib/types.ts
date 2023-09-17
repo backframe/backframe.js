@@ -50,7 +50,7 @@ export interface IHandlerConfig<
   input?: ZodObject<T>;
   output?: ZodObject<O>;
   action?: Handler<T, O>;
-  middleware?: Handler<T, O>[];
+  middleware?: Handler<T, any>[];
 }
 
 export interface IHandlers {
