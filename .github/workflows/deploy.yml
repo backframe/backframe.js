@@ -49,10 +49,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Setup npmrc
-        run: |
-          echo "@backframe:registry=https://npm.pkg.github.com/" > ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+      # - name: Setup npmrc
+      #   run: |
+      #     echo "@backframe:registry=https://npm.pkg.github.com/" > ~/.npmrc
+      #     echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
 
       - name: install dependencies
         run: pnpm install
