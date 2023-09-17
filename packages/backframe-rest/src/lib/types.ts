@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { z, ZodObject, ZodRawShape, ZodType } from "@backframe/utils/zod";
 import type { Request, Response } from "express";
 import { ServerResponse } from "http";
 import { Namespace } from "socket.io";
+import { ZodObject, ZodRawShape, ZodType, z } from "zod";
 import { Context } from "../app/context.js";
 import { GenericException } from "./errors.js";
 
-export type Awaitable<T> = T | Promise<T>;
+export type Awaitable<T> = T | Omit<Promise<T>, "then" | "catch" | "finally">;
 
-type HasKeys<T> = T extends object
+export type HasKeys<T> = T extends object
   ? keyof T extends never
     ? false
     : true
@@ -33,17 +33,20 @@ export type HandlerResult =
   | ServerResponse
   | void;
 
-type ZodReturnValue<T extends ZodType> = {
+export type ZodReturnValue<T extends ZodType> = {
   [K in keyof z.infer<T>]-?: z.infer<T>[K];
 } & { statusCode?: number; headers?: Record<string, string> };
 
-export type Handler<T extends ZodRawShape, O extends ZodRawShape> = (
-  ctx: Context<ZodObject<T>>
+export type Handler<T extends ZodRawShape, O extends ZodRawShape = {}> = (
+  ctx: Context<ZodObject<T>, O>
 ) => HasKeys<O> extends true
   ? Awaitable<ZodReturnValue<ZodObject<O>>>
   : Awaitable<any>;
 
-export interface IHandlerConfig<T extends ZodRawShape, O extends ZodRawShape> {
+export interface IHandlerConfig<
+  T extends ZodRawShape,
+  O extends ZodRawShape = {}
+> {
   input?: ZodObject<T>;
   output?: ZodObject<O>;
   action?: Handler<T, O>;

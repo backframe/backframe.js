@@ -1,15 +1,15 @@
 import type { DB } from "@backframe/models";
 import { deepMerge, logger, resolveCwd } from "@backframe/utils";
 import { globbySync } from "@backframe/utils/globby";
-import { ZodType } from "@backframe/utils/zod";
 import { buildSync } from "esbuild";
 import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
 import { Server } from "http";
 import path from "path";
+import { ZodType } from "zod";
 import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
-import { BfUserConfig, BF_CONFIG_DEFAULTS } from "./schema.js";
+import { BF_CONFIG_DEFAULTS, BfUserConfig } from "./schema.js";
 import { loadTsConfig } from "./tsconfig.js";
 
 // each key corresponds to a prop of the BfConfig class

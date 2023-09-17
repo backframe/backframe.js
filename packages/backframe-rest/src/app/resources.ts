@@ -3,7 +3,7 @@
 import { BfConfig } from "@backframe/core";
 import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
-import { ZodObject } from "@backframe/utils/zod";
+import { ZodObject } from "zod";
 import { GenericException } from "../lib/errors.js";
 import {
   BfHandler,
@@ -17,7 +17,7 @@ import {
 } from "../lib/types.js";
 import { RouteItem } from "../routing/router.js";
 import { Context } from "./context.js";
-import { DefaultHandlers, wrapHandler, _getStaticHandler } from "./handlers.js";
+import { DefaultHandlers, _getStaticHandler, wrapHandler } from "./handlers.js";
 import { BfServer } from "./index.js";
 
 export const DEFAULT_ENABLED: Method[] = ["get", "post", "put", "delete"];
@@ -152,8 +152,8 @@ export class Resource<T> {
             });
 
             // not in schema, but should be preserved
-            sanitized["headers"] = returnValue.headers;
-            sanitized["statusCode"] = returnValue.status;
+            sanitized.headers = returnValue.headers;
+            sanitized.statusCode = returnValue.status;
 
             returnValue = sanitized;
           }

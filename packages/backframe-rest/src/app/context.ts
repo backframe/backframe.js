@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BfConfig } from "@backframe/core";
-import type { z, ZodType } from "@backframe/utils/zod";
 import type { NextFunction } from "express";
-import { ExpressReq, ExpressRes } from "../lib/types";
+import type { ZodObject, ZodRawShape, ZodType, z } from "zod";
+import { ExpressReq, ExpressRes, HasKeys, ZodReturnValue } from "../lib/types";
 
 interface IResponseOptions {
   headers?: {
@@ -10,7 +10,8 @@ interface IResponseOptions {
   };
 }
 
-export class Context<I extends ZodType> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export class Context<I extends ZodType, O extends ZodRawShape = {}> {
   [key: string]: unknown; // extended by user
 
   constructor(
@@ -75,7 +76,11 @@ export class Context<I extends ZodType> {
     return this.response.status(status).send(value);
   }
 
-  json(json: object, _status = 200, options?: IResponseOptions) {
+  json(
+    json: HasKeys<O> extends true ? ZodReturnValue<ZodObject<O>> : object,
+    _status = 200,
+    options?: IResponseOptions
+  ) {
     this.#applyHeaders(options || {});
     return json;
   }
