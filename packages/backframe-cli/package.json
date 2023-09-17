@@ -8,7 +8,7 @@
     "bf": "dist/index.mjs"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@backframe"
+    "access": "public"
   },
   "files": [
     "dist",

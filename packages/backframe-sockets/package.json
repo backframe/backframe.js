@@ -14,7 +14,7 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@backframe"
+    "access": "public"
   },
   "license": "MIT",
   "dependencies": {
