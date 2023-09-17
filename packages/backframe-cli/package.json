@@ -1,6 +1,6 @@
 {
   "name": "@backframe/cli",
-  "version": "0.0.0-alpha.7",
+  "version": "0.0.0-alpha.8",
   "description": "Backframe command line interface",
   "type": "module",
   "license": "MIT",
@@ -8,7 +8,7 @@
     "bf": "dist/index.mjs"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@backframe"
+    "access": "public"
   },
   "files": [
     "dist",

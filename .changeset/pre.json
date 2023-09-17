@@ -18,6 +18,7 @@
     "@test/config": "1.0.0"
   },
   "changesets": [
+    "cool-zebras-grow",
     "famous-dingos-brush",
     "heavy-apricots-grow",
     "mighty-moose-admire"

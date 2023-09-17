@@ -1,6 +1,6 @@
 {
   "name": "@backframe/rest",
-  "version": "0.0.0-alpha.7",
+  "version": "0.0.0-alpha.8",
   "main": "dist/index.js",
   "type": "module",
   "license": "MIT",
@@ -17,14 +17,14 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@backframe"
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
     "prebuild": "rimraf dist"
   },
   "peerDependencies": {
-    "@backframe/core": "^0.0.0-alpha.7"
+    "@backframe/core": "^0.0.0-alpha.8"
   },
   "dependencies": {
     "@backframe/utils": "workspace:*",
