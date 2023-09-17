@@ -37,7 +37,7 @@ export function Hero() {
         A framework for rapid development of APIs and backends
       </h1>
 
-      <div className="text-center mx-auto text-2xl max-w-4xl text-black/40 dark:text-white/40">
+      <div className="text-center mx-auto text-xl md:text-2xl max-w-4xl text-black/40 dark:text-white/40">
         Whether you are looking to spin up a simple API in seconds, or build a
         complex backend for your next big project, backframe.js provides the
         tools you need to get started and keep iterating quickly and easily.
