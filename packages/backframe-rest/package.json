@@ -17,7 +17,7 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@backframe"
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
