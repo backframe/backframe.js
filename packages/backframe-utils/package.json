@@ -1,6 +1,6 @@
 {
   "name": "@backframe/utils",
-  "version": "0.0.0-alpha.9",
+  "version": "0.0.0-alpha.11",
   "main": "dist/index.js",
   "type": "module",
   "license": "MIT",
