@@ -140,12 +140,18 @@ export class Resource<T> {
         ) {
           const result = output.safeParse(returnValue);
           if (!result.success) {
+            // @ts-expect-error (value exists)
+            const errors = result.error.flatten().fieldErrors;
+            const field = Object.keys(errors)[0];
             throw new Error(
-              // @ts-expect-error (the value exists)
-              `output validation failed for route: \`${this.route}\` with method: \`${method}\` with error: ${result.error}`
+              `output validation failed for route: \`${
+                this.route
+              }\` with method: \`${method}\`. Error on field '${field}': ${errors[
+                field
+              ][0].toLowerCase()}`
             );
           } else {
-            // sanitize input
+            // sanitize output
             const sanitized: Record<string, unknown> = {};
             Object.keys(output.shape).forEach((k) => {
               sanitized[k] = (result.data as Record<string, unknown>)[k];

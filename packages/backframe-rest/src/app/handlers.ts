@@ -105,8 +105,11 @@ export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape = {}>(
     try {
       value = await handler(ctx);
     } catch (error) {
+      const e = error as Error;
       // in the case user `throws` the error
-      return next(error);
+      return next(
+        new GenericException(500, "Invalid response body", e.message)
+      );
     }
 
     // in the case user `returns` the error

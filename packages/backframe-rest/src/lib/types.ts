@@ -34,7 +34,7 @@ export type HandlerResult =
   | void;
 
 export type ZodReturnValue<T extends ZodType> = {
-  [K in keyof z.infer<T>]-?: z.infer<T>[K];
+  [K in keyof z.infer<T>]: z.infer<T>[K];
 } & { statusCode?: number; headers?: Record<string, string> };
 
 export type Handler<T extends ZodRawShape, O extends ZodRawShape = {}> = (
