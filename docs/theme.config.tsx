@@ -26,7 +26,7 @@ export default {
   banner: {
     key: "unstable-warning",
     text: (
-      <span>⚠️ Backframe.js is in its very early stages of development.</span>
+      <span>⚠️ This docs site and backframe.js are still under construction.</span>
     ),
   },
   navigation: {
@@ -37,11 +37,14 @@ export default {
     text: (
       <span>
         MIT {new Date().getFullYear()} ©{" "}
-        <a href="https://nextra.site" target="_blank">
+        <a href="https://backframe.dev" rel="noreferrer" target="_blank">
           Backframe.js
         </a>
         .
       </span>
     ),
+  },
+  nextThemes: {
+    defaultTheme: "dark",
   },
 };

@@ -1,0 +1,65 @@
+---
+title: Routing patterns - backframe.js
+---
+
+The file system based routing system in backframe.js is very flexible. It allows you to create routes that are very specific or very generic. Inspiration was taken from other frameworks like Next.js, Solid Start and Remix.
+
+## Basic routing
+
+The most basic route is a file in the `routes` directory. For example, if you create a file called `routes/about.ts` it will be available at `/about`. The file should export a constant named after the HTTP method you want to use. For example, if you want to use the `GET` method, you would export a constant named `GET`.
+
+```typescript copy
+import { createHandler } from "@backframe/rest";
+
+export const GET = createHandler({
+  action(ctx) {
+    return "Hello World!!!";
+  },
+});
+```
+
+This pattern applies to nested routes as well. For example, if you create a file called `routes/about/team.ts` it will be available at `/about/team`.
+
+## Dynamic routing
+
+Dynamic routes are created by prefixing a file or directory with a dollar sign. For example, if you create a file called `routes/users/$id.ts` it will be available at `/users/:id`.
+
+## Index routes
+
+To create an index route, create a file called `index.ts` in a directory. For example, if you create a file called `routes/users/index.ts` it will be available at `/users`. This pattern can be combined with dynamic routes. For example, if you create a file called `routes/users/$id/index.ts` it will be available at `/users/:id`. A challenge with this approach is that you end up with a lot of `index.ts` files. To avoid this, you can use route aliases.
+
+## Route aliases
+
+Route aliases allow you to create index routes without explicitly creating an `index.ts` thereby avoiding the problem of having a lot of `index.ts` files. To create a route alias, simply wrap a filename in parenthesis. For example, if you create a file called `routes/(root).ts` it will be available at `/`. It will be as if you created a file called `routes/index.ts`.
+
+## Route parameters
+
+Route parameters are available in the `params` property of the context object. For example, if you create a file called `routes/users/$id.ts` it will be available at `/users/:id`. The `id` parameter will be available in the `params` property of the context object.
+
+```typescript copy
+import { createHandler } from "@backframe/rest";
+
+export const GET = createHandler({
+  action(ctx) {
+    return `Hello ${ctx.params.id}!!!`;
+  },
+});
+```
+
+One limitation of this approach is that there's no type-safety for the parameters.
+
+## Route sub-sections
+
+You may want to create nested routes without creating another directory. To get around this, you can use route sub-sections. For instance, to create an endpoint at `/users/:id`, you can either create a file called `routes/users/$id.ts` or you can create a file called `routes/users.$id.ts`. You can still access the parameters in the same way. Route subsections are separated by a period.
+
+## Summary
+
+The following summarizes the routing patterns available in backframe.js.
+
+- `routes/about.ts` - `/about`
+- `routes/about/team.ts` - `/about/team`
+- `routes/users/$id.ts` - `/users/:id`
+- `routes/users/index.ts` - `/users`
+- `routes/users/$id/index.ts` - `/users/:id`
+- `routes/(root).ts` - `/`
+- `routes/users.$id.ts` - `/users/:id`

@@ -1,0 +1,23 @@
+---
+title: File structure - backframe.js
+---
+
+Backframe comes with an opinionated file structure. This is the default structure, but you can customize it to your liking.
+We designed the file structure to be as simple as possible, while still being flexible enough to handle most use cases.
+
+## The `src` directory
+
+The `src` directory is where you will write all of your code. This is where you should place all of your `typescript` files (if you are using typescript). When building the app under the hood, backframe will compile all of the files in this directory and output them to the `.bf` directory. Under the `src` directory, there is a special reserved directory: `routes`
+
+## The `src/routes` directory
+
+The `src/routes` directory is where you will write all of your routes. Any file in this directory will be treated as a route. For example, if you have a file called `src/routes/users.ts`, then you will be able to access that route at `/users`. If you have a file called `src/routes/users/$id.ts`, then you will be able to access that route at `/users/:id`.
+Learn more about routing patterns in the [routing section](/docs/concepts/routing).
+
+## The `bin/serve.mjs` file
+
+This file is used to serve your app in production. During development, you can use the `bf serve` command which used a locally installed version of the backframe cli. To avoid installing the cli on your production server, you can use this file to serve your app.
+
+## The `bf.config.ts` file
+
+This file is used to configure your app. You can learn more about the configuration options in the [configuration section](/docs/concepts/config).
