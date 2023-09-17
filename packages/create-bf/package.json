@@ -1,7 +1,7 @@
 {
-  "name": "@backframe/create-bf",
+  "name": "create-bf",
   "version": "0.0.0-alpha.9",
-  "description": "Create a new Backframe app",
+  "description": "Create a new backframe.js app",
   "type": "module",
   "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
