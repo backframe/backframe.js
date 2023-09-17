@@ -28,7 +28,7 @@
     "@babel/parser": "^7.20.7",
     "@babel/traverse": "^7.20.12",
     "@babel/types": "^7.20.7",
-    "@backframe/create-bf": "workspace:*",
+    "create-bf": "workspace:*",
     "@backframe/models": "workspace:*",
     "@backframe/utils": "workspace:*",
     "chokidar": "^3.5.3",

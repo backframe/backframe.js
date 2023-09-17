@@ -1,3 +1,25 @@
-## Backframe.js
+---
+title: A framework for rapid development and deployment of APIs and backends
+---
 
-The framework for rapid development and deployment of Backends/APIs
+import { Hero } from "../components/hero";
+import { Features } from "../components/features";
+import { Framework } from "../components/framework";
+import { Plugins } from "../components/plugins";
+import Link from "next/link";
+
+<div className="relative flex flex-col gap-10 pb-20 max-w-7xl mx-auto">
+  <Hero />
+  <Features />
+  <Framework />
+  <Plugins />
+
+  <div className="text-center gap-10 mb-16  flex items-center flex-col">
+    <h1 className="text-4xl font-semibold">
+      It's super easy, barely an inconvenience :)
+    </h1>
+    <Link href="/docs" className="relative flex cursor-pointer rounded-xl flex-row items-center gap-2 border px-2 py-2 text-sm transition-colors duration-300 hover:border-orange-400 md:px-3 md:py-3 md:text-lg lg:px-5 lg:py-4">
+    Get Started
+    </Link>
+  </div>
+</div>

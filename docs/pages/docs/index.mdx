@@ -1,0 +1,106 @@
+---
+title: Introduction to backframe.js
+---
+
+import { Callout } from "nextra/components";
+
+<Callout type="warning">
+  backframe.js does not support commonjs. You must use es modules. However, no
+  extra configuration is required on your part. Just use `import` instead of
+  `require` and backframe will handle the rest.
+</Callout>
+
+## Introduction to backframe.js
+
+Welcome to the backframe.js documentation. This documentation is a work in progress and will be updated as the project progresses. The easiest way to get started is to use the `create-bf` command line tool to create a new project. Be sure to include the `@latest` tag to ensure you are using the latest version of the tool.
+
+```bash copy
+pnpx create-bf@latest my-project
+```
+
+It can be a bit confusing getting started with backframe as it branded as a framework but also as a tool for creating full backends and it's a bit of both. The core is just a framework built on top of express and getting started with this is pretty straight forward. The tooling and plugin ecosystem is a bit more complex and is designed to help you create a full backend with a database, api, and admin interface. The tooling is optional and you can use the framework without it.
+
+## Getting Started
+
+After running the command, you will be prompted for a few values as well as how you would like to proceed with the CLI. Select `Create a minimal starter app` as the rest of the options are disabled for now. For better DX, select typescript as your language of choice. This will create a new project with the following structure:
+
+```bash
+my-project
+├── src
+│   ├── routes
+│   │   └── hello.ts
+│   └── server.ts
+├── bin
+│   └── serve.mjs
+├── bf.config.ts
+└── package.json
+```
+
+## Running the server
+
+To run the server, you can use the `dev` script automatically created in your package.json. This will start the server and watch for changes. The server will automatically restart when changes are detected (no nodemon required).
+
+```bash
+pnpm dev
+```
+
+If you have the `@backframe/cli` installed globally, you can also run the `serve` command from the root of your project.
+
+```bash
+bf serve
+```
+
+## Creating a route
+
+Routes are created in the `src/routes` directory. The CLI will create a `hello.ts` route for you. This route will respond to a `GET` request to `/hello` and return a simple hello world message.
+
+```typescript copy
+import { createHandler } from "@backframe/rest";
+
+export const GET = createHandler({
+  action(ctx) {
+    return "Hello World!!!";
+  },
+});
+```
+
+The `createHandler` helper function is what you will use to create your routes. It takes a single argument which is an object with the following properties:
+
+- `action` - The function that will be called when the route is hit. This function can return a value or a promise. If a promise is returned, the server will wait for the promise to resolve before sending the response.
+- `middleware` - An array of middleware functions that will be called before the action. These functions can return a value or a promise. The middleware functions will be called in the order they are defined and have access to the `ctx` object which contains the request and response objects. They have to call `ctx.next()` to continue to the next middleware or the action.
+- `input` (optional) - A zod schema that will be used to validate the request body. If the request body is invalid, a 400 error will be returned with the validation errors.
+- `output` (optional) - A zod schema that will be used to validate the response body. If the response body is invalid, a 500 error will be returned with the validation errors.
+
+Here's an example of a route that uses middleware and input/output validation.
+
+```typescript copy
+import { createHandler, z } from "@backframe/rest";
+
+export const POST = createHandler({
+  input: z.object({
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string().min(8),
+  }),
+  output: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+  }),
+  middleware: [
+    function (ctx) {
+      console.log("middleware");
+      ctx.next();
+    },
+  ],
+  action(ctx) {
+    // TODO: save to db
+    const savedUser = {
+      id: "123",
+      name: ctx.input.name,
+      email: ctx.input.email,
+    };
+    return savedUser;
+  },
+});
+```
