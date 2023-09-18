@@ -141,3 +141,5 @@ tests/playground
 
 # pnpm ignore files
 .pnmp*
+
+.DS_Store
