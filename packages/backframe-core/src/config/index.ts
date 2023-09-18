@@ -1,4 +1,4 @@
-import type { DB } from "@backframe/models";
+import type { BfDatabase } from "@backframe/models";
 import { deepMerge, logger, resolveCwd } from "@backframe/utils";
 import { globbySync } from "@backframe/utils/globby";
 import { buildSync } from "esbuild";
@@ -78,7 +78,13 @@ export interface IBfServer {
     }
   ) => void;
   $listRoutes: () => { route: string; type: string; name: string }[];
-  $createValidator: (t: ZodType) => RequestHandler;
+  $createValidator: (
+    t: ZodType,
+    opts: {
+      errorTitle: string;
+      errorMsgPrefix?: string;
+    }
+  ) => RequestHandler;
   $mountRoute: (
     method: Method,
     route: string,
@@ -100,7 +106,7 @@ export class BfConfig {
   // server related values
   $app?: Express;
   $server?: IBfServer;
-  $database?: DB;
+  $database?: BfDatabase;
   $sockets?: unknown;
 
   // config related values/extensions
@@ -146,7 +152,7 @@ export class BfConfig {
 
     // invoke db listeners
     if (this.userCfg.database) {
-      this.$database = this.userCfg.database as DB;
+      this.$database = this.userCfg.database;
       this.$invokeListeners("onDatabaseInit");
       logger.dev("database initilization complete");
     }

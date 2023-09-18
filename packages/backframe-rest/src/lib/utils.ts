@@ -1,5 +1,9 @@
 import { logger } from "@backframe/utils";
+import { NextFunction, RequestHandler } from "express";
 import http from "http";
+import { ZodObject, ZodRawShape } from "zod";
+import { GenericException } from "./errors.js";
+import { ExpressReq, ExpressRes } from "./types.js";
 
 export function isPortFree(port: number) {
   return new Promise<boolean>((resolve) => {
@@ -31,4 +35,37 @@ export async function validatePort(port: number, iter = 1): Promise<number> {
   }
 
   return p;
+}
+
+export function createRequestValidator<T extends ZodRawShape>({
+  schema,
+  source,
+  errorTitle,
+  errorMsgPrefix,
+}: {
+  schema: ZodObject<T>;
+  source?: "body" | "query" | "params";
+  errorTitle: string;
+  errorMsgPrefix?: string;
+}): RequestHandler {
+  return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
+    const opts = schema.safeParse(req[source]);
+    if (!opts.success) {
+      // @ts-expect-error (value exists)
+      const errors = opts.error.flatten().fieldErrors;
+      const field = Object.keys(errors)[0];
+      next(
+        new GenericException(
+          400,
+          errorTitle,
+          `${`${errorMsgPrefix} ` || ""}'${field}': ${errors[
+            field
+          ][0].toLowerCase()}`
+        )
+      );
+    } else {
+      req[source] = opts.data;
+      next();
+    }
+  };
 }

@@ -103,7 +103,16 @@ export class BfServer implements IBfServer {
     );
   }
 
-  $createValidator<T extends ZodRawShape>(input: ZodObject<T>): RequestHandler {
+  $createValidator<T extends ZodRawShape>(
+    input: ZodObject<T>,
+    {
+      errorTitle,
+      errorMsgPrefix,
+    }: {
+      errorTitle: string;
+      errorMsgPrefix?: string;
+    }
+  ): RequestHandler {
     return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
       const opts = input.safeParse(req.body);
       if (!opts.success) {
@@ -113,17 +122,14 @@ export class BfServer implements IBfServer {
         next(
           new GenericException(
             400,
-            "Invalid request body",
-            `Error on field '${field}': ${errors[field][0].toLowerCase()}`
+            errorTitle,
+            `${`${errorMsgPrefix} ` || ""}'${field}': ${errors[
+              field
+            ][0].toLowerCase()}`
           )
         );
       } else {
-        // sanitize input
-        const sanitized: Record<string, unknown> = {};
-        Object.keys(input.shape).forEach((k) => {
-          sanitized[k] = opts.data[k];
-        });
-        req.body = sanitized;
+        req.body = opts.data;
         next();
       }
     };

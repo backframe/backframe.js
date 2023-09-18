@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types  */
 
 import { BfConfig } from "@backframe/core";
-import type { DB, DbEntry } from "@backframe/models";
+import type { BfDatabase, BfDatabaseModel } from "@backframe/models";
 import { NextFunction, RequestHandler } from "express";
 import { ServerResponse } from "http";
-import { ZodObject, ZodRawShape } from "zod";
+import { ZodObject, ZodRawShape, z } from "zod";
 import { GenericException } from "../lib/errors.js";
 import {
   BfHandler,
@@ -76,9 +76,11 @@ export function defineResource(): ResourceConfig {
  * @see {@link defineResource}
  */
 export function createHandler<
-  T extends ZodRawShape,
-  O extends ZodRawShape = {}
->(h: IHandlerConfig<T, O>) {
+  I extends ZodRawShape,
+  O extends ZodRawShape = {},
+  Q extends ZodRawShape = {},
+  P extends ZodRawShape = {}
+>(h: IHandlerConfig<I, O, Q, P>) {
   return h;
 }
 
@@ -292,19 +294,24 @@ export function _getStaticHandler(method: Method, route: string) {
 }
 
 export class DefaultHandlers<T> {
-  #db: DB;
+  #db: BfDatabase;
   #model: string;
-  #dbObject: DbEntry<unknown>;
+  #dbObject: BfDatabaseModel;
 
   constructor(r: Resource<T>, bfConfig: BfConfig) {
-    this.#db = bfConfig.$database as DB;
+    this.#db = bfConfig.$database;
     this.#model = r.resolveModel();
-    this.#dbObject = this.#db?.[this.#model];
+    this.#dbObject = this.#db?.model(this.#model);
   }
 
   GET() {
     const dbObject = this.#dbObject;
     return createHandler({
+      query: z.object({
+        skip: z.number().optional(),
+        take: z.number().optional(),
+        orderBy: z.string().optional(),
+      }),
       async action(ctx) {
         let data;
 
@@ -333,11 +340,13 @@ export class DefaultHandlers<T> {
           // get multiple objects from collection
           // TODO: update pagination options
           try {
-            const values = await dbObject.findMany({
+            const values = (await dbObject.findMany({
               skip: Number(ctx.query.skip ?? 0),
               take: Number(ctx.query.take ?? 10),
               orderBy: ctx.query.orderBy ?? undefined,
-            });
+
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            })) as any;
             data = {
               count: values.length,
               page: Number(ctx.query.skip ?? 0),
@@ -376,6 +385,9 @@ export class DefaultHandlers<T> {
   PUT() {
     const dbObject = this.#dbObject;
     return createHandler({
+      params: z.object({
+        id: z.number(),
+      }),
       async action(ctx) {
         try {
           const item = await dbObject.update({
@@ -395,6 +407,9 @@ export class DefaultHandlers<T> {
   DELETE() {
     const dbObject = this.#dbObject;
     return createHandler({
+      params: z.object({
+        id: z.number(),
+      }),
       async action(ctx) {
         try {
           const item = await dbObject.delete({
@@ -413,6 +428,9 @@ export class DefaultHandlers<T> {
   PATCH() {
     const dbObject = this.#dbObject;
     return createHandler({
+      params: z.object({
+        id: z.number(),
+      }),
       async action(ctx) {
         try {
           const item = await dbObject.update({

@@ -37,20 +37,29 @@ export type ZodReturnValue<T extends ZodType> = {
   [K in keyof z.infer<T>]: z.infer<T>[K];
 } & { statusCode?: number; headers?: Record<string, string> };
 
-export type Handler<T extends ZodRawShape, O extends ZodRawShape = {}> = (
-  ctx: Context<ZodObject<T>, O>
+export type Handler<
+  I extends ZodRawShape,
+  O extends ZodRawShape = {},
+  Q extends ZodRawShape = {},
+  P extends ZodRawShape = {}
+> = (
+  ctx: Context<ZodObject<I>, O, ZodType<Q>, ZodType<P>>
 ) => HasKeys<O> extends true
   ? Awaitable<ZodReturnValue<ZodObject<O>>>
   : Awaitable<any>;
 
 export interface IHandlerConfig<
-  T extends ZodRawShape,
-  O extends ZodRawShape = {}
+  I extends ZodRawShape,
+  O extends ZodRawShape = {},
+  Q extends ZodRawShape = {},
+  P extends ZodRawShape = {}
 > {
-  input?: ZodObject<T>;
+  input?: ZodObject<I>;
   output?: ZodObject<O>;
-  action?: Handler<T, O>;
-  middleware?: Handler<T, any>[];
+  action?: Handler<I, O, Q, P>;
+  middleware?: Handler<I, any>[];
+  query?: ZodObject<Q>;
+  params?: ZodObject<P>;
 }
 
 export interface IHandlers {

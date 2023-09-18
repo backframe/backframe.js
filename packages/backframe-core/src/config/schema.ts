@@ -1,3 +1,4 @@
+import { BfDatabase } from "@backframe/models";
 import { z } from "zod";
 import { Plugin } from "../plugins/index.js";
 
@@ -51,7 +52,7 @@ export const BfUserConfigSchema = z.object({
     })
     .optional()
     .default({}),
-  database: z.unknown().optional(),
+  database: z.custom<BfDatabase>().optional(),
   authentication: z
     .object({
       strategy: z.enum(["token-based", "session-based"]).default("token-based"),

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BfConfig } from "@backframe/core";
+import { BfDatabase } from "@backframe/models";
 import type { NextFunction } from "express";
 import type { ZodObject, ZodRawShape, ZodType, z } from "zod";
 import { ExpressReq, ExpressRes, HasKeys, ZodReturnValue } from "../lib/types";
@@ -10,22 +12,24 @@ interface IResponseOptions {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export class Context<I extends ZodType, O extends ZodRawShape = {}> {
+export class Context<
+  I extends ZodType,
+  O extends ZodRawShape = {},
+  Q extends ZodType = ZodType<{}>,
+  P extends ZodType = ZodType<{}>
+> {
   [key: string]: unknown; // extended by user
 
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private database?: unknown,
+    private database?: BfDatabase,
     private bfConfig?: BfConfig
   ) {}
 
   get db() {
-    // TODO: Find a better way for this
-    // @ts-expect-error (come from user end)
-    return this.database as Database;
+    return this.bfConfig.$database;
   }
 
   get auth() {
@@ -38,15 +42,14 @@ export class Context<I extends ZodType, O extends ZodRawShape = {}> {
     return this.request.body as z.infer<I>;
   }
 
-  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
-  get query(): any {
-    return this.request.query;
+  get query() {
+    type QueryParams = HasKeys<Q> extends true ? z.infer<Q> : any;
+    return this.request.query as QueryParams;
   }
 
-  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
-  get params(): any {
-    // TODO: typed params
-    return this.request.params;
+  get params() {
+    type Params = HasKeys<P> extends true ? z.infer<P> : any;
+    return this.request.params as Params;
   }
 
   get config() {
