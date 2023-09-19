@@ -1,4 +1,3 @@
-import type { BfDatabase } from "@backframe/models";
 import { deepMerge, logger, resolveCwd } from "@backframe/utils";
 import { globbySync } from "@backframe/utils/globby";
 import { buildSync } from "esbuild";
@@ -6,6 +5,7 @@ import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
 import { Server } from "http";
 import path from "path";
+import { BfDatabase } from "../adapters/index.js";
 import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
 import { openConfig } from "./config.js";

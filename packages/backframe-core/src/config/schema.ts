@@ -1,5 +1,5 @@
-import { BfDatabase } from "@backframe/models";
 import { z } from "zod";
+import { BfDatabase } from "../adapters/index.js";
 import { Plugin } from "../plugins/index.js";
 
 export const BF_CONFIG_DEFAULTS = {
