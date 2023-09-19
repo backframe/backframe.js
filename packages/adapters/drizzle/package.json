@@ -1,7 +1,7 @@
 {
-  "name": "@backframe/adapter-prisma",
+  "name": "@backframe/adapter-drizzle",
   "version": "0.0.0",
-  "description": "Prisma adapter for backframe.js",
+  "description": "Drizzle adapter for backframe.js",
   "main": "dist/index.js",
   "license": "MIT",
   "type": "module",
@@ -18,8 +18,10 @@
     "build": "tsc"
   },
   "keywords": [],
+  "dependencies": {
+    "drizzle-orm": "^0.28.6"
+  },
   "devDependencies": {
-    "@backframe/core": "workspace:*",
-    "@prisma/client": "^4.8.0"
+    "@backframe/core": "workspace:*"
   }
 }

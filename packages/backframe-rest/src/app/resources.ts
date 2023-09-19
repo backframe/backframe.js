@@ -231,10 +231,10 @@ export class Resource<T> {
     const model = this.resolveModel();
 
     // check for a model
-    if (db?.model(model)) {
+    if (db?.hasModel(model)) {
       const defaultH = new DefaultHandlers(this, this.#bfConfig);
       // create custom handler
-      type key = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+      type key = "GET" | "POST" | "PUT" | "DELETE";
       return defaultH[method.toUpperCase() as key]();
     } else {
       return _getStaticHandler(method, this.route);

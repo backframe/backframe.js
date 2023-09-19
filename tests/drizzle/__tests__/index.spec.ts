@@ -1,7 +1,7 @@
 import loadConfig from "@backframe/core";
-import { Post } from "@bf/database";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
+import { Post } from "../src/schema.js";
 import server from "../src/server.js";
 
 await server.$init(await loadConfig());
@@ -19,20 +19,19 @@ describe("test prisma adapter functionality", () => {
       .send({ title, body: "world" })
       .expect(201);
 
-    expect(data.body.id).toBeDefined();
-    expect(data.body.createdAt).toBeDefined();
-    expect(data.body.updatedAt).toBeDefined();
-    expect(data.body.title).toBe(title);
+    const newPost = data.body[0];
 
-    // unleaked fields
-    expect(data.body.description).toBeUndefined();
+    expect(newPost.id).toBeDefined();
+    expect(newPost.createdAt).toBeDefined();
+    expect(newPost.updatedAt).toBeDefined();
+    expect(newPost.title).toBe(title);
 
-    post = data.body;
+    post = newPost;
   });
 
   it("GET /posts/:id", async () => {
     const res = await request(app).get(`/posts/${post.id}`).expect(200);
-    expect(res.body.id).toBe(post.id);
+    expect(res.body[0].id).toBe(post.id);
   });
 
   it("PUT /posts/:id", async () => {
@@ -44,8 +43,10 @@ describe("test prisma adapter functionality", () => {
       .send({ title: newTitle })
       .expect(200);
 
-    expect(updated.body.id).toBe(post.id);
-    expect(updated.body.title).toBe(newTitle);
+    const updatePost = updated.body[0];
+
+    expect(updatePost.id).toBe(post.id);
+    expect(updatePost.title).toBe(newTitle);
   });
 
   it("DELETE /posts/:id", async () => {

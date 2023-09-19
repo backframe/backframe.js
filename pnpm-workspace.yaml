@@ -5,6 +5,7 @@ packages:
   - "examples/*"
   - "packages/*"
   - "packages/plugins/*"
+  - "packages/adapters/*"
 options:
   git-checks: false
   prefer-workspace-packages: true

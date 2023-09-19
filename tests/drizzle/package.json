@@ -1,5 +1,5 @@
 {
-  "name": "@tests/prisma",
+  "name": "drizzle",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -8,12 +8,17 @@
     "run:tests": "vitest --run"
   },
   "dependencies": {
-    "@backframe/adapter-prisma": "workspace:^",
+    "@backframe/adapter-drizzle": "workspace:*",
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
-    "@bf/database": "workspace:*",
-    "@prisma/client": "^4.8.0",
-    "prisma": "^4.8.0"
+    "@neondatabase/serverless": "^0.6.0",
+    "@planetscale/database": "^1.11.0",
+    "@types/better-sqlite3": "^7.6.5",
+    "@types/pg": "^8.10.2",
+    "better-sqlite3": "^8.6.0",
+    "drizzle-kit": "^0.19.13",
+    "drizzle-orm": "^0.28.6",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "@backframe/cli": "workspace:*",

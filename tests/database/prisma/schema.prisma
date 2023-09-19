@@ -7,66 +7,15 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  firstName    String?
-  lastName     String?
-  provider     String   @default("local")
-  providerId   String?  @unique
-  passwordHash String?
-  role         String   @default("USER")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
-}
-
-model AuthAccount {
-  id                 String   @id @default(cuid())
-  userID             String
-  provider           String
-  providerID         String   @unique
-  providerAccountID  String
-  refreshToken       String?
-  accessToken        String
-  accessTokenExpires String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               AuthUser @relation(references: [id], fields: [userID])
-}
-
-model AuthSession {
-  id           String   @id @default(cuid())
-  userID       String
-  expires      DateTime
-  sessionToken String
-  accessToken  String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         AuthUser @relation(references: [id], fields: [userID])
-}
-
-model AuthUser {
-  id            String        @id @default(cuid())
-  role          String        @default("user")
-  email         String        @unique
-  emailVerified DateTime?
-  name          String?
-  imageURL      String?
-  password      String?
-  accounts      AuthAccount[]
-  sessions      AuthSession[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-}
-
-model AuthVerificationRequest {
-  id         String   @id @default(cuid())
-  identifier String
-  token      String
-  expires    DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Post {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  Int?
 }

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types  */
 
-import { BfConfig } from "@backframe/core";
-import type { BfDatabase, BfDatabaseModel } from "@backframe/models";
+import { BfConfig, BfDatabase } from "@backframe/core";
 import { NextFunction, RequestHandler } from "express";
 import { ServerResponse } from "http";
 import { ZodObject, ZodRawShape, z } from "zod";
@@ -99,7 +98,7 @@ export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape = {}>(
   return async (req: ExpressReq, res: ExpressRes, next: NextFunction) => {
     const ctx =
       (req.sharedCtx as Context<ZodObject<I>, O>) ??
-      new Context<ZodObject<I>, O>(req, res, next, cfg.$database, cfg);
+      new Context<ZodObject<I>, O>(req, res, next, cfg);
 
     req.sharedCtx = ctx; // plant ctx in req object for reuse
 
@@ -296,20 +295,19 @@ export function _getStaticHandler(method: Method, route: string) {
 export class DefaultHandlers<T> {
   #db: BfDatabase;
   #model: string;
-  #dbObject: BfDatabaseModel;
 
   constructor(r: Resource<T>, bfConfig: BfConfig) {
     this.#db = bfConfig.$database;
     this.#model = r.resolveModel();
-    this.#dbObject = this.#db?.model(this.#model);
   }
 
   GET() {
-    const dbObject = this.#dbObject;
+    const db = this.#db;
+    const model = this.#model;
     return createHandler({
       query: z.object({
-        skip: z.number().optional(),
-        take: z.number().optional(),
+        offset: z.number().optional(),
+        limit: z.number().optional(),
         orderBy: z.enum(["asc", "desc"]).optional(),
       }),
       async action(ctx) {
@@ -322,7 +320,7 @@ export class DefaultHandlers<T> {
         if (k && v) {
           // get one from collection
           try {
-            data = await dbObject.findUnique({
+            data = await db.read(model, {
               where: {
                 [k]: v,
               },
@@ -340,16 +338,14 @@ export class DefaultHandlers<T> {
           // get multiple objects from collection
           // TODO: update pagination options
           try {
-            const values = (await dbObject.findMany({
-              ...(ctx.query.skip ? { skip: ctx.query.skip } : {}),
-              ...(ctx.query.take ? { take: ctx.query.take } : {}),
-              // @ts-expect-error (hassle)
-              orderBy: ctx.query.orderBy ?? undefined,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            })) as any;
+            const args: Record<string, unknown> = {};
+            const { limit, offset } = ctx.query;
+            limit && (args["limit"] = limit);
+            offset && (args["offset"] = offset);
+            const values = await db.list(model, args);
             data = {
               count: values.length,
-              page: Number(ctx.query.skip ?? 0),
+              page: Number(ctx.query.offset ?? 0),
               data: values,
             };
           } catch (error) {
@@ -369,11 +365,12 @@ export class DefaultHandlers<T> {
   }
 
   POST() {
-    const dbObject = this.#dbObject;
+    const db = this.#db;
+    const model = this.#model;
     return createHandler({
       async action(ctx) {
         try {
-          const item = await dbObject.create({ data: ctx.input });
+          const item = await db.create(model, ctx.input);
           return ctx.json(item as object, 201);
         } catch (error) {
           return ctx.json(new GenericException(400, error.message, ""), 400);
@@ -383,16 +380,21 @@ export class DefaultHandlers<T> {
   }
 
   PUT() {
-    const dbObject = this.#dbObject;
+    const db = this.#db;
+    const model = this.#model;
     return createHandler({
       params: z.object({
         id: z.number(),
       }),
       async action(ctx) {
         try {
-          const item = await dbObject.update({
+          // check if [param] exists
+          const k = Object.keys(ctx.params)[0] ?? undefined;
+          const v = Object.values(ctx.params)[0] ?? undefined;
+
+          const item = await db.update(model, {
             where: {
-              id: ctx.params.id,
+              [k]: v,
             },
             data: ctx.input,
           });
@@ -405,39 +407,19 @@ export class DefaultHandlers<T> {
   }
 
   DELETE() {
-    const dbObject = this.#dbObject;
+    const db = this.#db;
+    const model = this.#model;
     return createHandler({
-      params: z.object({
-        id: z.number(),
-      }),
       async action(ctx) {
         try {
-          const item = await dbObject.delete({
-            where: {
-              id: ctx.params.id,
-            },
-          });
-          return ctx.json(item as object);
-        } catch (error) {
-          return ctx.json(new GenericException(400, error.message, ""), 400);
-        }
-      },
-    });
-  }
+          // check if [param] exists
+          const k = Object.keys(ctx.params)[0] ?? undefined;
+          const v = Object.values(ctx.params)[0] ?? undefined;
 
-  PATCH() {
-    const dbObject = this.#dbObject;
-    return createHandler({
-      params: z.object({
-        id: z.number(),
-      }),
-      async action(ctx) {
-        try {
-          const item = await dbObject.update({
+          const item = await db.delete(model, {
             where: {
-              id: ctx.params.id,
+              [k]: v,
             },
-            data: ctx.input,
           });
           return ctx.json(item as object);
         } catch (error) {

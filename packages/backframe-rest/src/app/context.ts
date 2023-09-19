@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BfConfig } from "@backframe/core";
-import { BfDatabase } from "@backframe/models";
 import type { NextFunction } from "express";
 import type { ZodObject, ZodRawShape, ZodType, z } from "zod";
 import { ExpressReq, ExpressRes, HasKeys, ZodReturnValue } from "../lib/types";
@@ -24,7 +23,6 @@ export class Context<
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
-    private database?: BfDatabase,
     private bfConfig?: BfConfig
   ) {}
 
