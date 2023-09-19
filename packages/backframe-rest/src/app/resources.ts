@@ -152,7 +152,7 @@ export class Resource<T> {
             // @ts-expect-error (not in schema, but should be preserved)
             sanitized.headers = returnValue.headers;
             // @ts-expect-error (not in schema, but should be preserved)
-            sanitized.statusCode = returnValue.status;
+            sanitized.statusCode = returnValue.statusCode;
 
             returnValue = sanitized;
           } else {

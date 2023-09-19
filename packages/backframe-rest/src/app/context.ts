@@ -81,11 +81,11 @@ export class Context<
 
   json(
     json: HasKeys<O> extends true ? ZodReturnValue<ZodObject<O>> : object,
-    _status = 200,
+    status = 200,
     options?: IResponseOptions
   ) {
     this.#applyHeaders(options || {});
-    return json;
+    return { ...json, statusCode: status, headers: options?.headers || {} };
   }
 
   file(contents: string, status = 200, options?: IResponseOptions) {

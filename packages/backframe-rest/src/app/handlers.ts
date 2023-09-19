@@ -310,7 +310,7 @@ export class DefaultHandlers<T> {
       query: z.object({
         skip: z.number().optional(),
         take: z.number().optional(),
-        orderBy: z.string().optional(),
+        orderBy: z.enum(["asc", "desc"]).optional(),
       }),
       async action(ctx) {
         let data;
@@ -341,10 +341,10 @@ export class DefaultHandlers<T> {
           // TODO: update pagination options
           try {
             const values = (await dbObject.findMany({
-              skip: Number(ctx.query.skip ?? 0),
-              take: Number(ctx.query.take ?? 10),
+              ...(ctx.query.skip ? { skip: ctx.query.skip } : {}),
+              ...(ctx.query.take ? { take: ctx.query.take } : {}),
+              // @ts-expect-error (hassle)
               orderBy: ctx.query.orderBy ?? undefined,
-
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
             })) as any;
             data = {
@@ -374,7 +374,7 @@ export class DefaultHandlers<T> {
       async action(ctx) {
         try {
           const item = await dbObject.create({ data: ctx.input });
-          return ctx.json(item as object);
+          return ctx.json(item as object, 201);
         } catch (error) {
           return ctx.json(new GenericException(400, error.message, ""), 400);
         }
