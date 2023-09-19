@@ -16,7 +16,9 @@
     "@backframe/admin": "0.0.0-alpha.5",
     "docs": "1.0.0",
     "@test/config": "1.0.0",
-    "create-bf": "0.0.0-alpha.9"
+    "create-bf": "0.0.0-alpha.9",
+    "@test/drizzle": "1.0.0",
+    "@test/prisma": "1.0.0"
   },
   "changesets": [
     "cool-zebras-grow",
@@ -26,6 +28,7 @@
     "mighty-moose-admire",
     "orange-crabs-grab",
     "smart-hounds-perform",
-    "tidy-horses-ring"
+    "tidy-horses-ring",
+    "tiny-ads-agree"
   ]
 }
