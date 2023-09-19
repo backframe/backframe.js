@@ -4,8 +4,6 @@
 "@backframe/core": patch
 "@backframe/rest": patch
 "create-bf": patch
-"drizzle": patch
-"@tests/prisma": patch
 ---
 
 abstracted db implementation into adapters
