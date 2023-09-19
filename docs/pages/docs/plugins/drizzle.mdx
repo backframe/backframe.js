@@ -1,0 +1,38 @@
+---
+title: Drizzle Adapter - Backframe.js
+---
+
+This adapter allows you to connect your backframe server to a database using the Drizzle ORM. It is a simple wrapper around the Drizzle ORM and is not meant to be used directly. Infact, you will probably never need to use this package directly. The adapters are only used by backframe internally.
+
+## Installation
+
+```bash
+pnpm add @backframe/adapter-drizzle
+```
+
+## Usage
+
+Upon Installation, you will need to do one final thing to get the adapter working. Create a new instance of the `DrizzleAdapter` class and pass it:
+
+1. Your SQL dialect (`pg` or `mysql` or `sqlite`)
+2. Your database connection object
+3. An array of tables to be used by the adapter (see below)
+
+```ts
+// bf.config.ts
+import { DrizzleAdapter } from "@backframe/adapter-drizzle";
+import { defineConfig } from "@backframe/core";
+import { db } from "./src/db.js"; // drizzle db object
+import { posts } from "./src/schema.js"; // drizzle schema
+
+const database = new DrizzleAdapter("pg", db, [{ key: "posts", table: posts }]);
+
+export default defineConfig({
+  interfaces: {
+    rest: {},
+  },
+  database,
+});
+```
+
+And that's it! You're good to go.

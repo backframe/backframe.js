@@ -1,6 +1,7 @@
 {
   "structure": "File Structure",
   "routing": "Routing",
+  "adapters": "Adapters",
   "config": "Configuration",
   "plugins": "Plugins"
 }

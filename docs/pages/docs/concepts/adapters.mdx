@@ -1,0 +1,12 @@
+---
+title: Adapters - Backframe.js
+---
+
+One of the goals of backframe.js is to make it easy to use any database you want whilst still maintaining the 'magic' of the framework. To do this, backframe.js uses adapters to handle the database specific code. Adapters are just objects that have a few methods that backframe.js uses to interact with the database. The methods are:
+`create`, `read`, `list`, `update`, `delete`. These adapters aren't meant to be used standalone, but rather with your favorit ORM i.e Prisma / Drizzle. However, if you prefer not to use an ORM, you can create your own adapter to interact with your database. Learn more [here](/docs/advanced/adapters).
+
+## The magic of backframe.js
+
+Once cool consequence of abstracting away specific database implementations into adapters is that we maintain the same API regardless of the database. This allows the framework to make certain functionalities available such as auto CRUD for your models. This means that you can create a model and have all CRUD operations available for that model without having to write any code yourself. This is a great way to get started with backframe.js and to get a feel for how the framework works. You can learn more about auto CRUD [here](/docs/advanced/auto-crud).
+
+You can try this right now. Add an adapter to your backframe app and then create a model in however way your ORM makes it possible. Once you've done this, create a file in the `routes` directory with the same name as your model. And thats all you have to do. Now try fetching and creating new entries. Learn how you can add the [prisma adapter](/docs/plugins/prisma) or [drizzle adapter](/docs/plugins/drizzle) to your backframe app.
