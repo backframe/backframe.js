@@ -18,7 +18,9 @@
     "@test/config": "1.0.0",
     "create-bf": "0.0.0-alpha.9",
     "@test/drizzle": "1.0.0",
-    "@test/prisma": "1.0.0"
+    "@test/prisma": "1.0.0",
+    "@backframe/adapter-drizzle": "0.0.0",
+    "@backframe/adapter-prisma": "0.0.0"
   },
   "changesets": [
     "cool-zebras-grow",
@@ -27,6 +29,7 @@
     "khaki-emus-learn",
     "mighty-moose-admire",
     "orange-crabs-grab",
+    "rare-dots-give",
     "smart-hounds-perform",
     "tidy-horses-ring",
     "tiny-ads-agree"
