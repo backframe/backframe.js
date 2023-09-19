@@ -1,4 +1,7 @@
+import { loadEnv } from "@backframe/utils";
 import type { Config } from "drizzle-kit";
+
+loadEnv();
 
 export default {
   schema: "./src/schema.ts",

@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "bf serve",
     "start": "node bin/serve.mjs",
-    "run:tests": "vitest --run"
+    "run:tests": "vitest --run",
+    "db:push": "drizzle-kit push:pg"
   },
   "dependencies": {
     "@backframe/adapter-drizzle": "workspace:*",
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
+    "@backframe/utils": "workspace:*",
     "@neondatabase/serverless": "^0.6.0",
     "@planetscale/database": "^1.11.0",
     "@types/better-sqlite3": "^7.6.5",
