@@ -9,7 +9,8 @@
     "tests/*",
     "packages/*",
     "examples/*",
-    "packages/plugins/*"
+    "packages/plugins/*",
+    "packages/adapters/*"
   ],
   "keywords": [
     "nodejs",
