@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createHandler, defineRouteConfig, z } from "@backframe/rest";
 import { logger } from "@backframe/utils";
 import { AccountExists, PasswordsDontMatch } from "../lib/errors.js";
@@ -23,7 +24,7 @@ export const POST = createHandler({
     }
 
     const { db, auth } = getOptions(ctx);
-    let user = await db.authUser.findUnique({
+    let user = await db.read("user", {
       where: { email },
     });
 
@@ -33,7 +34,7 @@ export const POST = createHandler({
     }
 
     const hash = await auth.hash(password);
-    user = await db.authUser.create({
+    user = await db.create("user", {
       data: {
         name,
         email,
@@ -57,7 +58,7 @@ export const POST = createHandler({
     };
 
     if (auth.strategy === "token-based") {
-      const token = await auth.encode({ id: user.id });
+      const token = await auth.encode({ id: (user as any).id });
       return ctx.json({
         ...body,
         token,
@@ -65,23 +66,23 @@ export const POST = createHandler({
     }
 
     // found and session, create cookie and session
-    const session = await db.authSession.create({
-      data: {
-        user: {
-          connect: { id: user.id },
-        },
-        userID: user.id,
-        accessToken: user.id,
-        sessionToken: user.id,
-      },
-    });
+    // const session = await db.create("session", {
+    //   data: {
+    //     user: {
+    //       connect: { id: user.id },
+    //     },
+    //     userID: user.id,
+    //     accessToken: user.id,
+    //     sessionToken: user.id,
+    //   },
+    // });
 
-    ctx.response.cookie("bfauthapp", session.id, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 60 * 24,
-    });
+    // ctx.response.cookie("bfauthapp", session.id, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "lax",
+    //   maxAge: 60 * 60 * 60 * 24,
+    // });
 
     return ctx.json(body);
   },
