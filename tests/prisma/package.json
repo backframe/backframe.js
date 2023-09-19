@@ -1,0 +1,23 @@
+{
+  "name": "@tests/prisma",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bf serve",
+    "start": "node bin/serve.mjs",
+    "run:tests": "vitest --run"
+  },
+  "dependencies": {
+    "@backframe/adapter-prisma": "workspace:^",
+    "@backframe/core": "workspace:*",
+    "@backframe/models": "workspace:*",
+    "@backframe/rest": "workspace:*",
+    "@bf/database": "workspace:*",
+    "@prisma/client": "^4.8.0",
+    "prisma": "^4.8.0"
+  },
+  "devDependencies": {
+    "@backframe/cli": "workspace:*",
+    "@types/node": "^18.7.17"
+  }
+}
