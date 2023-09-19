@@ -1,7 +1,8 @@
 {
-  "name": "@tests/prisma",
+  "name": "@test/prisma",
   "version": "1.0.0",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "bf serve",
     "start": "node bin/serve.mjs",
