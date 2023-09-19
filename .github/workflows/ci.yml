@@ -10,6 +10,7 @@ env:
   CI: true
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  PG_DATABASE_URL: ${{ secrets.PG_DATABASE_URL }}
 
 jobs:
   ci:
@@ -58,16 +59,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Setup npmrc
-        run: |
-          echo "@backframe:registry=https://npm.pkg.github.com/" > ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-
       - name: install dependencies
         run: pnpm install
 
       - name: build packages
         run: pnpm build
 
+      - name: push db schema(s)
+        run: pnpm turbo db:push
+
       - name: run tests
         run: pnpm run:tests
+        shell: bash

@@ -24,7 +24,7 @@
     "prebuild": "rimraf dist"
   },
   "peerDependencies": {
-    "@backframe/core": "^0.0.0-alpha.12"
+    "@backframe/core": "workspace:*"
   },
   "dependencies": {
     "@backframe/utils": "workspace:*",
@@ -36,7 +36,6 @@
   "devDependencies": {
     "@backframe/core": "workspace:*",
     "@backframe/eslint-config": "workspace:*",
-    "@backframe/models": "workspace:*",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/minimist": "^1.2.2",

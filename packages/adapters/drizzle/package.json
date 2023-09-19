@@ -1,0 +1,27 @@
+{
+  "name": "@backframe/adapter-drizzle",
+  "version": "0.0.0",
+  "description": "Drizzle adapter for backframe.js",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "type": "module",
+  "author": "Victor Ndaba <vndabam@gmail.com>",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "dependencies": {
+    "drizzle-orm": "^0.28.6"
+  },
+  "devDependencies": {
+    "@backframe/core": "workspace:*"
+  }
+}

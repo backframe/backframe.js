@@ -1,19 +1,14 @@
 import type { BfConfig, IBfServer } from "@backframe/core";
 import { deepMerge, loadModule, logger, resolveCwd } from "@backframe/utils";
 import cors, { CorsOptions } from "cors";
-import express, { NextFunction, RequestHandler, type Express } from "express";
+import express, { RequestHandler, type Express } from "express";
 import fs from "fs";
 import helmet from "helmet";
 import http, { Server as HttpServer } from "http";
 import type { Server as SocketServer } from "socket.io";
-import { ZodObject, ZodRawShape } from "zod";
-import {
-  GenericException,
-  MethodNotAllowed,
-  NotFoundExeption,
-} from "../lib/errors.js";
+import { MethodNotAllowed, NotFoundExeption } from "../lib/errors.js";
 import { errorHandler, httpLogger } from "../lib/middleware.js";
-import { BfHandler, ExpressReq, ExpressRes, Method } from "../lib/types.js";
+import { BfHandler, Method } from "../lib/types.js";
 import { validatePort } from "../lib/utils.js";
 import { Router } from "../routing/router.js";
 import { wrapHandler } from "./handlers.js";
@@ -101,32 +96,6 @@ export class BfServer implements IBfServer {
         await r.mount(this);
       })
     );
-  }
-
-  $createValidator<T extends ZodRawShape>(input: ZodObject<T>): RequestHandler {
-    return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
-      const opts = input.safeParse(req.body);
-      if (!opts.success) {
-        // @ts-expect-error (value exists)
-        const errors = opts.error.flatten().fieldErrors;
-        const field = Object.keys(errors)[0];
-        next(
-          new GenericException(
-            400,
-            "Invalid request body",
-            `Error on field '${field}': ${errors[field][0].toLowerCase()}`
-          )
-        );
-      } else {
-        // sanitize input
-        const sanitized: Record<string, unknown> = {};
-        Object.keys(input.shape).forEach((k) => {
-          sanitized[k] = opts.data[k];
-        });
-        req.body = sanitized;
-        next();
-      }
-    };
   }
 
   #applyMiddleware() {

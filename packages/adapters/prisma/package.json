@@ -1,0 +1,25 @@
+{
+  "name": "@backframe/adapter-prisma",
+  "version": "0.0.0",
+  "description": "Prisma adapter for backframe.js",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "type": "module",
+  "author": "Victor Ndaba <vndabam@gmail.com>",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@backframe/core": "workspace:*",
+    "@prisma/client": "^4.8.0"
+  }
+}

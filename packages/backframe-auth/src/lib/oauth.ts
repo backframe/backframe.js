@@ -1,12 +1,12 @@
-import { BfConfig, BfUserConfig } from "@backframe/core";
-import { DB } from "@backframe/models";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { BfConfig, BfDatabase, BfUserConfig } from "@backframe/core";
 import { Context } from "@backframe/rest";
 import { Issuer } from "openid-client";
 import { AuthConfig, DEFAULT_CFG } from "../index.js";
 import { InternalProvider, Provider } from "./types";
 
 export type InternalOptions = {
-  db: DB;
+  db: BfDatabase;
   bf: BfConfig;
   auth: AuthConfig & BfUserConfig["authentication"];
   providerId: string;
@@ -58,7 +58,7 @@ export function getOptions(ctx: Context<any>): InternalOptions {
     ...DEFAULT_CFG,
     ...bf.getConfig("authentication"),
   }) as AuthConfig;
-  const { provider: providerId } = ctx.params;
+  const { provider: providerId } = ctx.params as any;
   const providers = bf.getConfig("authentication").providers as Provider[];
 
   const normalized: InternalProvider[] = providers.map((p) => {
@@ -101,7 +101,7 @@ export function getOptions(ctx: Context<any>): InternalOptions {
     providerId,
     providers: normalized,
     provider: normalized.find((provider) => provider.id === providerId),
-    db: ctx.db as DB,
+    db: ctx.db,
     cookies,
     referer: cookies.vals?.["referer"] ?? ctx.request.headers.referer,
   };

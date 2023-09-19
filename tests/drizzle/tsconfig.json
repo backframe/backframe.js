@@ -1,0 +1,9 @@
+{
+  "include": ["src/**/*", "bf.config.ts"],
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
+  }
+}

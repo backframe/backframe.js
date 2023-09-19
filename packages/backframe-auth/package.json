@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@backframe/core": "workspace:*",
-    "@backframe/models": "workspace:*",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie": "^0.5.1",
     "@types/jsonwebtoken": "^9.0.0",

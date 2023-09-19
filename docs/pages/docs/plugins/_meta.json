@@ -1,7 +1,8 @@
 {
-  "index": "All plugins",
   "auth": "@backframe/auth",
   "admin": "@backframe/admin",
   "sockets": "@backframe/sockets",
-  "storage": "@backframe/storage"
+  "storage": "@backframe/storage",
+  "prisma": "@backframe/adapter-prisma",
+  "drizzle": "@backframe/adapter-drizzle"
 }

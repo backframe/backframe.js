@@ -1,5 +1,5 @@
 {
-  "name": "database",
+  "name": "@bf/database",
   "private": true,
   "type": "module",
   "main": "./index.js",

@@ -24,8 +24,7 @@
     "prebuild": "rimraf dist"
   },
   "devDependencies": {
-    "@backframe/eslint-config": "workspace:*",
-    "@backframe/models": "workspace:*"
+    "@backframe/eslint-config": "workspace:*"
   },
   "dependencies": {
     "@backframe/utils": "workspace:*",

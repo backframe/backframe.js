@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BfDatabase } from "../adapters/index.js";
 import { Plugin } from "../plugins/index.js";
 
 export const BF_CONFIG_DEFAULTS = {
@@ -17,7 +18,7 @@ export const BF_CONFIG_DEFAULTS = {
   },
   plugins: [] as Plugin[],
   authentication: {
-    strategy: "token-based",
+    strategy: "token-based" as "token-based" | "session-based",
     providers: [] as { [key: string]: string }[],
   },
 };
@@ -51,7 +52,7 @@ export const BfUserConfigSchema = z.object({
     })
     .optional()
     .default({}),
-  database: z.unknown().optional(),
+  database: z.custom<BfDatabase>().optional(),
   authentication: z
     .object({
       strategy: z.enum(["token-based", "session-based"]).default("token-based"),

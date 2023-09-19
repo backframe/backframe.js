@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { BfConfig } from "@backframe/core";
-import type { DB } from "@backframe/models";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
 import { ZodObject } from "zod";
 import { GenericException } from "../lib/errors.js";
@@ -15,6 +14,7 @@ import {
   Method,
   NspListener,
 } from "../lib/types.js";
+import { createRequestValidator } from "../lib/utils.js";
 import { RouteItem } from "../routing/router.js";
 import { Context } from "./context.js";
 import { DefaultHandlers, _getStaticHandler, wrapHandler } from "./handlers.js";
@@ -118,8 +118,14 @@ export class Resource<T> {
     for (const [m, cfg] of Object.entries(this.handlers)) {
       const method = m as Method;
 
-      // eslint-disable-next-line prefer-const
-      let { middleware: mware, action, input, output } = cfg as BfHandlerConfig;
+      const {
+        middleware: mware,
+        input,
+        output,
+        params,
+        query,
+      } = cfg as BfHandlerConfig;
+      let action = cfg.action;
       middleware.push(...(mware ?? []));
 
       // check if action is provided
@@ -139,7 +145,17 @@ export class Resource<T> {
           )
         ) {
           const result = output.safeParse(returnValue);
-          if (!result.success) {
+
+          if (result.success) {
+            const sanitized = result.data;
+
+            // @ts-expect-error (not in schema, but should be preserved)
+            sanitized.headers = returnValue.headers;
+            // @ts-expect-error (not in schema, but should be preserved)
+            sanitized.statusCode = returnValue.statusCode;
+
+            returnValue = sanitized;
+          } else {
             // @ts-expect-error (value exists)
             const errors = result.error.flatten().fieldErrors;
             const field = Object.keys(errors)[0];
@@ -150,18 +166,6 @@ export class Resource<T> {
                 field
               ][0].toLowerCase()}`
             );
-          } else {
-            // sanitize output
-            const sanitized: Record<string, unknown> = {};
-            Object.keys(output.shape).forEach((k) => {
-              sanitized[k] = (result.data as Record<string, unknown>)[k];
-            });
-
-            // not in schema, but should be preserved
-            sanitized.headers = returnValue.headers;
-            sanitized.statusCode = returnValue.status;
-
-            returnValue = sanitized;
           }
         }
 
@@ -177,10 +181,34 @@ export class Resource<T> {
         .concat($)
         .map((h) => wrapHandler(h, this.#bfConfig));
 
-      // add validator (should be `unshifted` last... First line of defense)
-      if (input) {
-        handlers.unshift(server.$createValidator(input));
-      }
+      // additional validators (should be `unshifted` last... First line of defense)
+      if (input)
+        handlers.unshift(
+          createRequestValidator({
+            schema: input,
+            source: "body",
+            errorTitle: "Invalid request body",
+            errorMsgPrefix: "Error on field",
+          })
+        );
+      if (params)
+        handlers.unshift(
+          createRequestValidator({
+            schema: params,
+            source: "params",
+            errorTitle: "Invalid request params",
+            errorMsgPrefix: "Error on param",
+          })
+        );
+      if (query)
+        handlers.unshift(
+          createRequestValidator({
+            schema: query,
+            source: "query",
+            errorTitle: "Invalid request query params",
+            errorMsgPrefix: "Error on query param",
+          })
+        );
 
       // mount resource on express app
       server.$app[method](this.route, handlers);
@@ -199,14 +227,14 @@ export class Resource<T> {
   }
 
   #getHandler(method: Method): IHandlerConfig<{}, {}> {
-    const db = this.#bfConfig.$database as DB;
+    const db = this.#bfConfig.$database;
     const model = this.resolveModel();
 
     // check for a model
-    if (db?.[model]) {
+    if (db?.hasModel(model)) {
       const defaultH = new DefaultHandlers(this, this.#bfConfig);
       // create custom handler
-      type key = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+      type key = "GET" | "POST" | "PUT" | "DELETE";
       return defaultH[method.toUpperCase() as key]();
     } else {
       return _getStaticHandler(method, this.route);

@@ -1,12 +1,11 @@
 import { createHandler } from "@backframe/rest";
-import crypto from "crypto";
 import { TokenSet } from "openid-client";
 import { getOptions, openidClient } from "../lib/oauth.js";
 
 export const GET = createHandler({
   async action(ctx) {
     const options = getOptions(ctx);
-    const { auth, db, provider, cookies, referer } = options;
+    const { db, provider, cookies } = options;
     const client = await openidClient(options);
     const params = client.callbackParams(ctx.request);
 
@@ -36,20 +35,14 @@ export const GET = createHandler({
     p.email = p.email?.toLowerCase();
 
     // create user then account then session
-    let user = await db.authUser.findUnique({
+    let user = await db.read("user", {
       where: {
         email: p.email,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        imageURL: true,
       },
     });
 
     if (!user) {
-      user = await db.authUser.create({
+      user = await db.create("user", {
         data: {
           email: p.email,
           name: p.name,
@@ -66,14 +59,14 @@ export const GET = createHandler({
       });
     }
 
-    let account = await db.authAccount.findUnique({
+    let account = await db.read("account", {
       where: {
         providerID: provider.id,
       },
     });
 
     if (!account) {
-      account = await db.authAccount.create({
+      account = await db.create("account", {
         data: {
           provider: provider.type,
           providerID: provider.id,
@@ -83,7 +76,7 @@ export const GET = createHandler({
           // accessTokenExpires: new Date(tokens.expires_at * 1000),
           user: {
             connect: {
-              id: user.id,
+              // id: user.id,
             },
           },
         },
@@ -91,19 +84,19 @@ export const GET = createHandler({
     }
 
     // update user accounts
-    await db.authUser.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        accounts: {
-          // @ts-expect-error TODO: fix this
-          connect: {
-            id: account.id,
-          },
-        },
-      },
-    });
+    // await db.authUser.update({
+    //   where: {
+    //     id: user.id,
+    //   },
+    //   data: {
+    //     accounts: {
+    //       // @ts-expect-error TODO: fix this
+    //       connect: {
+    //         id: account.id,
+    //       },
+    //     },
+    //   },
+    // });
 
     const body = {
       status: "success",
@@ -113,69 +106,69 @@ export const GET = createHandler({
       },
     };
 
-    if (auth.strategy === "token-based") {
-      const token = await auth.encode({ id: user.id });
-      const nonce = crypto.randomBytes(16).toString("base64");
-      ctx.response.setHeader(
-        "Content-Security-Policy",
-        `script-src 'nonce-${nonce}'`
-      );
+    // if (auth.strategy === "token-based") {
+    //   const token = await auth.encode({ id: user.id });
+    //   const nonce = crypto.randomBytes(16).toString("base64");
+    //   ctx.response.setHeader(
+    //     "Content-Security-Policy",
+    //     `script-src 'nonce-${nonce}'`
+    //   );
 
-      // use postMessage to send token to parent window
-      const vals = JSON.stringify({
-        ...body,
-        token,
-      });
-      
-      // decode the referer
-      const decoded = Buffer.from(referer, "base64").toString("ascii");
-      console.log("DECODED:", decoded);
+    //   // use postMessage to send token to parent window
+    //   const vals = JSON.stringify({
+    //     ...body,
+    //     token,
+    //   });
 
-      return ctx.string(
-        `
-          <script nonce="${nonce}">
-            console.log(${vals})
-            console.log("PARENT:", window.parent);
+    //   // decode the referer
+    //   const decoded = Buffer.from(referer, "base64").toString("ascii");
+    //   console.log("DECODED:", decoded);
 
-            window.location.href = ${decoded};
-            
-          </script>
-        `,
-        200,
-        {
-          headers: {
-            "Content-Type": "text/html",
-          },
-        }
-      );
+    //   return ctx.string(
+    //     `
+    //       <script nonce="${nonce}">
+    //         console.log(${vals})
+    //         console.log("PARENT:", window.parent);
 
-      // return ctx.json({
-      //   ...body,
-      //   token,
-      // });
-    }
+    //         window.location.href = ${decoded};
 
-    // create session
-    const session = await db.authSession.create({
-      data: {
-        user: {
-          connect: {
-            id: user.id,
-          },
-        },
-        userID: user.id,
-        accessToken: user.id,
-        sessionToken: user.id,
-        // expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
-    });
+    //       </script>
+    //     `,
+    //     200,
+    //     {
+    //       headers: {
+    //         "Content-Type": "text/html",
+    //       },
+    //     }
+    //   );
 
-    // set cookie
-    ctx.response.cookie(cookies.names.session, session.sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+    //   // return ctx.json({
+    //   //   ...body,
+    //   //   token,
+    //   // });
+    // }
+
+    // // create session
+    // const session = await db.authSession.create({
+    //   data: {
+    //     user: {
+    //       connect: {
+    //         id: user.id,
+    //       },
+    //     },
+    //     userID: user.id,
+    //     accessToken: user.id,
+    //     sessionToken: user.id,
+    //     // expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    //   },
+    // });
+
+    // // set cookie
+    // ctx.response.cookie(cookies.names.session, session.sessionToken, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "lax",
+    // });
 
     return ctx.json(body);
   },

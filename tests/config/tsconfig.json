@@ -1,0 +1,8 @@
+{
+  "include": ["my-routes/**/*", "bf.config.ts", "server.ts"],
+  "compilerOptions": {
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
+  }
+}

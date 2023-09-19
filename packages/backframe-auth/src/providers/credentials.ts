@@ -1,7 +1,6 @@
-import type { AuthUser } from "@backframe/models";
 import { OAuthConfig, OAuthUserConfig } from "../lib/types";
 
-export default function Credentials<P extends AuthUser>(
+export default function Credentials<P extends object>(
   options: OAuthUserConfig<P>
 ): OAuthConfig<P> {
   return {
