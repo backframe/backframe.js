@@ -67,10 +67,11 @@ export class DrizzleAdapter<
   async create<T>(model: string, data: Partial<T>) {
     const table = this.#table(model);
     const client = this.client as any;
-    let promise = client.insert(table).values(data);
+    const promise = client.insert(table).values(data);
 
     if (this.dialect !== "mysql") {
-      promise = promise.returning();
+      const data = await promise.returning();
+      return data[0];
     }
 
     return await promise;
@@ -79,10 +80,13 @@ export class DrizzleAdapter<
   async delete<T>(model: string, args: { where: BfWhere<T> }) {
     const table = this.#table(model);
     const client = this.client as any;
-    let promise = client.delete(table).where(toDrizzleWhere(table, args.where));
+    const promise = client
+      .delete(table)
+      .where(toDrizzleWhere(table, args.where));
 
     if (this.dialect !== "mysql") {
-      promise = promise.returning();
+      const data = await promise.returning();
+      return data[0];
     }
 
     return await promise;
@@ -118,10 +122,12 @@ export class DrizzleAdapter<
   async read<T>(model: string, args: { where: BfWhere<T> }) {
     const table = this.#table(model);
     const client = this.client as any;
-    return await client
+    const data = await client
       .select()
       .from(table)
       .where(toDrizzleWhere(table, args.where));
+
+    return data[0];
   }
 
   async update<T>(
@@ -130,13 +136,14 @@ export class DrizzleAdapter<
   ) {
     const table = this.#table(model);
     const client = this.client as any;
-    let promise = client
+    const promise = client
       .update(table)
       .set(args.data)
       .where(toDrizzleWhere(table, args.where));
 
     if (this.dialect !== "mysql") {
-      promise = promise.returning();
+      const data = await promise.returning();
+      return data[0];
     }
 
     return await promise;

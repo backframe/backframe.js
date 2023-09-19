@@ -19,7 +19,7 @@ describe("test prisma adapter functionality", () => {
       .send({ title, body: "world" })
       .expect(201);
 
-    const newPost = data.body[0];
+    const newPost = data.body;
 
     expect(newPost.id).toBeDefined();
     expect(newPost.createdAt).toBeDefined();
@@ -31,7 +31,7 @@ describe("test prisma adapter functionality", () => {
 
   it("GET /posts/:id", async () => {
     const res = await request(app).get(`/posts/${post.id}`).expect(200);
-    expect(res.body[0].id).toBe(post.id);
+    expect(res.body.id).toBe(post.id);
   });
 
   it("PUT /posts/:id", async () => {
@@ -43,7 +43,7 @@ describe("test prisma adapter functionality", () => {
       .send({ title: newTitle })
       .expect(200);
 
-    const updatePost = updated.body[0];
+    const updatePost = updated.body;
 
     expect(updatePost.id).toBe(post.id);
     expect(updatePost.title).toBe(newTitle);
