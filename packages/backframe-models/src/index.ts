@@ -1,23 +1,20 @@
-import {
-  AuthAccount,
-  AuthSession,
-  AuthUser,
-  AuthVerificationRequest,
-  BaseModel,
-} from "./models.js";
+type BooleanKeys<T> = {
+  [key in keyof T]: boolean;
+};
 
-// Object mimicking expected database shape
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type DB<T = {}> = {
-  authUser: DbEntry<AuthUser>;
-  authSession: DbEntry<AuthSession>;
-  authAccount: DbEntry<AuthAccount>;
-  authVerificationRequest: DbEntry<AuthVerificationRequest>;
-  [key: string]: DbEntry<unknown>;
-} & { [k in keyof T]: DbEntry<T[k]> };
+type InferKeys<B, O> = {
+  [key in keyof (B | O)]: O[key];
+};
 
-export * from "./models.js";
-export * from "./prisma.js";
+export type SortOrder<T> = {
+  [key in keyof T]: "asc" | "desc";
+};
+
+export type ExpandWithOps<T> = {
+  OR?: T & ExpandWithOps<T>;
+  AND?: T & ExpandWithOps<T>;
+  NOT?: T & ExpandWithOps<T>;
+};
 
 type QueryWithRelations<T> = {
   every?: ExpandWithOps<T>;
@@ -35,32 +32,19 @@ type CreateWithRelations<T extends { id?: string }> = {
 };
 
 type ExpandedCreate<T> = {
-  [P in keyof T]: T[P] extends BaseModel
+  [P in keyof T]: T[P] extends object
     ? CreateWithRelations<T[P]>
-    : T[P] extends BaseModel[]
+    : T[P] extends object[]
     ? CreateWithRelations<T[P][0]>
     : T[P];
 };
 
-type _ExpandedUpdate<T> = {
-  [P in keyof T]: T[P] extends BaseModel
-    ? CreateWithRelations<T[P]>
-    : T[P] extends BaseModel[]
-    ? CreateWithRelations<T[P][0]> & {
-        delete?: Partial<T[P]>;
-        deleteMany: ExpandWithOps<Partial<T[P]>>;
-        update?: {
-          data: T[P];
-          where: Partial<T[P]>;
-        };
-        updateMany?: {
-          data: T[P];
-          where: Partial<ExpandWithOps<T[P]>>;
-        };
-        disconnect?: Partial<T[P]>;
-        set?: Partial<T[P]>;
-      }
-    : T[P];
+type ExpandedDeleteMany<T> = {
+  [P in keyof T]: T[P] extends object[] ? QueryWithRelations<T[P]> : T[P];
+};
+
+type ExpandedFindFirst<T> = {
+  [P in keyof T]: T[P] extends object ? QueryWithRelations<T[P]> : T[P];
 };
 
 type DeleteIncludeClause<T> = {
@@ -68,13 +52,11 @@ type DeleteIncludeClause<T> = {
     | boolean
     | {
         select?: {
-          [P in keyof T]?: T[P] extends BaseModel | BaseModel[]
-            ? boolean
-            : never;
+          [P in keyof T]?: T[P] extends object | object[] ? boolean : never;
         };
       };
 } & {
-  [P in keyof T]?: T[P] extends BaseModel | BaseModel[]
+  [P in keyof T]?: T[P] extends object | object[]
     ?
         | boolean
         | {
@@ -89,40 +71,23 @@ type DeleteIncludeClause<T> = {
     : never;
 };
 
-type ExpandedDeleteMany<T> = {
-  [P in keyof T]: T[P] extends BaseModel[] ? QueryWithRelations<T[P]> : T[P];
-};
+export abstract class BfDatabase {
+  abstract model(name: string): BfDatabaseModel;
+}
 
-type ExpandedFindFirst<T> = {
-  [P in keyof T]: T[P] extends BaseModel ? QueryWithRelations<T[P]> : T[P];
-};
+export abstract class BfDatabaseModel {
+  [key: string]: unknown;
 
-export interface DbEntry<T> {
-  create: <S extends BooleanKeys<T>>(args: {
+  abstract create<T, S extends BooleanKeys<T>>(args: {
     data: ExpandedCreate<T>;
     select?: S;
-  }) => Promise<InferKeys<S, T> | T>;
-  delete: <S extends BooleanKeys<T>>(args: {
-    where: T;
+  }): Promise<InferKeys<S, T> | T>;
+  abstract findUnique<T, S extends BooleanKeys<T>, K extends keyof T>(args: {
+    where: Pick<T, K>;
     select?: S;
-    include?: DeleteIncludeClause<T>;
-  }) => Promise<InferKeys<S, T> | T>;
-  deleteMany: <S extends Partial<T> & ExpandWithOps<Partial<T>>>(args: {
-    where: ExpandedDeleteMany<S>;
-  }) => Promise<{ count: number }>;
-  findFirst: <
-    S extends BooleanKeys<T>,
-    W extends Partial<T> & ExpandWithOps<Partial<T>>
-  >(args: {
-    where?: ExpandedFindFirst<W>;
-    select?: S;
-    skip?: number;
-    take?: number;
-    orderBy?: SortOrder<Partial<T>>;
-    distinct?: keyof T;
-    cursor?: Partial<T>;
-  }) => Promise<InferKeys<S, T> | T>;
-  findMany: <
+  }): Promise<InferKeys<S, T> | T>;
+  abstract findMany<
+    T,
     S extends BooleanKeys<T>,
     W extends Partial<T> & ExpandWithOps<Partial<T>>
   >(args: {
@@ -133,82 +98,50 @@ export interface DbEntry<T> {
     orderBy?: SortOrder<Partial<T>>;
     distinct?: keyof T;
     cursor?: Partial<T>;
-  }) => Promise<Array<InferKeys<S, T> | T>>;
-  findUnique: <
+  }): Promise<Array<InferKeys<S, T> | T>>;
+  abstract findFirst<
+    T,
     S extends BooleanKeys<T>,
-    K extends keyof T
+    W extends Partial<T> & ExpandWithOps<Partial<T>>
   >(args: {
-    where: Pick<T, K>;
+    where?: ExpandedFindFirst<W>;
     select?: S;
-  }) => Promise<InferKeys<S, T> | T>;
-  update: <S extends BooleanKeys<T>>(args: {
+    skip?: number;
+    take?: number;
+    orderBy?: SortOrder<Partial<T>>;
+    distinct?: keyof T;
+    cursor?: Partial<T>;
+  }): Promise<InferKeys<S, T> | T>;
+  abstract update<T, S extends BooleanKeys<T>>(args: {
     where: Partial<T>;
     data: Partial<T>;
     select?: S;
-  }) => Promise<InferKeys<S, T> | T>;
-  updateMany: <S extends Partial<T> & ExpandWithOps<Partial<T>>>(args: {
-    where: S;
-    data: Partial<T>;
-  }) => Promise<{ count: number }>;
-  upsert: <S extends BooleanKeys<T>>(args: {
+  }): Promise<InferKeys<S, T> | T>;
+  abstract updateMany<
+    T,
+    S extends Partial<T> & ExpandWithOps<Partial<T>>
+  >(args: { where: S; data: Partial<T> }): Promise<{ count: number }>;
+  abstract delete<T, S extends BooleanKeys<T>>(args: {
+    where: T;
+    select?: S;
+    include?: DeleteIncludeClause<T>;
+  }): Promise<InferKeys<S, T> | T>;
+  abstract deleteMany<
+    T,
+    S extends Partial<T> & ExpandWithOps<Partial<T>>
+  >(args: { where: ExpandedDeleteMany<S> }): Promise<{ count: number }>;
+  abstract upsert<T, S extends BooleanKeys<T>>(args: {
     where: Partial<T>;
     create: T;
     update: Partial<T>;
     select?: S;
-  }) => Promise<InferKeys<S, T> | T>;
-  groupBy: <S extends BooleanKeys<T>>(args: {
-    where?: Partial<T>;
-    by: Array<keyof T>;
-    having?: Partial<T>;
-    take?: number;
-    skip?: number;
-    orderBy?: SortOrder<Partial<T>>;
-    select?: S;
-  }) => Promise<Array<InferKeys<S, T> | T>>;
-  count: (args: {
+  }): Promise<InferKeys<S, T> | T>;
+  abstract count<T>(args: {
     where?: Partial<T>;
     orderBy?: SortOrder<Partial<T>>;
     cursor?: Partial<T>;
     take?: number;
     skip?: number;
     distinct?: keyof T;
-  }) => Promise<number>;
-  aggregate: (args: {
-    where?: Partial<T>;
-    orderBy?: SortOrder<Partial<T>>;
-    cursor?: Partial<T>;
-    take?: number;
-    skip?: number;
-    distinct?: keyof T;
-    _count?: true;
-    _max?: true;
-    _min?: true;
-  }) => Promise<{
-    _count: number;
-    _min: Partial<T>;
-    _max: Partial<T>;
-  }>;
+  }): Promise<number>;
 }
-
-
-export type SortOrder<T> = {
-  [key in keyof T]: "asc" | "desc";
-};
-
-export type ExpandWithOps<T> = {
-  OR?: T & ExpandWithOps<T>;
-  AND?: T & ExpandWithOps<T>;
-  NOT?: T & ExpandWithOps<T>;
-};
-
-export type InferKeys<B, O> = {
-  [key in keyof (B | O)]: O[key];
-};
-
-export type Enumerable<T> = T | Array<T>;
-
-export type BooleanKeys<T> = {
-  [key in keyof T]: boolean;
-};
-
-
