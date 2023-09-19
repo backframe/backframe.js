@@ -67,6 +67,9 @@ jobs:
       - name: build packages
         run: pnpm build
 
+      - name: push db schema(s)
+        run: pnpm turbo db:push
+
       - name: create and publish versions
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: changesets/action@v1
