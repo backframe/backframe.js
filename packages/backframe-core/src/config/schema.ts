@@ -18,7 +18,7 @@ export const BF_CONFIG_DEFAULTS = {
   },
   plugins: [] as Plugin[],
   authentication: {
-    strategy: "token-based",
+    strategy: "token-based" as "token-based" | "session-based",
     providers: [] as { [key: string]: string }[],
   },
 };

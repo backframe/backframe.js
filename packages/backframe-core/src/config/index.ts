@@ -6,9 +6,9 @@ import type { Express, NextFunction, RequestHandler } from "express";
 import fs from "fs";
 import { Server } from "http";
 import path from "path";
-import { ZodType } from "zod";
 import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
+import { openConfig } from "./config.js";
 import { BF_CONFIG_DEFAULTS, BfUserConfig } from "./schema.js";
 import { loadTsConfig } from "./tsconfig.js";
 
@@ -78,13 +78,6 @@ export interface IBfServer {
     }
   ) => void;
   $listRoutes: () => { route: string; type: string; name: string }[];
-  $createValidator: (
-    t: ZodType,
-    opts: {
-      errorTitle: string;
-      errorMsgPrefix?: string;
-    }
-  ) => RequestHandler;
   $mountRoute: (
     method: Method,
     route: string,
@@ -120,7 +113,7 @@ export class BfConfig {
   // Third party plugins can mount their own options to the config
   pluginsOptions: Record<string, Record<string, unknown>> = {};
 
-  constructor(private userCfg: BfUserConfig) {
+  constructor(private userCfg: BfUserConfig = BF_CONFIG_DEFAULTS) {
     this.$listeners = {
       onServerInit: [],
       onConfigInit: [],
@@ -130,13 +123,10 @@ export class BfConfig {
       onServerStop: [],
     };
     this.compiler = defaultBuilder;
-
-    this.userCfg = deepMerge(BF_CONFIG_DEFAULTS, userCfg);
     this.#pluginManifest = new PluginManifest(this);
-    this.$initialize();
   }
 
-  $initialize() {
+  async $initialize() {
     const plugins = this.getConfig("plugins");
     plugins.forEach((p) => {
       this.#pluginManifest.register(p);
@@ -145,6 +135,15 @@ export class BfConfig {
     // if any plugin overrides the compiler
     this.$invokePlugin("compiler");
     this.compiler(this); // invoke compiler(it'll only run if typescript detected)
+
+    // read config file
+    const userCfg: BfUserConfig = await openConfig();
+    this.userCfg = deepMerge(BF_CONFIG_DEFAULTS, userCfg);
+
+    // if transpiled, update root dir
+    if (this.#updatedRootDir) {
+      this.$updateRootDir(path.join(this.#updatedRootDir, this.userCfg.root));
+    }
 
     // invoke config modifiers
     this.$invokeListeners("onConfigInit");
@@ -311,23 +310,21 @@ export class BfConfig {
 }
 
 const defaultBuilder = (cfg: BfConfig) => {
-  const root = cfg.getDirName("root");
   const tsconfig = loadTsConfig();
 
-  const globbyWithOpts = (g: string) => {
+  const globbyWithOpts = (g: string | string[]) => {
     return globbySync(g, {
       ignore: [
         ...(tsconfig.exclude ?? []),
         "node_modules/",
         "dist/",
         `${BF_OUT_DIR}/`,
-        "bf.config.*",
       ],
     });
   };
 
   // No ts files
-  if (!globbyWithOpts(`${root}/**/*.ts`).length) {
+  if (!globbyWithOpts(tsconfig.include ?? []).length) {
     return;
   }
 
@@ -335,13 +332,14 @@ const defaultBuilder = (cfg: BfConfig) => {
     fs.rmSync(resolveCwd(BF_OUT_DIR), { force: true, recursive: true });
   }
 
-  const files = globbyWithOpts(`${root}/**/*.{js,ts}`);
+  const outdir = BF_OUT_DIR;
+  const files = globbyWithOpts(tsconfig.include);
   buildSync({
+    outdir,
     format: "esm",
-    outdir: BF_OUT_DIR,
     entryPoints: files,
   });
 
-  // update root dir name
-  cfg.$updateRootDir(BF_OUT_DIR);
+  // update root dir
+  cfg.$updateRootDir(outdir);
 };
