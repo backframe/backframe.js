@@ -82,7 +82,7 @@ export class Router {
   #processRoute(r: string) {
     const fileRoute = this.#normalizeRoute(r);
     const base = path.basename(fileRoute);
-    const leading = path.dirname(fileRoute);
+    const leading = path.dirname(fileRoute).replace(/\$/g, ":");
     if (this.cfg?.ignored?.includes(base)) return;
 
     // try match route pattern

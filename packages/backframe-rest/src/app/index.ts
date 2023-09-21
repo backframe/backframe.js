@@ -85,8 +85,12 @@ export class BfServer implements IBfServer {
       // not a dummy route
       if (i.filePath !== null) {
         const r = new Resource(i, this.#bfConfig);
-        if (!this.$resources.some((_) => _.route === r.route))
+        const fmt = (str: string) => str.replace(/\/$/g, "");
+        if (!this.$resources.some((_) => fmt(_.route) === fmt(r.route)))
           this.$resources.push(r);
+        else {
+          logger.warn(`duplicate route detected: ${r.route}`);
+        }
       }
     });
 
