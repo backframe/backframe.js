@@ -8,7 +8,8 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./providers/*": "./dist/providers/*.js"
+    "./providers/*": "./dist/providers/*.js",
+    "./integrations/*": "./dist/integrations/*.js"
   },
   "scripts": {
     "build": "tsc"
@@ -17,6 +18,7 @@
     "@backframe/rest": "workspace:*",
     "@backframe/utils": "workspace:*",
     "@panva/hkdf": "^1.0.2",
+    "africastalking": "^0.6.2",
     "bcrypt": "^5.1.0",
     "cookie": "^0.5.0",
     "express-session": "^1.17.3",
@@ -26,7 +28,9 @@
     "node-fetch": "^3.3.0",
     "nodemailer": "^6.8.0",
     "oauth": "^0.10.0",
-    "openid-client": "^5.3.1"
+    "openid-client": "^5.3.1",
+    "qrcode": "^1.5.3",
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "@backframe/core": "workspace:*",
@@ -35,7 +39,9 @@
     "@types/jsonwebtoken": "^9.0.0",
     "@types/lodash.merge": "^4.6.7",
     "@types/nodemailer": "^6.4.7",
-    "@types/oauth": "^0.9.1"
+    "@types/oauth": "^0.9.1",
+    "@types/qrcode": "^1.5.2",
+    "@types/speakeasy": "^2.0.7"
   },
   "peerDependencies": {
     "@backframe/core": "workspace:*",
