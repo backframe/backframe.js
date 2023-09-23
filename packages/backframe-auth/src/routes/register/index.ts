@@ -37,7 +37,7 @@ export const POST = createHandler({
     passwordConfirm: z.string().min(8).max(64).optional(),
   }),
   async action(ctx) {
-    const { db, auth } = getOptions(ctx);
+    const { db, auth, getSMSTemplate } = getOptions(ctx);
     const { attr } = ctx.query;
 
     const {
@@ -120,8 +120,7 @@ export const POST = createHandler({
       switch (preferredMfa) {
         case "TOTP": {
           const secretCode = speakeasy.generateSecret({
-            name:
-              `${(mfa.applicationName ?? "Backframe app")}:${userparamValue}`,
+            name: `${auth.appName ?? "Backframe app"}:${userparamValue}`,
           });
 
           await db.update<BfUser>("user", {
@@ -157,10 +156,15 @@ export const POST = createHandler({
             expiresAt: new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
           });
 
+          // TODO: load message template from settings
           ctx.config.pluginsOptions["smsProvider"] = {
             ...ctx.config.pluginsOptions["smsProvider"],
             to: [user.phone],
-            message: `Your verification code is ${challenge}`,
+            message: getSMSTemplate("verificationCode", {
+              otp_code: challenge,
+              app_name: auth.appName ?? "Backframe app",
+              age: 5,
+            }),
           };
 
           ctx.config.$invokePlugin("smsProvider");

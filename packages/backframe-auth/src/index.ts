@@ -13,7 +13,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const pkg = require(path.join(__dirname, "../package.json"));
 
+type EmailTemplate = {
+  from: string;
+  subject: string;
+  body: string;
+};
+
 export interface AuthConfig {
+  appName: string;
   prefix?: string;
   encode?: <T>(payload: T, options?: unknown) => string | PromiseLike<string>;
   decode?: (token: string, options?: unknown) => any;
@@ -27,17 +34,81 @@ export interface AuthConfig {
     encrypted: string
   ) => boolean | PromiseLike<boolean>;
   mfaConfiguration?: {
+    age?: number;
     status: "ON" | "OFF" | "OPTIONAL";
     mfaTypes?: Array<"SMS" | "EMAIL" | "TOTP">;
-    applicationName?: string;
   };
   requiredAttributes?: Array<Partial<keyof BfUser>>;
   allowedSignInAttributes?: Array<"phone" | "email" | "username">;
+  smsTemplates?: {
+    verificationCode?: string;
+    resetPassword?: string;
+    invitation?: string;
+    passwordChanged?: string;
+  };
+  emailTemplates?: {
+    verificationCode?: EmailTemplate;
+    resetPassword?: EmailTemplate;
+    invitation?: EmailTemplate;
+    passwordChanged?: EmailTemplate;
+    organizationInvitation?: EmailTemplate;
+    magicLinkSignIn?: EmailTemplate;
+    magicLinkSignUp?: EmailTemplate;
+    magicLinkVerifyEmail?: EmailTemplate;
+  };
 }
+
+export type SMSTemplateConfig<T extends keyof AuthConfig["smsTemplates"]> =
+  T extends "verificationCode"
+    ? {
+        event: "verificationCode";
+        vars: {
+          otp_code: string;
+          app_name: string;
+          age: number;
+        };
+      }
+    : T extends "resetPassword"
+    ? {
+        event: "resetPassword";
+        vars: {
+          otp_code: string;
+          app_name: string;
+          age: number;
+        };
+      }
+    : T extends "invitation"
+    ? {
+        event: "invitation";
+        vars: {
+          inviter_name: string;
+          app_name: string;
+          action_url: string;
+        };
+      }
+    : T extends "passwordChanged"
+    ? {
+        event: "passwordChanged";
+        vars: {
+          app_name: string;
+        };
+      }
+    : never;
 
 export const DEFAULT_CFG: AuthConfig = {
   prefix: "/auth",
+  appName: "Backframe App",
   allowedSignInAttributes: ["phone", "email", "username"],
+  smsTemplates: {
+    verificationCode:
+      "{{otp_code}} is your {{app_name}} verification code and it will expire in {{age}} minutes. Do not share this with anyone.",
+    passwordChanged:
+      "Your {{app_name}} password has been changed! If you did not make this change, please reach out to an administrator for support.",
+    resetPassword:
+      "{{otp_code}} is your {{app_name}} reset password code. It will expire in 10 minutes, do not share this with anyone.",
+    invitation:
+      "{{inviter_name}} has invited you to join them on {{app_name}} {{action_url}}",
+  },
   // default encode is jwt
   async encode(payload, options: { secret: string; alg?: string }) {
     const s = new TextEncoder().encode(
