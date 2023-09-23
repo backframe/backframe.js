@@ -127,23 +127,20 @@ export class BfConfig {
   }
 
   async $initialize() {
-    const plugins = this.getConfig("plugins");
-    plugins.forEach((p) => {
-      this.#pluginManifest.register(p);
-    });
-
-    // if any plugin overrides the compiler
-    this.$invokePlugin("compiler");
-    this.compiler(this); // invoke compiler(it'll only run if typescript detected)
-
     // read config file
     const userCfg: BfUserConfig = await openConfig();
     this.userCfg = deepMerge(BF_CONFIG_DEFAULTS, userCfg);
+    this.compiler(this); // invoke compiler(it'll only run if typescript detected)
 
     // if transpiled, update root dir
     if (this.#updatedRootDir) {
       this.$updateRootDir(path.join(this.#updatedRootDir, this.userCfg.root));
     }
+
+    const plugins = this.getConfig("plugins");
+    plugins.forEach((p) => {
+      this.#pluginManifest.register(p);
+    });
 
     // invoke config modifiers
     this.$invokeListeners("onConfigInit");
@@ -169,7 +166,7 @@ export class BfConfig {
     return this.$listeners[key];
   }
 
-  $addPlugin(key: ConfigKey, p: PluginFunction) {
+  $addPlugin<T extends keyof typeof this>(key: T, p: typeof this[T]) {
     this[key] = p;
   }
 
