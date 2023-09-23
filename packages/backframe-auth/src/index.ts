@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { Plugin } from "@backframe/core";
-import { require } from "@backframe/utils";
+import type { BfUser, Plugin } from "@backframe/core";
+import { logger, require } from "@backframe/utils";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
 import merge from "lodash.merge";
@@ -26,10 +26,18 @@ export interface AuthConfig {
     data: string | Buffer,
     encrypted: string
   ) => boolean | PromiseLike<boolean>;
+  mfaConfiguration?: {
+    status: "ON" | "OFF" | "OPTIONAL";
+    mfaTypes?: Array<"SMS" | "EMAIL" | "TOTP">;
+    applicationName?: string;
+  };
+  requiredAttributes?: Array<Partial<keyof BfUser>>;
+  allowedSignInAttributes?: Array<"phone" | "email" | "username">;
 }
 
 export const DEFAULT_CFG: AuthConfig = {
   prefix: "/auth",
+  allowedSignInAttributes: ["phone", "email", "username"],
   // default encode is jwt
   async encode(payload, options: { secret: string; alg?: string }) {
     const s = new TextEncoder().encode(
@@ -79,6 +87,7 @@ export default function (cfg = DEFAULT_CFG): Plugin {
       pkg.description || "Provides authentication for a backframe app",
     version: pkg.version || "0.0.0",
     onServerInit(bfCfg) {
+      logger.dev("auth plugin registered");
       const { $server } = bfCfg;
       const { $app } = bfCfg.$server;
       const authCfg = bfCfg.getConfig("authentication");
