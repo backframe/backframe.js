@@ -203,7 +203,8 @@ export class BfServer implements IBfServer {
   }
 
   $extendFrom(path: string, cfg: { name?: string; prefix?: string }) {
-    const sub = new Router(this.#bfConfig, cfg); // sub-router
+    const sub = new Router(this.#bfConfig, { ...cfg, subRouter: true }); // sub-router
+    logger.dev(`extending router from: ${path}`);
     sub.init(path, "routes");
     this.#router.mergeRouter(sub);
   }

@@ -43,7 +43,7 @@ export type Handler<
   Q extends ZodRawShape = {},
   P extends ZodRawShape = {}
 > = (
-  ctx: Context<ZodObject<I>, O, ZodType<Q>, ZodType<P>>
+  ctx: Context<ZodObject<I>, O, ZodObject<Q>, ZodObject<P>>
 ) => HasKeys<O> extends true
   ? Awaitable<ZodReturnValue<ZodObject<O>>>
   : Awaitable<any>;
