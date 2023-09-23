@@ -55,6 +55,7 @@ export class Router {
       name?: string;
       prefix?: string;
       ignored?: string[];
+      subRouter?: boolean;
     }
   ) {
     this.#restPrefix = bfConfig.getInterfaceConfig("rest").urlPrefix;
@@ -70,12 +71,18 @@ export class Router {
     this.#rootDir = cwd;
     this.#sourceDir = src;
 
-    const matches = globbySync(ptrn, { cwd });
+    const isSubRouter = (root || this.cfg?.subRouter) ?? false;
+    const matches = globbySync(ptrn, {
+      cwd,
+      absolute: isSubRouter ? true : false,
+    });
     if (!matches.length) {
       logger.warn(`no routes detected in the ${src} directory`);
     }
     this.matches = matches;
-    matches.map((m) => this.#processRoute(m.replace("./", `./${cwd}/`)));
+    matches.map((m) =>
+      this.#processRoute(isSubRouter ? m : m.replace("./", `./${cwd}/`))
+    );
     this.manifest.orderRoutes();
   }
 
@@ -124,9 +131,11 @@ export class Router {
   }
 
   #normalizeRoute(route: string) {
-    // strip leading dirs and add prefix
-    const r = route.replace(`./${this.#rootDir}/${this.#sourceDir}`, "");
-    return path.join(this.#restPrefix, this.cfg?.prefix ?? "", r);
+    route = route.replace(/^.\//g, ""); // strip leading ./
+    // strip rootDir & sourceDir
+    const re = new RegExp(`^${this.#rootDir}/${this.#sourceDir}`);
+    route = route.replace(re, "");
+    return path.join(this.#restPrefix, this.cfg?.prefix ?? "", route);
   }
 
   #validateRoute(route: string) {
