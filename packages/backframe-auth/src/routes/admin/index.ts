@@ -1,4 +1,5 @@
 import { createHandler, defineRouteConfig } from "@backframe/rest";
+import { logger } from "@backframe/utils";
 import { POST as createUser } from "../register/index.js";
 
 export const config = defineRouteConfig({
@@ -16,7 +17,10 @@ export const POST = createHandler({
   async auth(ctx, cfg) {
     // allow if its the first user
     const users = await ctx.db.list("user", { limit: 1 });
-    if (users.length === 0) return cfg.allow();
+    if (users.length === 0) {
+      logger.dev("allowing first admin user");
+      return cfg.allow();
+    }
 
     // if users exist, allow admin only
     if (ctx.auth.roles.includes("ADMIN")) return cfg.allow();

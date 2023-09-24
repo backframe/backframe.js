@@ -7,6 +7,7 @@ export type AuthPluginConfig = {
       resourceRoles: string[];
       currentActions: string[];
       currentResources: string[];
+      public?: boolean;
     }
   ) => Promise<
     | void

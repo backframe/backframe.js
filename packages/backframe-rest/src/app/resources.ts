@@ -154,8 +154,6 @@ export class Resource<T> {
       cfg.runAuthMiddleware ?? "before"
     ); // default to before
 
-    if (isPublic) return;
-
     // mount global auth middleware - resolves session/token, sets ctx.auth and checks policies
     if (globalAuthMiddleware) {
       handlers.push(
@@ -164,6 +162,7 @@ export class Resource<T> {
             currentActions: [method],
             currentResources: [resource],
             resourceRoles: roles,
+            public: isPublic,
           });
         }, this.#bfConfig)
       );
@@ -316,7 +315,7 @@ export class Resource<T> {
       cfg.runAuthMiddleware ?? "before"
     ); // default to before
 
-    if (isPublic) return data;
+    if (isPublic && !ctx.auth.userId) return data;
 
     if (evaluatePolicies) {
       const allowed = await evaluatePolicies(ctx, {

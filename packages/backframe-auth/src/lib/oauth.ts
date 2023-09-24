@@ -2,8 +2,13 @@
 import { BfConfig, BfDatabase, BfUserConfig } from "@backframe/core";
 import { Context } from "@backframe/rest";
 import { Issuer } from "openid-client";
-import { AuthConfig, DEFAULT_CFG, SMSTemplateConfig } from "../index.js";
-import { InternalProvider, Provider } from "./types";
+import { DEFAULT_CFG } from "../index.js";
+import {
+  AuthConfig,
+  InternalProvider,
+  Provider,
+  SMSTemplateConfig,
+} from "./types.js";
 
 export type InternalOptions = {
   db: BfDatabase;
