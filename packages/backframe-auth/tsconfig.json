@@ -5,5 +5,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/example-*"]
+  "exclude": ["node_modules", "dist"]
 }

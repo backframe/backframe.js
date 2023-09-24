@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@backframe/core": "workspace:*",
+    "@backframe/eslint-config": "workspace:*",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie": "^0.5.1",
     "@types/jsonwebtoken": "^9.0.0",
@@ -46,5 +47,11 @@
   "peerDependencies": {
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*"
+  },
+  "eslintIgnore": [
+    "dist/*"
+  ],
+  "eslintConfig": {
+    "extends": "@backframe/eslint-config"
   }
 }
