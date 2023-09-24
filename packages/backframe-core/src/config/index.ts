@@ -6,6 +6,7 @@ import fs from "fs";
 import { Server } from "http";
 import path from "path";
 import { BfDatabase } from "../adapters/index.js";
+import { AuthPluginConfig } from "../plugins/auth.js";
 import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
 import { loadSettings, openConfig } from "./config.js";
@@ -94,6 +95,9 @@ export interface IAuthDef {
 }
 
 export class BfConfig {
+  // built in plugins
+  auth: AuthPluginConfig;
+
   #updatedRootDir: string;
   #pluginManifest: PluginManifest;
 
@@ -186,6 +190,17 @@ export class BfConfig {
 
   $updateRootDir(name: string) {
     this.#updatedRootDir = name;
+  }
+
+  $getAuthPluginOptions<T extends keyof AuthPluginConfig>(key: T) {
+    return this.auth?.[key];
+  }
+
+  $updateAuthOptions(auth: AuthPluginConfig) {
+    this.auth = {
+      ...this.auth,
+      ...auth,
+    };
   }
 
   // configure server,app,database,sockets

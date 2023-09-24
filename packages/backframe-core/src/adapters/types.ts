@@ -6,7 +6,14 @@ export const BfAuthPolicySchema = z.object({
   effect: z.enum(["ALLOW", "DENY"]),
   actions: z.array(z.string()),
   resources: z.array(z.string()),
-  expressions: z.array(z.string()).optional(),
+  conditions: z
+    .array(
+      z.object({
+        run: z.enum(["before", "after", "beforeAndAfter"]),
+        expression: z.string(),
+      })
+    )
+    .optional(),
 });
 
 export const BfUserRoleSchema = z.object({
