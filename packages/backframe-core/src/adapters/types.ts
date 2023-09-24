@@ -3,17 +3,16 @@ import { z } from "zod";
 export const BfAuthPolicySchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string().optional(),
+  effect: z.enum(["ALLOW", "DENY"]),
   actions: z.array(z.string()),
   resources: z.array(z.string()),
-  conditions: z.array(z.string()).optional(),
-  createdAt: z.date(),
-  updatedAt: z.date().optional(),
+  expressions: z.array(z.string()).optional(),
 });
 
 export const BfUserRoleSchema = z.object({
   id: z.string(),
   name: z.string(),
+  userId: z.string(),
   description: z.string().optional(),
   permissions: z.array(BfAuthPolicySchema),
   createdAt: z.date(),
