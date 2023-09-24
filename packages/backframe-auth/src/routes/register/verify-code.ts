@@ -5,10 +5,15 @@ import {
   BfVerificationToken,
   PublicBfUserSchema,
 } from "@backframe/core";
-import { createHandler, z } from "@backframe/rest";
+import { createHandler, defineRouteConfig, z } from "@backframe/rest";
 import * as speakeasy from "speakeasy";
 import { UserNotFound } from "../../lib/errors.js";
 import { getOptions } from "../../lib/oauth.js";
+
+export const config = defineRouteConfig({
+  enabledMethods: [],
+  publicMethods: ["post"],
+});
 
 export const POST = createHandler({
   input: z.object({
@@ -166,7 +171,7 @@ export const POST = createHandler({
     };
 
     if (auth.strategy === "token-based") {
-      const token = await auth.encode({ id: user.id }); // TODO: add claims
+      const token = await auth.encode({ id: user.id, roles: ["USER"] }); // TODO: add claims
       return ctx.json({
         ...body,
         token,

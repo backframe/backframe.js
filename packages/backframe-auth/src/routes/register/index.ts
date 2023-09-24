@@ -20,6 +20,7 @@ import { generateVerificationCode } from "../../lib/utils.js";
 
 export const config = defineRouteConfig({
   enabledMethods: [],
+  publicMethods: ["post"],
 });
 
 export const POST = createHandler({
@@ -120,7 +121,9 @@ export const POST = createHandler({
       switch (preferredMfa) {
         case "TOTP": {
           const secretCode = speakeasy.generateSecret({
-            name: `${auth.appName ?? "Backframe app"}:${userparamValue}`,
+            name: `${
+              auth.applicationName ?? "Backframe app"
+            }:${userparamValue}`,
           });
 
           await db.update<BfUser>("user", {
@@ -162,7 +165,7 @@ export const POST = createHandler({
             to: [user.phone],
             message: getSMSTemplate("verificationCode", {
               otp_code: challenge,
-              app_name: auth.appName ?? "Backframe app",
+              app_name: auth.applicationName ?? "Backframe app",
               age: 5,
             }),
           };
@@ -205,8 +208,11 @@ export const POST = createHandler({
         },
       };
 
+      // override roles if provided (e.g. admin)
+      const roles = (ctx.roles as string[]) ?? ["USER"];
+
       if (auth.strategy === "token-based") {
-        const token = await auth.encode({ id: user.id }); // TODO: add claims
+        const token = await auth.encode({ id: user.id, roles }); // TODO: add claims
         return ctx.json({
           ...body,
           token,
