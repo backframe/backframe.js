@@ -8,8 +8,9 @@ import path from "path";
 import { BfDatabase } from "../adapters/index.js";
 import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
-import { openConfig } from "./config.js";
+import { loadSettings, openConfig } from "./config.js";
 import { BF_CONFIG_DEFAULTS, BfUserConfig } from "./schema.js";
+import { BfSettings } from "./settings.js";
 import { loadTsConfig } from "./tsconfig.js";
 
 // each key corresponds to a prop of the BfConfig class
@@ -103,6 +104,7 @@ export class BfConfig {
   $sockets?: unknown;
 
   // config related values/extensions
+  $settings?: BfSettings;
   $listeners: Listeners;
   compiler: PluginFunction;
   smsProvider?: PluginFunction;
@@ -127,6 +129,10 @@ export class BfConfig {
   }
 
   async $initialize() {
+    // load settings
+    const settings = loadSettings();
+    this.$settings = settings;
+
     // read config file
     const userCfg: BfUserConfig = await openConfig();
     this.userCfg = deepMerge(BF_CONFIG_DEFAULTS, userCfg);
