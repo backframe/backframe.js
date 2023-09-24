@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
 }
 
 model Post {
@@ -18,4 +18,47 @@ model Post {
   content   String?
   published Boolean  @default(false)
   authorId  Int?
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String?
+  email            String?   @unique
+  emailVerified    DateTime?
+  phone            String?
+  phoneVerified    DateTime?
+  imageURL         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+  firstName        String?
+  lastName         String?
+  username         String?
+  status           String?
+  unsafeMetadata   Json?
+  twoFactorEnabled Boolean   @default(false)
+  sessions         Session[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  ip           String?
+  sessionToken String   @unique
+  userId       String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime @default(now())
+  userAgent    String?
+  User         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  expiresAt  DateTime
+
+  @@unique([identifier, token])
 }

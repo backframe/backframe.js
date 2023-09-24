@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@backframe/adapter-prisma": "workspace:^",
+    "@backframe/auth": "workspace:*",
     "@backframe/core": "workspace:*",
     "@backframe/rest": "workspace:*",
     "@bf/database": "workspace:*",
