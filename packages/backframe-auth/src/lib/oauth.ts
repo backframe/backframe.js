@@ -75,7 +75,7 @@ export function getOptions(ctx: Context<any>): InternalOptions {
       ...p,
       callbackURL: `${
         process.env.APP_URL ?? "http://localhost:6969"
-      }${bf.withRestPrefix(auth.prefix)}/callback/${providerId}`,
+      }${bf.withRestPrefix(auth.routePrefix)}/callback/${providerId}`,
       options: {
         clientId,
         clientSecret,

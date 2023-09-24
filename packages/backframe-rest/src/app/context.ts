@@ -19,21 +19,25 @@ export class Context<
 > {
   [key: string]: unknown; // extended by user
 
+  auth?: {
+    userId?: string;
+    roles?: string[];
+    sessionId?: string;
+  };
+
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
     private bfConfig?: BfConfig
-  ) {}
+  ) {
+    this.auth = {
+      roles: [],
+    };
+  }
 
   get db() {
     return this.bfConfig.$database;
-  }
-
-  get auth() {
-    return {
-      session: "",
-    };
   }
 
   get input() {

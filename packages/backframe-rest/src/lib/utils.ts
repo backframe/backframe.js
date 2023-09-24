@@ -50,9 +50,8 @@ export function createRequestValidator<T extends ZodRawShape>({
 }): RequestHandler {
   return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
     const opts = schema.safeParse(req[source]);
-    if (!opts.success) {
-      // @ts-expect-error (value exists)
-      const errors = opts.error.flatten().fieldErrors;
+    if (opts.success === false) {
+      const errors: Record<string, string[]> = opts.error.flatten().fieldErrors;
       const field = Object.keys(errors)[0];
       next(
         new GenericException(

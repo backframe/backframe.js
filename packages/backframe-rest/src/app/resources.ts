@@ -2,7 +2,6 @@
 
 import { BfConfig } from "@backframe/core";
 import { loadModule, logger, resolveCwd } from "@backframe/utils";
-import { ZodObject } from "zod";
 import { GenericException } from "../lib/errors.js";
 import {
   BfHandler,
@@ -16,8 +15,12 @@ import {
 } from "../lib/types.js";
 import { createRequestValidator } from "../lib/utils.js";
 import { RouteItem } from "../routing/router.js";
-import { Context } from "./context.js";
-import { DefaultHandlers, _getStaticHandler, wrapHandler } from "./handlers.js";
+import {
+  DefaultHandlers,
+  _getStaticHandler,
+  createHandler,
+  wrapHandler,
+} from "./handlers.js";
 import { BfServer } from "./index.js";
 
 export const DEFAULT_ENABLED: Method[] = ["get", "post", "put", "delete"];
@@ -35,7 +38,7 @@ export class Resource<T> {
   listeners?: NspListener;
   afterAll?: BfHandler[];
   beforeAll?: BfHandler[];
-  secured?: Method[];
+  public?: Method[];
   enabled?: Method[];
 
   constructor(item: RouteItem, config: BfConfig) {
@@ -70,16 +73,17 @@ export class Resource<T> {
       const filePath = this.routeItem.isExtended
         ? this.routeItem.filePath
         : resolveCwd(this.#routeItem.filePath);
+      // TODO: validate module exports
       const mod = await loadModule(filePath);
       const config: IRouteConfig<T> = Object.assign(
         {
           enabledMethods: DEFAULT_ENABLED,
-          securedMethods: DEFAULT_PUBLIC,
+          publicMethods: DEFAULT_PUBLIC,
         },
         mod.config ?? {}
       );
       this.#model = config.model;
-      this.secured = config.securedMethods;
+      this.public = config.publicMethods;
       this.enabled = config.enabledMethods;
 
       this.#loadHandlers(mod);
@@ -124,6 +128,9 @@ export class Resource<T> {
         output,
         params,
         query,
+        roles,
+        auth: authMiddleware,
+        runAuthMiddleware,
       } = cfg as BfHandlerConfig;
       let action = cfg.action;
       middleware.push(...(mware ?? []));
@@ -133,49 +140,66 @@ export class Resource<T> {
         action = this.#getHandler(method).action;
       }
 
-      const $ = async <U extends ZodObject<{}>>(ctx: Context<U>) => {
-        let returnValue = await action(ctx);
+      const { action: $ } = createHandler({
+        async action(ctx) {
+          let returnValue = await action(ctx);
 
-        // check for output validation
-        if (
-          output &&
-          !(
-            returnValue instanceof GenericException ||
-            returnValue instanceof Error
-          )
-        ) {
-          const result = output.safeParse(returnValue);
+          // check for output validation
+          if (
+            output &&
+            !(
+              returnValue instanceof GenericException ||
+              returnValue instanceof Error
+            )
+          ) {
+            const result = output.safeParse(returnValue);
 
-          if (result.success) {
-            const sanitized = result.data;
+            if (result.success === true) {
+              const sanitized = result.data;
 
-            // @ts-expect-error (not in schema, but should be preserved)
-            sanitized.headers = returnValue.headers;
-            // @ts-expect-error (not in schema, but should be preserved)
-            sanitized.statusCode = returnValue.statusCode;
+              // @ts-expect-error (not in schema, but should be preserved)
+              sanitized.headers = returnValue.headers;
+              // @ts-expect-error (not in schema, but should be preserved)
+              sanitized.statusCode = returnValue.statusCode;
 
-            returnValue = sanitized;
-          } else {
-            // @ts-expect-error (value exists)
-            const errors = result.error.flatten().fieldErrors;
-            const field = Object.keys(errors)[0];
-            throw new Error(
-              `output validation failed for route: \`${
-                this.route
-              }\` with method: \`${method}\`. Error on field '${field}': ${errors[
-                field
-              ][0].toLowerCase()}`
-            );
+              returnValue = sanitized;
+            } else {
+              const errors: Record<string, string[]> =
+                result.error.flatten().fieldErrors;
+              const field = Object.keys(errors)[0];
+              throw new Error(
+                `output validation failed for route: \`${
+                  this.route
+                }\` with method: \`${method}\`. Error on field '${field}': ${errors[
+                  field
+                ][0].toLowerCase()}`
+              );
+            }
           }
-        }
 
-        // check for afterAll hooks
-        this.afterAll?.forEach((m) => {
-          m(ctx);
-        });
+          // check for 'post' auth middleware
+          if (
+            ["both", "after"].includes(runAuthMiddleware ?? "before") &&
+            authMiddleware
+          ) {
+            logger.dev("found post auth middleware");
+            return await authMiddleware(ctx, {
+              data: returnValue,
+              status: "after",
+              allow: () => returnValue,
+              deny: (msg?: string) => {
+                return new GenericException(
+                  401,
+                  "Unauthorized",
+                  msg ?? "You are not authorized to access this resource"
+                );
+              },
+            });
+          }
 
-        return returnValue;
-      };
+          return returnValue;
+        },
+      });
 
       const handlers = middleware
         .concat($)
@@ -210,6 +234,50 @@ export class Resource<T> {
           })
         );
 
+      // check for 'pre' auth middleware
+      if (
+        ["both", "before"].includes(runAuthMiddleware ?? "before") &&
+        authMiddleware
+      ) {
+        logger.dev("found pre auth middleware");
+        const h = createHandler({
+          async action(ctx) {
+            return await authMiddleware(ctx, {
+              data: undefined,
+              status: "before",
+              allow: () => ctx.next(),
+              deny: (msg?: string) =>
+                ctx.next(
+                  new GenericException(
+                    401,
+                    "Unauthorized",
+                    msg ?? "You are not authorized to access this resource"
+                  )
+                ),
+            });
+          },
+        });
+        handlers.unshift(wrapHandler(h.action, this.#bfConfig));
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const auth: any = this.#bfConfig.pluginsOptions?.["auth"]?.["middleware"];
+      const resource = this.resolveModel();
+
+      if (auth && !this.public?.includes(method)) {
+        logger.dev(`auth middleware running for ${method} on ${resource}`);
+        const h = createHandler({
+          async action(ctx) {
+            return await auth(ctx, {
+              currentActions: [method],
+              currentResources: [resource],
+              resourceRoles: roles,
+            });
+          },
+        });
+        handlers.unshift(wrapHandler(h.action, this.#bfConfig));
+      }
+
       // mount resource on express app
       server.$app[method](this.route, handlers);
     }
@@ -224,6 +292,11 @@ export class Resource<T> {
     }
 
     return model;
+  }
+
+  #authorize() {
+    // TODO: check for auth middleware
+    // action: model/resource+method
   }
 
   #getHandler(method: Method): IHandlerConfig<{}, {}> {

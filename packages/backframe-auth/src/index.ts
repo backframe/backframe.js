@@ -1,10 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { BfUser, Plugin } from "@backframe/core";
+import {
+  BfSettings,
+  createEnvValidator,
+  z,
+  type Plugin,
+} from "@backframe/core";
 import { logger, require } from "@backframe/utils";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
 import merge from "lodash.merge";
+import { Context } from "packages/backframe-rest/dist/index.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Provider } from "./lib/types.js";
@@ -13,15 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const pkg = require(path.join(__dirname, "../package.json"));
 
-type EmailTemplate = {
-  from: string;
-  subject: string;
-  body: string;
-};
-
-export interface AuthConfig {
-  appName: string;
-  prefix?: string;
+export type AuthConfig = BfSettings["auth"] & {
   encode?: <T>(payload: T, options?: unknown) => string | PromiseLike<string>;
   decode?: (token: string, options?: unknown) => any;
   verify?: (token: string, options?: unknown) => boolean | Promise<boolean>;
@@ -33,30 +31,7 @@ export interface AuthConfig {
     data: string | Buffer,
     encrypted: string
   ) => boolean | PromiseLike<boolean>;
-  mfaConfiguration?: {
-    age?: number;
-    status: "ON" | "OFF" | "OPTIONAL";
-    mfaTypes?: Array<"SMS" | "EMAIL" | "TOTP">;
-  };
-  requiredAttributes?: Array<Partial<keyof BfUser>>;
-  allowedSignInAttributes?: Array<"phone" | "email" | "username">;
-  smsTemplates?: {
-    verificationCode?: string;
-    resetPassword?: string;
-    invitation?: string;
-    passwordChanged?: string;
-  };
-  emailTemplates?: {
-    verificationCode?: EmailTemplate;
-    resetPassword?: EmailTemplate;
-    invitation?: EmailTemplate;
-    passwordChanged?: EmailTemplate;
-    organizationInvitation?: EmailTemplate;
-    magicLinkSignIn?: EmailTemplate;
-    magicLinkSignUp?: EmailTemplate;
-    magicLinkVerifyEmail?: EmailTemplate;
-  };
-}
+};
 
 export type SMSTemplateConfig<T extends keyof AuthConfig["smsTemplates"]> =
   T extends "verificationCode"
@@ -95,25 +70,25 @@ export type SMSTemplateConfig<T extends keyof AuthConfig["smsTemplates"]> =
       }
     : never;
 
-export const DEFAULT_CFG: AuthConfig = {
-  prefix: "/auth",
-  appName: "Backframe App",
-  allowedSignInAttributes: ["phone", "email", "username"],
-  smsTemplates: {
-    verificationCode:
-      "{{otp_code}} is your {{app_name}} verification code and it will expire in {{age}} minutes. Do not share this with anyone.",
-    passwordChanged:
-      "Your {{app_name}} password has been changed! If you did not make this change, please reach out to an administrator for support.",
-    resetPassword:
-      "{{otp_code}} is your {{app_name}} reset password code. It will expire in 10 minutes, do not share this with anyone.",
-    invitation:
-      "{{inviter_name}} has invited you to join them on {{app_name}} {{action_url}}",
+export const env = createEnvValidator({
+  schema: z.object({
+    BF_AUTH_SECRET: z.string(),
+  }),
+  onValidationError(error) {
+    const errors: Record<string, string[]> = error.flatten().fieldErrors;
+    logger.error(`auth: missing required env var, ${errors[0]}`);
+    console.error(
+      "❌ Invalid environment variables:",
+      error.flatten().fieldErrors
+    );
+    throw new Error("Invalid environment variables");
   },
+});
+
+export const DEFAULT_CFG: AuthConfig = {
   // default encode is jwt
   async encode(payload, options: { secret: string; alg?: string }) {
-    const s = new TextEncoder().encode(
-      options?.secret || process.env.BF_AUTH_SECRET
-    );
+    const s = new TextEncoder().encode(options?.secret || env.BF_AUTH_SECRET);
 
     const token = await new jose.SignJWT(payload as jose.JWTPayload)
       .setProtectedHeader({ alg: options?.alg ?? "HS256" })
@@ -126,17 +101,11 @@ export const DEFAULT_CFG: AuthConfig = {
     return token;
   },
   // default decode is jwt
-  async decode(token, options: { secret: string }) {
-    const s = jose.base64url.decode(
-      options?.secret || process.env.BF_AUTH_SECRET
-    );
-    const { payload } = await jose.jwtDecrypt(token, s);
-    return payload;
+  decode(token) {
+    return jose.decodeJwt(token);
   },
   async verify(token, options: { secret: string }) {
-    const s = new TextEncoder().encode(
-      options?.secret || process.env.BF_AUTH_SECRET
-    );
+    const s = new TextEncoder().encode(options?.secret || env.BF_AUTH_SECRET);
     const { payload } = await jose.jwtVerify(token, s);
     return !!payload;
   },
@@ -151,7 +120,6 @@ export const DEFAULT_CFG: AuthConfig = {
 };
 
 export default function (cfg = DEFAULT_CFG): Plugin {
-  cfg = merge(DEFAULT_CFG, cfg);
   return {
     name: pkg.name,
     description:
@@ -163,8 +131,10 @@ export default function (cfg = DEFAULT_CFG): Plugin {
       const { $app } = bfCfg.$server;
       const authCfg = bfCfg.getConfig("authentication");
       const providers = authCfg.providers as Provider[];
+      const settings = bfCfg.$settings.auth;
+      cfg = merge(merge(DEFAULT_CFG, settings), cfg);
 
-      $app.use(bfCfg.withRestPrefix(cfg.prefix), (rq, _rs, nxt) => {
+      $app.use((rq, _rs, nxt) => {
         // @ts-expect-error - it will be there
         rq.authCfg = { ...cfg, ...authCfg };
         nxt();
@@ -178,10 +148,108 @@ export default function (cfg = DEFAULT_CFG): Plugin {
         ignored.push("signin.credentials.js");
       }
 
+      async function middleware(
+        ctx: Context<any>,
+        {
+          resourceRoles,
+          currentActions,
+          currentResources,
+        }: {
+          resourceRoles: string[];
+          currentActions: string[];
+          currentResources: string[];
+        }
+      ) {
+        const unauthorized = () => ({
+          status: "error",
+          message: "Unauthorized",
+          description: "Authorization is required to access this resource",
+        });
+
+        let userId: string;
+        let userRoles: string[];
+
+        // check requirements
+        if (authCfg.strategy === "token-based") {
+          const bearer = ctx.request.headers["authorization"];
+          if (!bearer) return ctx.json(unauthorized(), 401);
+
+          const token = bearer.split(" ")[1];
+          if (!token) return ctx.json(unauthorized(), 401);
+
+          try {
+            const valid = await cfg.verify(token);
+            if (!valid) return ctx.json(unauthorized(), 401);
+
+            const payload = cfg.decode(token);
+            if (!payload) return ctx.json(unauthorized(), 401);
+
+            userId = payload.id;
+            userRoles = payload.roles ?? [];
+          } catch (e) {
+            return ctx.json(unauthorized(), 401);
+          }
+        } else {
+          throw new Error("Not implemented");
+        }
+
+        ctx.auth = {
+          userId,
+          roles: userRoles,
+        };
+
+        // check permissions
+        if (userRoles.some((r) => resourceRoles?.includes(r))) {
+          return ctx.next();
+        }
+
+        const permissions = userRoles
+          .flatMap(
+            (role) =>
+              settings.userRolesConfiguration?.roles?.find(
+                (r) => r.name === role
+              )?.permissions
+          );
+
+        const allowRules = permissions?.filter((p) => p.effect === "ALLOW");
+        const denyRules = permissions?.filter((p) => p.effect === "DENY");
+
+        const allowedActions = allowRules.flatMap((p) => p.actions);
+        const allowedResources = allowRules.flatMap((p) => p.resources);
+
+        const deniedActions = denyRules.flatMap((p) => p.actions);
+        const deniedResources = denyRules.flatMap((p) => p.resources);
+
+        const denied =
+          (currentActions.some((a) => deniedActions?.includes(a)) ||
+            deniedActions.includes("*")) &&
+          (currentResources.some((r) => deniedResources?.includes(r)) ||
+            deniedResources.includes("*"));
+
+        if (denied) return ctx.json(unauthorized(), 401);
+
+        const authorized =
+          (currentActions.every((a) => allowedActions?.includes(a)) ||
+            allowedActions.includes("*")) &&
+          (currentResources.every((r) => allowedResources?.includes(r)) ||
+            allowedResources.includes("*"));
+
+        if (!authorized) return ctx.json(unauthorized(), 401);
+
+        // continue
+
+        return ctx.next();
+      }
+
+      bfCfg.pluginsOptions["auth"] = {
+        ...bfCfg.pluginsOptions["auth"],
+        middleware,
+      };
+
       // mount auth pkg routes
       $server.$extendFrom(__dirname, {
         name: pkg.name,
-        prefix: cfg.prefix,
+        prefix: cfg.routePrefix,
         ignored,
       });
     },
