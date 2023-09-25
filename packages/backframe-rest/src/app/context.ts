@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BfConfig } from "@backframe/core";
 import type { NextFunction } from "express";
-import type { ZodObject, ZodRawShape, ZodType, z } from "zod";
+import type { ZodAny, ZodObject, ZodRawShape, ZodType, z } from "zod";
 import { ExpressReq, ExpressRes, HasKeys, ZodReturnValue } from "../lib/types";
 
 interface IResponseOptions {
@@ -14,26 +14,30 @@ interface IResponseOptions {
 export class Context<
   I extends ZodType,
   O extends ZodRawShape = {},
-  Q extends ZodType = ZodType<{}>,
-  P extends ZodType = ZodType<{}>
+  Q extends ZodType = ZodAny,
+  P extends ZodType = ZodAny
 > {
   [key: string]: unknown; // extended by user
+
+  auth?: {
+    userId?: string;
+    roles?: string[];
+    sessionId?: string;
+  };
 
   constructor(
     public request: ExpressReq,
     public response: ExpressRes,
     public next: NextFunction,
     private bfConfig?: BfConfig
-  ) {}
+  ) {
+    this.auth = {
+      roles: [],
+    };
+  }
 
   get db() {
     return this.bfConfig.$database;
-  }
-
-  get auth() {
-    return {
-      session: "",
-    };
   }
 
   get input() {
@@ -41,13 +45,11 @@ export class Context<
   }
 
   get query() {
-    type QueryParams = HasKeys<Q> extends true ? z.infer<Q> : any;
-    return this.request.query as QueryParams;
+    return this.request.query as z.infer<Q>;
   }
 
   get params() {
-    type Params = HasKeys<P> extends true ? z.infer<P> : any;
-    return this.request.params as Params;
+    return this.request.params as z.infer<P>;
   }
 
   get config() {

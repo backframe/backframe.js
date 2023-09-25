@@ -18,9 +18,12 @@ export class Manifest {
   }
 
   add(i: RouteItem) {
-    const match = this.#items.find(($) => $.route === i.route);
+    const fmt = (str: string) => str.replace(/\/$/g, "");
+    const match = this.#items.find(($) => fmt($.route) === fmt(i.route));
     if (match) {
-      logger.warn(`ignoring duplicate route: \`${i.route}\` found`);
+      logger.warn(
+        `ignoring duplicate route: \`${i.route}\` (${i.filePath}) found`
+      );
 
       if (match.isExtended) {
         logger.warn(

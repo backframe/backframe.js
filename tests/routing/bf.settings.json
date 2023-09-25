@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "applicationName": "Backframe",
+    "routePrefix": "/auth",
+    "requiredAttributes": ["email", "phone", "firstName", "lastName"],
+    "allowedSignInAttributes": ["phone", "email", "username"],
+    "smsTemplates": {
+      "verificationCode": "{{otp_code}} is your {{app_name}} verification code and it will expire in {{age}} minutes. Do not share this with anyone.",
+      "passwordChanged": "Your {{app_name}} password has been changed! If you did not make this change, please reach out to an administrator for support.",
+      "invitation": "{{inviter_name}} has invited you to join them on {{app_name}} {{action_url}}",
+      "resetPassword": "{{inviter_name}} has invited you to join them on {{app_name}} {{action_url}}"
+    },
+    "emailTemplates": {},
+    "mfaConfiguration": {
+      "codeLength": 6,
+      "codeExpiresIn": 10,
+      "status": "OFF",
+      "mfaTypes": ["TOTP", "EMAIL", "SMS"]
+    },
+    "userRolesConfiguration": {
+      "default": "USER",
+      "roles": [
+        {
+          "name": "USER",
+          "permissions": [
+            {
+              "id": "sid-allow",
+              "name": "allow-uses",
+              "effect": "ALLOW",
+              "actions": ["*"],
+              "resources": ["hello"]
+            }
+          ]
+        },
+        {
+          "name": "ADMIN",
+          "permissions": []
+        }
+      ]
+    },
+    "policies": []
+  }
+}

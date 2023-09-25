@@ -3,6 +3,7 @@ import { createHandler, defineRouteConfig, z } from "@backframe/rest";
 export const config = defineRouteConfig({
   model: "post",
   enabledMethods: ["put", "delete"],
+  publicMethods: ["get", "put", "delete"],
 });
 
 export const PUT = createHandler({

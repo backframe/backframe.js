@@ -30,10 +30,18 @@ export function PasswordsDontMatch() {
   };
 }
 
-export function AccountExists() {
+export function AccountExists(param: string) {
   return {
     status: "error",
     code: "auth/exists",
-    message: "Account with provided email already exists",
+    message: `Account with provided ${param} already exists`,
+  };
+}
+
+export function MissingRequiredAttribute(attr: string) {
+  return {
+    status: "error",
+    code: "auth/missing-attribute",
+    message: `Missing required attribute: ${attr}`,
   };
 }

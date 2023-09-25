@@ -16,6 +16,9 @@
       "@backframe/utils/*": ["node_modules/@backframe/utils/dist/thirdparty/*"],
       "@backframe/auth/providers/*": [
         "node_modules/@backframe/auth/dist/providers/*"
+      ],
+      "@backframe/auth/integrations/*": [
+        "node_modules/@backframe/auth/dist/integrations/*"
       ]
     }
   },

@@ -1,7 +1,7 @@
 import { logger } from "@backframe/utils";
 import { NextFunction, RequestHandler } from "express";
 import http from "http";
-import { ZodObject, ZodRawShape } from "zod";
+import { ZodError, ZodObject, ZodRawShape, z } from "zod";
 import { GenericException } from "./errors.js";
 import { ExpressReq, ExpressRes } from "./types.js";
 
@@ -37,7 +37,7 @@ export async function validatePort(port: number, iter = 1): Promise<number> {
   return p;
 }
 
-export function createRequestValidator<T extends ZodRawShape>({
+export function createExpressRequestValidator<T extends ZodRawShape>({
   schema,
   source,
   errorTitle,
@@ -50,9 +50,8 @@ export function createRequestValidator<T extends ZodRawShape>({
 }): RequestHandler {
   return (req: ExpressReq, _res: ExpressRes, next: NextFunction) => {
     const opts = schema.safeParse(req[source]);
-    if (!opts.success) {
-      // @ts-expect-error (value exists)
-      const errors = opts.error.flatten().fieldErrors;
+    if (opts.success === false) {
+      const errors: Record<string, string[]> = opts.error.flatten().fieldErrors;
       const field = Object.keys(errors)[0];
       next(
         new GenericException(
@@ -68,4 +67,31 @@ export function createRequestValidator<T extends ZodRawShape>({
       next();
     }
   };
+}
+
+export function validate<T extends ZodRawShape>({
+  schema,
+  input,
+  onValidationError,
+}: {
+  schema: ZodObject<T>;
+  input: unknown;
+  onValidationError?: (error: ZodError) => void;
+  onValidationSuccess?: (data: z.infer<ZodObject<T>>) => void;
+}) {
+  const result = schema.safeParse(input);
+
+  if (result.success === true) {
+    return result.data;
+  } else {
+    if (onValidationError) {
+      return onValidationError(result.error);
+    } else {
+      console.error(
+        "❌ Schema validation failed:",
+        result.error.flatten().fieldErrors
+      );
+      throw new Error("Schema validation failed");
+    }
+  }
 }

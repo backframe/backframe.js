@@ -43,7 +43,7 @@ export type Handler<
   Q extends ZodRawShape = {},
   P extends ZodRawShape = {}
 > = (
-  ctx: Context<ZodObject<I>, O, ZodType<Q>, ZodType<P>>
+  ctx: Context<ZodObject<I>, O, ZodObject<Q>, ZodObject<P>>
 ) => HasKeys<O> extends true
   ? Awaitable<ZodReturnValue<ZodObject<O>>>
   : Awaitable<any>;
@@ -55,11 +55,22 @@ export interface IHandlerConfig<
   P extends ZodRawShape = {}
 > {
   input?: ZodObject<I>;
+  roles?: string[];
   output?: ZodObject<O>;
   action?: Handler<I, O, Q, P>;
   middleware?: Handler<I, any>[];
   query?: ZodObject<Q>;
   params?: ZodObject<P>;
+  auth?: <T extends ZodObject<O>>(
+    ctx: Context<ZodObject<I>, O, ZodObject<Q>, ZodObject<P>>,
+    cfg: {
+      data: z.infer<T>;
+      status: "before" | "after";
+      allow: () => void;
+      deny: (msg?: string) => void;
+    }
+  ) => void | Promise<void>;
+  runAuthMiddleware?: "before" | "after" | "beforeAndAfter";
 }
 
 export interface IHandlers {
@@ -108,5 +119,5 @@ export interface IRouteConfig<T> {
   /**
    * Define which methods/routes are publicly available without requiring the caller to be authenticated
    */
-  securedMethods?: Method[];
+  publicMethods?: Method[];
 }

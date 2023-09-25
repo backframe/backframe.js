@@ -77,6 +77,7 @@ export async function serve(args: Record<string, unknown>) {
             ...(args["ext"] as string[]),
           ].join(",")}}`,
           "bf.config.*",
+          ".env*",
           ...filterPaths(args["watch"] as string[]),
         ],
         {

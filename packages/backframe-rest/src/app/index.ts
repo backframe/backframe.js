@@ -85,8 +85,12 @@ export class BfServer implements IBfServer {
       // not a dummy route
       if (i.filePath !== null) {
         const r = new Resource(i, this.#bfConfig);
-        if (!this.$resources.some((_) => _.route === r.route))
+        const fmt = (str: string) => str.replace(/\/$/g, "");
+        if (!this.$resources.some((_) => fmt(_.route) === fmt(r.route)))
           this.$resources.push(r);
+        else {
+          logger.warn(`duplicate route detected: ${r.route}`);
+        }
       }
     });
 
@@ -199,7 +203,8 @@ export class BfServer implements IBfServer {
   }
 
   $extendFrom(path: string, cfg: { name?: string; prefix?: string }) {
-    const sub = new Router(this.#bfConfig, cfg); // sub-router
+    const sub = new Router(this.#bfConfig, { ...cfg, subRouter: true }); // sub-router
+    logger.dev(`extending router from: ${path}`);
     sub.init(path, "routes");
     this.#router.mergeRouter(sub);
   }

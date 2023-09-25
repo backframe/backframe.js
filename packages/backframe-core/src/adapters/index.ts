@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type BfModelFilterOps<T> = {
-  and?: BfWhere<T>[];
-  or?: BfWhere<T>[];
-  not?: BfWhere<T>;
+  AND?: BfWhere<T>[];
+  OR?: BfWhere<T>[];
+  NOT?: BfWhere<T>;
 };
 
 export type BfModelCompareOps<T> = {
@@ -24,39 +25,36 @@ export type BfWhere<T> = {
     : T[P] extends Array<infer U>
     ? BfWhere<U> & BfModelFilterOps<U>
     : T[P] extends string | number | boolean
-    ? BfModelCompareOps<T[P]>
+    ? T[P] | BfModelCompareOps<T[P]>
     : T[P];
-};
+} & BfModelFilterOps<T>;
 
 export abstract class BfDatabase {
-  abstract create<T>(
-    model: string,
-    data: Partial<T>
-  ): Promise<Partial<T> | object>;
+  abstract create<T, U = any>(model: string, data: Partial<T>): Promise<U>;
 
-  abstract read<T>(
+  abstract read<T, U = any>(
     model: string,
     args: { where: BfWhere<T> }
-  ): Promise<Partial<T> | object>;
+  ): Promise<U>;
 
-  abstract list<T>(
+  abstract list<T, U = any>(
     model: string,
     args: {
       where?: BfWhere<T>;
       limit?: number;
       offset?: number;
     }
-  ): Promise<Array<Partial<T> | object>>;
+  ): Promise<U>;
 
-  abstract update<T>(
+  abstract update<T, U = any>(
     model: string,
     args: { where: BfWhere<T>; data: Partial<T> }
-  ): Promise<Partial<T> | object>;
+  ): Promise<U>;
 
-  abstract delete<T>(
+  abstract delete<T, U = any>(
     model: string,
     args: { where: BfWhere<T> }
-  ): Promise<Partial<T> | object>;
+  ): Promise<U>;
 
   abstract hasModel(model: string): boolean;
 }

@@ -48,8 +48,12 @@ describe("test routing functionality", () => {
     await request(app).get("/a/hello").expect(200).expect("hello");
   });
 
-  describe("test catchAll routing", () => {
-    it("should receive `catchAll works` as response", async () => {
+  it("should receive okay response for dynamic folder route", async () => {
+    await request(app).get("/user/900/name").expect(200);
+  });
+
+  describe("test catch-all routing", () => {
+    it("should receive `catch-all works` as response", async () => {
       await request(app).get("/admin/").expect(200).expect("Catchall works");
     });
 

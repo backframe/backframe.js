@@ -23,14 +23,14 @@ function toDrizzleWhere(table: any, where: BfWhere<unknown>): any {
   const key = Object.keys(where)[0] as Key;
   const value = where[key as keyof typeof where];
 
-  if (key === "and") {
+  if (key === "AND") {
     const args = [];
     for (const [k, v] of Object.entries(value as BfWhere<unknown>)) {
       args.push(toDrizzleWhere(table, { [k]: v }));
     }
 
     return and(...args);
-  } else if (key === "or") {
+  } else if (key === "OR") {
     const args = [];
     for (const [k, v] of Object.entries(value as BfWhere<unknown>)) {
       args.push(toDrizzleWhere(table, { [k]: v }));

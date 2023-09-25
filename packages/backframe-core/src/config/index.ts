@@ -6,10 +6,12 @@ import fs from "fs";
 import { Server } from "http";
 import path from "path";
 import { BfDatabase } from "../adapters/index.js";
+import { AuthPluginConfig } from "../plugins/auth.js";
 import { PluginFunction } from "../plugins/index.js";
 import { PluginManifest } from "../plugins/manifest.js";
-import { openConfig } from "./config.js";
+import { loadSettings, openConfig } from "./config.js";
 import { BF_CONFIG_DEFAULTS, BfUserConfig } from "./schema.js";
+import { BfSettings } from "./settings.js";
 import { loadTsConfig } from "./tsconfig.js";
 
 // each key corresponds to a prop of the BfConfig class
@@ -93,6 +95,9 @@ export interface IAuthDef {
 }
 
 export class BfConfig {
+  // built in plugins
+  auth: AuthPluginConfig;
+
   #updatedRootDir: string;
   #pluginManifest: PluginManifest;
 
@@ -103,6 +108,7 @@ export class BfConfig {
   $sockets?: unknown;
 
   // config related values/extensions
+  $settings?: BfSettings;
   $listeners: Listeners;
   compiler: PluginFunction;
   smsProvider?: PluginFunction;
@@ -127,23 +133,24 @@ export class BfConfig {
   }
 
   async $initialize() {
-    const plugins = this.getConfig("plugins");
-    plugins.forEach((p) => {
-      this.#pluginManifest.register(p);
-    });
-
-    // if any plugin overrides the compiler
-    this.$invokePlugin("compiler");
-    this.compiler(this); // invoke compiler(it'll only run if typescript detected)
+    // load settings
+    const settings = loadSettings();
+    this.$settings = settings;
 
     // read config file
     const userCfg: BfUserConfig = await openConfig();
     this.userCfg = deepMerge(BF_CONFIG_DEFAULTS, userCfg);
+    this.compiler(this); // invoke compiler(it'll only run if typescript detected)
 
     // if transpiled, update root dir
     if (this.#updatedRootDir) {
       this.$updateRootDir(path.join(this.#updatedRootDir, this.userCfg.root));
     }
+
+    const plugins = this.getConfig("plugins");
+    plugins.forEach((p) => {
+      this.#pluginManifest.register(p);
+    });
 
     // invoke config modifiers
     this.$invokeListeners("onConfigInit");
@@ -169,7 +176,7 @@ export class BfConfig {
     return this.$listeners[key];
   }
 
-  $addPlugin(key: ConfigKey, p: PluginFunction) {
+  $addPlugin<T extends keyof typeof this>(key: T, p: typeof this[T]) {
     this[key] = p;
   }
 
@@ -183,6 +190,17 @@ export class BfConfig {
 
   $updateRootDir(name: string) {
     this.#updatedRootDir = name;
+  }
+
+  $getAuthPluginOptions<T extends keyof AuthPluginConfig>(key: T) {
+    return this.auth?.[key];
+  }
+
+  $updateAuthOptions(auth: AuthPluginConfig) {
+    this.auth = {
+      ...this.auth,
+      ...auth,
+    };
   }
 
   // configure server,app,database,sockets

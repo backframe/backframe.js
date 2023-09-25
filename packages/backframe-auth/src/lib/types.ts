@@ -1,5 +1,7 @@
+import { BfSettings } from "@backframe/core";
 import { CookieOptions } from "express";
 import type { JWK } from "jose";
+import * as jose from "jose";
 import {
   BaseClient,
   ClientMetadata,
@@ -8,6 +10,30 @@ import {
   TokenSet,
   UserinfoResponse,
 } from "openid-client";
+
+export type AuthConfig = BfSettings["auth"] & {
+  encode?: <T>(payload: T, options?: unknown) => string | PromiseLike<string>;
+  decode?: (token: string, options?: unknown) => JWTPayload;
+  verify?: (token: string, options?: unknown) => boolean | Promise<boolean>;
+  hash?: (
+    data: string | Buffer,
+    options?: unknown
+  ) => string | PromiseLike<string>;
+  compare?: (
+    data: string | Buffer,
+    encrypted: string
+  ) => boolean | PromiseLike<boolean>;
+};
+
+export type JWTPayload = jose.JWTPayload & {
+  sub: string;
+  roles?: string[];
+  iat: string;
+  exp: string;
+  iss?: string;
+  aud?: string;
+  [key: string]: unknown;
+};
 
 export type ProviderType = "oauth" | "email" | "credentials";
 export type PartialIssuer = Partial<
@@ -109,3 +135,40 @@ export type OAuthUserConfig<P> = Omit<
   "options" | "type"
 > &
   Required<Pick<OAuthConfig<P>, "clientId" | "clientSecret">>;
+
+export type SMSTemplateConfig<T extends keyof AuthConfig["smsTemplates"]> =
+  T extends "verificationCode"
+    ? {
+        event: "verificationCode";
+        vars: {
+          otp_code: string;
+          app_name: string;
+          age: number;
+        };
+      }
+    : T extends "resetPassword"
+    ? {
+        event: "resetPassword";
+        vars: {
+          otp_code: string;
+          app_name: string;
+          age: number;
+        };
+      }
+    : T extends "invitation"
+    ? {
+        event: "invitation";
+        vars: {
+          inviter_name: string;
+          app_name: string;
+          action_url: string;
+        };
+      }
+    : T extends "passwordChanged"
+    ? {
+        event: "passwordChanged";
+        vars: {
+          app_name: string;
+        };
+      }
+    : never;

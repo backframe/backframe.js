@@ -109,7 +109,7 @@ export function wrapHandler<I extends ZodRawShape, O extends ZodRawShape = {}>(
       const e = error as Error;
       // in the case user `throws` the error
       return next(
-        new GenericException(500, "Invalid response body", e.message)
+        new GenericException(500, "Internal server error", e.message)
       );
     }
 

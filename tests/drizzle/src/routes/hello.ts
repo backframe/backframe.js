@@ -1,7 +1,7 @@
 import { createHandler } from "@backframe/rest";
 
 export const GET = createHandler({
-  action(ctx) {
+  action(_ctx) {
     return "Hello World!!!";
   },
 });

@@ -2,8 +2,13 @@
 import { BfConfig, BfDatabase, BfUserConfig } from "@backframe/core";
 import { Context } from "@backframe/rest";
 import { Issuer } from "openid-client";
-import { AuthConfig, DEFAULT_CFG } from "../index.js";
-import { InternalProvider, Provider } from "./types";
+import { DEFAULT_CFG } from "../index.js";
+import {
+  AuthConfig,
+  InternalProvider,
+  Provider,
+  SMSTemplateConfig,
+} from "./types.js";
 
 export type InternalOptions = {
   db: BfDatabase;
@@ -22,6 +27,10 @@ export type InternalOptions = {
     vals?: Record<string, string>;
   };
   referer?: string;
+  getSMSTemplate: <T extends keyof AuthConfig["smsTemplates"]>(
+    event: T,
+    vars: SMSTemplateConfig<T>["vars"]
+  ) => string;
 };
 
 export async function openidClient(opts: InternalOptions) {
@@ -71,7 +80,7 @@ export function getOptions(ctx: Context<any>): InternalOptions {
       ...p,
       callbackURL: `${
         process.env.APP_URL ?? "http://localhost:6969"
-      }${bf.withRestPrefix(auth.prefix)}/callback/${providerId}`,
+      }${bf.withRestPrefix(auth.routePrefix)}/callback/${providerId}`,
       options: {
         clientId,
         clientSecret,
@@ -95,6 +104,16 @@ export function getOptions(ctx: Context<any>): InternalOptions {
     cookies.vals[key] = reqCookies[value];
   }
 
+  function getSMSTemplate<T extends keyof typeof auth.smsTemplates>(
+    event: T,
+    vars: SMSTemplateConfig<T>["vars"]
+  ) {
+    const template = auth.smsTemplates[event];
+    return Object.entries(vars).reduce((acc, [key, value]) => {
+      return acc.replace(`{{${key}}}`, String(value));
+    }, template);
+  }
+
   return {
     bf,
     auth,
@@ -104,5 +123,6 @@ export function getOptions(ctx: Context<any>): InternalOptions {
     db: ctx.db,
     cookies,
     referer: cookies.vals?.["referer"] ?? ctx.request.headers.referer,
+    getSMSTemplate,
   };
 }
