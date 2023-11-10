@@ -2,4 +2,9 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Run `pnpm i` to make sure lockfile is upto date
-pnpm i && pnpm build && pnpm run:tests
+pnpm i && pnpm build
+
+# if not in CI then run tests
+if [ -z "$CI" ]; then
+  pnpm run:tests
+fi
