@@ -1,6 +1,6 @@
 {
   "name": "@backframe/adapter-prisma",
-  "version": "0.0.1-alpha.14",
+  "version": "0.0.1-alpha.15",
   "description": "Prisma adapter for backframe.js",
   "main": "dist/index.js",
   "license": "MIT",
