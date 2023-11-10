@@ -2,9 +2,6 @@ import { dim } from "kleur/colors";
 import winston, { createLogger, format, transports } from "winston";
 const { printf, colorize, combine, timestamp } = format;
 
-export const Logger =
-  process.env.NODE_ENV === "production" ? getProdLogger() : getDevLogger();
-
 function _log(
   msg: string,
   level: "info" | "http" | "error" | "warn" | "debug"
@@ -27,6 +24,9 @@ export const dev = (msg: string) => {
 const fmt = printf(({ level, message, timestamp }) => {
   return `[${timestamp}] ${level} - ${message}`;
 });
+
+export const Logger =
+  process.env.NODE_ENV === "production" ? getProdLogger() : getDevLogger();
 
 function getDevLogger() {
   const fmt = printf(({ level, message, timestamp }) => {
